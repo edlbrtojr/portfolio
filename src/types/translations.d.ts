@@ -5,6 +5,7 @@ export interface Translation {
     skills: string;
     certifications: string;
     projects: string;
+    home: string;
   };
   notFound: {
     title: string;

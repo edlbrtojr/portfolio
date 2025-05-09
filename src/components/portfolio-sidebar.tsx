@@ -16,6 +16,7 @@ import {
   Moon,
   Sun,
   Languages,
+  Home,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -63,12 +64,19 @@ export function PortfolioSidebar() {
     skills: "Skills",
     certifications: "Certifications",
     projects: "Projects",
+    home: "Home",
   };
 
   // Use t.navigation if available, otherwise use default
   const nav = t?.navigation || defaultNav;
 
   const sections: NavItem[] = [
+    {
+      name: language === "pt" ? "Início" : nav.home,
+      icon: Home,
+      href: "#hero",
+      sectionId: "hero",
+    },
     {
       name: nav.projects,
       icon: Folder,
@@ -113,38 +121,30 @@ export function PortfolioSidebar() {
     <div className="w-[320px] fixed top-0 left-0 bottom-0 hidden lg:block backdrop-blur-xl bg-white/10 dark:bg-slate-800/80 shadow-xl z-40 border-r border-white/5">
       <div className="flex flex-col h-full">
         <div className="p-6 flex flex-col items-center text-center">
-          {/* Circular profile container with simplified smooth depth effect */}
-          <div className="profile-container relative w-[180px] h-[180px] mb-6">
-            {/* Outer circle with uniform gradient to create smooth depth */}
-            <div
-              className="absolute inset-0 rounded-full bg-gradient-to-br from-indigo-100/20 to-indigo-100/5 dark:from-slate-700/40 dark:to-slate-800/20 
-                shadow-[0_8px_30px_rgba(0,0,0,0.2)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.35)] overflow-hidden border border-white/10 dark:border-white/5"
-            >
-              {/* Gradient overlay to create the impression of depth */}
-              <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-black/20 dark:to-black/30"></div>
+          {/* Minimalist profile container */}
+          <div className="relative w-36 h-36 mb-6 group">
+            {/* Main image container */}
+            <div className="relative w-full h-full rounded-full overflow-hidden transition-transform duration-500 ease-out group-hover:scale-[1.02]">
+              {/* The profile image */}
+              <img
+                src="/images/profile.jpg"
+                alt="Edilberto A. Lima Jr."
+                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.08] group-hover:rotate-1"
+              />
 
-              {/* Subtle inner light at top to create realistic lighting */}
-              <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/10 to-transparent opacity-50 dark:opacity-20"></div>
+              {/* Subtle inner shadow */}
+              <div className="absolute inset-0 shadow-[inset_0_2px_6px_rgba(0,0,0,0.2)] dark:shadow-[inset_0_2px_6px_rgba(0,0,0,0.3)]"></div>
+
+              {/* Hover glow effect */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 shadow-[0_0_15px_5px_rgba(120,182,255,0.15)] dark:shadow-[0_0_15px_5px_rgba(120,182,255,0.2)]"></div>
             </div>
 
-            {/* Cavity effect - a single deeper inset circle */}
-            <div
-              className="absolute top-1/2 left-1/2 w-[140px] h-[140px] transform -translate-x-1/2 -translate-y-1/2 rounded-full
-                shadow-[inset_0_8px_20px_5px_rgba(0,0,0,0.35),inset_0_-4px_8px_rgba(255,255,255,0.1),0_-1px_2px_rgba(255,255,255,0.1)] 
-                dark:shadow-[inset_0_8px_25px_5px_rgba(0,0,0,0.5),inset_0_-4px_8px_rgba(255,255,255,0.05),0_-1px_2px_rgba(255,255,255,0.05)]"
-            >
-              {/* Image container */}
-              <div className="relative w-full h-full rounded-full overflow-hidden">
-                <img
-                  src="/images/profile.jpg"
-                  alt="Edilberto A. Lima Jr."
-                  className="w-full h-full object-cover"
-                />
+            {/* Floating decorative elements - subtle dots */}
+            <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-blue-400/40 dark:bg-blue-400/30 blur-[1px] opacity-0 group-hover:opacity-70 transition-all duration-700 group-hover:translate-x-1 group-hover:-translate-y-1"></div>
+            <div className="absolute -bottom-1 -left-2 w-3 h-3 rounded-full bg-indigo-400/30 dark:bg-indigo-400/20 blur-[1px] opacity-0 group-hover:opacity-70 transition-all duration-700 group-hover:-translate-x-1 group-hover:translate-y-1"></div>
 
-                {/* Subtle overlay to integrate image with depth effect */}
-                <div className="absolute inset-0 shadow-[inset_0_6px_12px_rgba(0,0,0,0.4),inset_0_-3px_6px_rgba(0,0,0,0.3)]"></div>
-              </div>
-            </div>
+            {/* Subtle ambient light reflection */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/0 to-white/5 dark:to-white/3 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none"></div>
           </div>
 
           <h1 className="text-xl font-bold text-white dark:text-white">
@@ -182,7 +182,7 @@ export function PortfolioSidebar() {
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-white/70 dark:text-white/70">
               <MapPin className="h-4 w-4 text-white/50 dark:text-white/50" />
-              <span className="text-sm">Rio Branco, Acre</span>
+              <span className="text-sm">Rio Branco, Brasil</span>
             </div>
 
             <div className="flex items-center gap-2 text-white/70 dark:text-white/70">

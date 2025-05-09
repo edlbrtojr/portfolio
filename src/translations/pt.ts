@@ -5,6 +5,7 @@ export const pt = {
     skills: "Habilidades",
     certifications: "Certificações",
     projects: "Projetos",
+    home: "Início",
   },
   notFound: {
     title: "Página Não Encontrada",

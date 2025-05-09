@@ -4,6 +4,7 @@ import { Education } from "@/components/education";
 import { Skills } from "@/components/skills";
 import { Projects } from "@/components/projects";
 import { Certifications } from "@/components/certifications";
+import "./section-styles.css";
 
 export default function Home() {
   return (

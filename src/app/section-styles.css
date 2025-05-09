@@ -1,0 +1,14 @@
+/* Styles for sections to improve scroll behavior with navigation */
+section {
+  scroll-margin-top: 80px; /* Adjust based on your header height */
+}
+
+/* Add some extra space between sections for better visual separation */
+section + section {
+  margin-top: 1rem;
+}
+
+/* Smooth scrolling for the entire page */
+html {
+  scroll-behavior: smooth;
+}

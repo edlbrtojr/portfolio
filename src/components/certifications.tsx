@@ -23,7 +23,7 @@ function CertificationCard({ title, provider, date }: CertificationCardProps) {
         <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none shadow-[0_0_15px_2px_rgba(101,157,255,0.07)]"></div>
 
         <CardHeader className="pb-3 pt-4 px-4 bg-white/10 dark:bg-slate-800/80 relative z-10 group-hover:bg-white/15 dark:group-hover:bg-slate-700/90 transition-colors duration-300 flex-none h-[85px]">
-          <CardTitle className="text-base text-white/90 dark:text-white/90 group-hover:text-white dark:group-hover:text-white transition-colors duration-300 line-clamp-2 overflow-hidden font-semibold text-lg">
+          <CardTitle className="text-white/90 dark:text-white/90 group-hover:text-white dark:group-hover:text-white transition-colors duration-300 line-clamp-2 overflow-hidden font-semibold text-lg">
             {title}
           </CardTitle>
         </CardHeader>
