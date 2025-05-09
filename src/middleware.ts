@@ -7,6 +7,12 @@ const locales = ["pt", "en"];
 export function middleware(request: NextRequest) {
   // Check if there is any supported locale in the pathname
   const pathname = request.nextUrl.pathname;
+
+  // Skip locale enforcement for specific paths
+  if (pathname.startsWith("/projects") || pathname === "/favicon.ico") {
+    return;
+  }
+
   const pathnameIsMissingLocale = locales.every(
     (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
   );

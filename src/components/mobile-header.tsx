@@ -188,7 +188,7 @@ export function MobileHeader() {
               <div className="p-4 space-y-4">
                 <div className="flex items-center gap-2 text-white/60">
                   <MapPin className="h-4 w-4 text-white/40" />
-                  <span className="text-sm">Rio Branco, Acre, 69920-070</span>
+                  <span className="text-sm">Rio Branco, Acre</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-white/60">

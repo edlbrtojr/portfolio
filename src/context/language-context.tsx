@@ -3,11 +3,11 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { en } from "@/translations/en";
 import { pt } from "@/translations/pt";
+import type { Translation } from "@/types/translations";
 
 type Language = "pt" | "en";
 
-// Define translation type based on the English translations structure
-export type TranslationType = typeof en;
+export type TranslationType = Translation;
 
 export type LanguageContextType = {
   language: Language;

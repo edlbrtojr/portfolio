@@ -6,6 +6,13 @@ export const en = {
     certifications: "Certifications",
     projects: "Projects",
   },
+  notFound: {
+    title: "Page Not Found",
+    description:
+      "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.",
+    goBack: "Go Back",
+    goHome: "Go to Homepage",
+  },
   sidebar: {
     title: "Analyst and Developer",
     navigation: "Navigation",

@@ -12,8 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Github } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
-import Link from "next/link";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export function Projects() {
   const { t } = useLanguage();
@@ -153,9 +153,12 @@ export function Projects() {
                     variant="default"
                     size="sm"
                     className="gap-1 icloud-btn text-white dark:text-white hover:shadow-[0_0_15px_rgba(101,157,255,0.15)] transition-all duration-300"
+                    asChild
                   >
-                    <ExternalLink className="h-4 w-4" />
-                    <span>{t.projects.viewProject}</span>
+                    <span>
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      {t.projects.viewProject}
+                    </span>
                   </Button>
                 </Link>
                 {project.github && (

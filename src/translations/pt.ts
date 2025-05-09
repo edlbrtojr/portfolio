@@ -6,6 +6,13 @@ export const pt = {
     certifications: "Certificações",
     projects: "Projetos",
   },
+  notFound: {
+    title: "Página Não Encontrada",
+    description:
+      "A página que você está procurando pode ter sido removida, teve seu nome alterado ou está temporariamente indisponível.",
+    goBack: "Voltar",
+    goHome: "Ir para Página Inicial",
+  },
   sidebar: {
     title: "Analista e Desenvolvedor",
     navigation: "Navegação",
