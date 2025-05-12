@@ -16,17 +16,17 @@ export type LanguageContextType = {
   t: TranslationType;
 };
 
-const defaultTranslations = en;
+const defaultTranslations = pt;
 
 const LanguageContext = createContext<LanguageContextType>({
-  language: "en",
+  language: "pt",
   setLanguage: () => {},
   toggleLanguage: () => {},
   t: defaultTranslations,
 });
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>("en");
+  const [language, setLanguage] = useState<Language>("pt");
   const [mounted, setMounted] = useState(false);
 
   // Get the translations based on the current language

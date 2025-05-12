@@ -37,13 +37,10 @@ export function Hero() {
   const hero = t?.hero || defaultHero;
 
   // Set resume file path based on selected language
-  const resumeFileName =
-    language === "pt"
-      ? "Currículo Edilberto Portifólio.pdf"
-      : "Edilberto's Resumé.pdf";
+  const resumeFileName = language === "pt" ? "resume-pt.pdf" : "resume-en.pdf";
 
   // Encode the file path to handle special characters
-  const resumePath = `/${encodeURIComponent(resumeFileName)}`;
+  const resumePath = `/${resumeFileName}`;
 
   return (
     <section id="hero" className="py-12 md:py-24 relative">

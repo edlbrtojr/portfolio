@@ -12,9 +12,8 @@ import { BackgroundElements } from "@/components/background-elements";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Edilberto A. Lima Jr. | Portfolio",
-  description:
-    "Portfolio website of Edilberto A. Lima Jr., Analyst and Developer",
+  title: "Edilberto A. Lima Jr. | Portfólio",
+  description: "Portfólio de Edilberto A. Lima Jr., Analista e Desenvolvedor",
 };
 
 export default function RootLayout({
@@ -23,12 +22,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="pt-BR" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
+          enableSystem={false}
           disableTransitionOnChange
         >
           <LanguageProvider>
