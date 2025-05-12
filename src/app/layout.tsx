@@ -14,6 +14,18 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Edilberto A. Lima Jr. | Portfólio",
   description: "Portfólio de Edilberto A. Lima Jr., Analista e Desenvolvedor",
+  alternates: {
+    languages: {
+      "pt-BR": "/",
+      "en-US": "/en",
+    },
+  },
+  openGraph: {
+    title: "Edilberto A. Lima Jr. | Portfólio",
+    description: "Portfólio de Edilberto A. Lima Jr., Analista e Desenvolvedor",
+    locale: "pt_BR",
+    alternateLocale: "en_US",
+  },
 };
 
 export default function RootLayout({

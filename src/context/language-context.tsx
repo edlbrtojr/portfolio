@@ -17,16 +17,18 @@ export type LanguageContextType = {
 };
 
 const defaultTranslations = pt;
+const DEFAULT_LANGUAGE: Language = "pt";
 
 const LanguageContext = createContext<LanguageContextType>({
-  language: "pt",
+  language: DEFAULT_LANGUAGE,
   setLanguage: () => {},
   toggleLanguage: () => {},
   t: defaultTranslations,
 });
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>("pt");
+  // Always start with Portuguese as the default language
+  const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE);
   const [mounted, setMounted] = useState(false);
 
   // Get the translations based on the current language
@@ -40,15 +42,18 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   // Load saved language preference from localStorage
   useEffect(() => {
     setMounted(true);
-    const savedLanguage = localStorage.getItem("language") as Language;
-    if (savedLanguage && (savedLanguage === "en" || savedLanguage === "pt")) {
-      setLanguage(savedLanguage);
+    // Only load from localStorage on client-side
+    if (typeof window !== "undefined") {
+      const savedLanguage = localStorage.getItem("language") as Language;
+      if (savedLanguage && (savedLanguage === "en" || savedLanguage === "pt")) {
+        setLanguage(savedLanguage);
+      }
     }
   }, []);
 
   // Save language preference to localStorage when it changes
   useEffect(() => {
-    if (mounted) {
+    if (mounted && typeof window !== "undefined") {
       localStorage.setItem("language", language);
     }
   }, [language, mounted]);

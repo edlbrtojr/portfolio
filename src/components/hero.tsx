@@ -36,11 +36,8 @@ export function Hero() {
   // Use t.hero if available, otherwise use default
   const hero = t?.hero || defaultHero;
 
-  // Set resume file path based on selected language
-  const resumeFileName = language === "pt" ? "resume-pt.pdf" : "resume-en.pdf";
-
-  // Encode the file path to handle special characters
-  const resumePath = `/${resumeFileName}`;
+  // Set resume file path to use the API route based on selected language
+  const resumePath = `/api/resume/${language}`;
 
   return (
     <section id="hero" className="py-12 md:py-24 relative">
