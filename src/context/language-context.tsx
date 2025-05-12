@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { en } from "@/translations/en";
 import { pt } from "@/translations/pt";
 import type { Translation } from "@/types/translations";
+import { getCookie, setCookie } from "@/lib/cookies";
 
 type Language = "pt" | "en";
 
@@ -36,17 +37,44 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   // Toggle between English and Portuguese
   const toggleLanguage = () => {
-    setLanguage((prev) => (prev === "en" ? "pt" : "en"));
+    setLanguage((prev) => {
+      const newLang = prev === "en" ? "pt" : "en";
+      // Also update cookie when toggling
+      if (typeof document !== "undefined") {
+        setCookie("language", newLang, 365);
+      }
+      return newLang;
+    });
   };
 
-  // Load saved language preference from localStorage
+  // Custom language setter that also updates cookie
+  const handleSetLanguage = (newLanguage: Language) => {
+    setLanguage(newLanguage);
+    if (typeof document !== "undefined") {
+      setCookie("language", newLanguage, 365);
+    }
+  };
+
+  // Load saved language preference from cookie or localStorage
   useEffect(() => {
     setMounted(true);
-    // Only load from localStorage on client-side
+    // Only load preferences on client-side
     if (typeof window !== "undefined") {
-      const savedLanguage = localStorage.getItem("language") as Language;
-      if (savedLanguage && (savedLanguage === "en" || savedLanguage === "pt")) {
-        setLanguage(savedLanguage);
+      // First check cookie (set by middleware)
+      const cookieLang = getCookie("language") as Language;
+      if (cookieLang && (cookieLang === "en" || cookieLang === "pt")) {
+        setLanguage(cookieLang);
+      } else {
+        // Fall back to localStorage if no cookie
+        const savedLanguage = localStorage.getItem("language") as Language;
+        if (
+          savedLanguage &&
+          (savedLanguage === "en" || savedLanguage === "pt")
+        ) {
+          setLanguage(savedLanguage);
+          // Also set cookie for consistency
+          setCookie("language", savedLanguage, 365);
+        }
       }
     }
   }, []);
@@ -55,12 +83,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (mounted && typeof window !== "undefined") {
       localStorage.setItem("language", language);
+      // Also update cookie
+      setCookie("language", language, 365);
     }
   }, [language, mounted]);
 
   const value = {
     language,
-    setLanguage,
+    setLanguage: handleSetLanguage,
     toggleLanguage,
     t,
   };
