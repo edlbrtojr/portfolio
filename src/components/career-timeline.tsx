@@ -10,19 +10,19 @@ type Position = {
   location: string;
   period: string;
   current?: boolean;
+  responsibilities?: string[];
 };
 
 type ExperienceData = {
   timeline: string;
   positions: Position[];
-  responsibilities: string[];
 };
 
 export function CareerTimeline() {
   const { t, language } = useLanguage() as any;
 
   // Default experience content in case t.experience is undefined
-  const defaultExperience = {
+  const defaultExperienceEn = {
     timeline: "Career at Federação das Indústrias do Acre - Sistema FIEAC",
     positions: [
       {
@@ -37,29 +37,99 @@ export function CareerTimeline() {
         company: "Federação das Indústrias do Acre - Sistema FIEAC",
         location: "Rio Branco",
         period: "Jan 2024 - Feb 2025",
+        responsibilities: [
+          "Development of low-code/no-code applications using Power Apps and Power Automate",
+          "System integration with Dataverse, Dynamics 365 and external APIs",
+          "Implementation of Python and Selenium scripts for automating processes",
+          "Data analysis with Power BI and Microsoft Fabric",
+          "Support and maintenance of organization systems",
+          "Developed a centralized service desk application for managing inter-departmental requests",
+          "Led the corporate intranet redesign using SharePoint Framework and modern experiences",
+        ],
       },
       {
         title: "IT Intern",
         company: "Federação das Indústrias do Acre - Sistema FIEAC",
         location: "Rio Branco",
         period: "Sep 2023 - Dec 2023",
+        responsibilities: [
+          "Development and maintenance of internal applications with Power Platform",
+          "Automation of business workflows",
+          "Support and maintenance of organization systems",
+        ],
       },
-    ],
-    responsibilities: [
-      "Development of low-code/no-code applications using Power Apps and Power Automate",
-      "System integration with Dataverse, Dynamics 365 and external APIs",
-      "Implementation of Python and Selenium scripts for automating processes",
-      "Data analysis with Power BI and Microsoft Fabric",
-      "Support and maintenance of organization systems",
     ],
   };
 
-  // Use t.experience if available, otherwise use default
+  const defaultExperiencePt = {
+    timeline: "Carreira na Federação das Indústrias do Acre - Sistema FIEAC",
+    positions: [
+      {
+        title: "Analista de TI",
+        company: "Federação das Indústrias do Acre - Sistema FIEAC",
+        location: "Rio Branco",
+        period: "Fev/2025 - Atual",
+        current: true,
+      },
+      {
+        title: "Assistente de TI",
+        company: "Federação das Indústrias do Acre - Sistema FIEAC",
+        location: "Rio Branco",
+        period: "Jan/2024 - Fev/2025",
+        responsibilities: [
+          "Desenvolvimento de aplicações low-code/no-code utilizando Power Apps e Power Automate",
+          "Integração de sistemas com Dataverse, Dynamics 365 e APIs externas",
+          "Implementação de scripts em Python e Selenium para automação de processos",
+          "Administração e análise de dados com Power BI e Microsoft Fabric",
+          "Suporte e manutenção de sistemas da organização",
+          "Desenvolveu um aplicativo centralizado de service desk para gerenciar solicitações interdepartamentais",
+          "Liderou o redesign da intranet corporativa utilizando SharePoint Framework e experiências modernas",
+        ],
+      },
+      {
+        title: "Estagiário de TI",
+        company: "Federação das Indústrias do Acre - Sistema FIEAC",
+        location: "Rio Branco",
+        period: "Set/2023 - Dez/2023",
+        responsibilities: [
+          "Desenvolvimento e manutenção de aplicações internas com Power Platform",
+          "Automação de fluxos de trabalho empresariais",
+          "Suporte e manutenção de sistemas da organização",
+        ],
+      },
+    ],
+  };
+
+  // Use appropriate default experience based on language
+  const defaultExperience =
+    language === "en" ? defaultExperienceEn : defaultExperiencePt;
+
+  // Use t.experience if available, otherwise use default based on language
   const experience = t?.experience || defaultExperience;
 
-  // Ensure responsibilities is always an array
-  const responsibilities =
-    experience?.responsibilities || defaultExperience.responsibilities;
+  // Collect all responsibilities from the positions, taking language into account
+  const getAllResponsibilities = () => {
+    const position = experience.positions?.find(
+      (p: Position) => p.responsibilities
+    );
+    if (position && position.responsibilities) {
+      return position.responsibilities;
+    }
+
+    // Fallback to default responsibilities based on language
+    const defaultPosition =
+      language === "en"
+        ? defaultExperienceEn.positions.find(
+            (p: Position) => p.responsibilities
+          )
+        : defaultExperiencePt.positions.find(
+            (p: Position) => p.responsibilities
+          );
+
+    return defaultPosition?.responsibilities || [];
+  };
+
+  const responsibilities = getAllResponsibilities();
 
   return (
     <Card className="overflow-hidden icloud-card border-none relative group">
