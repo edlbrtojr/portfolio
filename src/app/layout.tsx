@@ -14,6 +14,11 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Edilberto A. Lima Jr. | Portfólio",
   description: "Portfólio de Edilberto A. Lima Jr., Analista e Desenvolvedor",
+  icons: {
+    icon: "/logo.ico",
+    shortcut: "/logo.ico",
+    apple: "/logo.ico",
+  },
   alternates: {
     languages: {
       "pt-BR": "/",

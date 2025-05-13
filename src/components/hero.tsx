@@ -65,7 +65,7 @@ export function Hero() {
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <Button
                 size="lg"
-                className="group bg-white/30 hover:bg-white/40 dark:bg-blue-600/80 dark:hover:bg-blue-600 text-white border border-white/30 shadow-sm transition-all duration-300 rounded-xl"
+                className="group bg-white/10 hover:bg-white/40 dark:bg-blue-600/80 dark:hover:bg-blue-600 text-white border border-white/30 shadow-sm transition-all duration-300 rounded-xl"
                 asChild
               >
                 <a href={resumePath} download>
