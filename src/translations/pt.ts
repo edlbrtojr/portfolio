@@ -264,6 +264,43 @@ export const pt = {
     viewProject: "Ver Projeto",
     projects: [
       {
+        title: "Busca Diários",
+        description:
+          "Ferramenta de automação que baixa diários oficiais de fontes governamentais, renomeia arquivos com datas formatadas e pesquisa termos específicos dentro dos PDFs. Apresenta interfaces CLI e GUI para processamento e análise eficiente de documentos.",
+        year: "2024",
+        technologies: [
+          "Python",
+          "Selenium",
+          "Processamento de PDF",
+          "Desenvolvimento GUI",
+        ],
+        github: true,
+        live: false,
+        slug: "official-gazette-search",
+        details: {
+          overview:
+            "Uma solução automatizada para download e pesquisa em diários oficiais do Governo do Estado do Acre e do Tribunal de Justiça. A ferramenta elimina downloads manuais e buscas de texto, melhorando significativamente a eficiência para profissionais jurídicos e pesquisadores.",
+          challenges: [
+            "O download manual de diários diários era demorado",
+            "A pesquisa de termos específicos em vários documentos PDF era ineficiente",
+            "Diferentes fontes de diários usavam formatos e sites variados",
+            "Necessidade de interfaces de linha de comando e gráficas para diferentes casos de uso",
+          ],
+          solutions: [
+            "Implementação da automação web Selenium para lidar com downloads de fontes oficiais",
+            "Criação de funcionalidade de extração e busca de texto em PDF usando pdfplumber",
+            "Desenvolvimento de convenção padronizada de nomenclatura de arquivos com datas para melhor organização",
+            "Construção de interfaces CLI e GUI para flexibilidade em diferentes cenários de uso",
+          ],
+          results: [
+            "Eliminação completa do processo manual de download",
+            "Redução do tempo de pesquisa de horas para minutos",
+            "Organização padronizada de arquivos melhorou a gestão de documentos",
+            "Interface amigável aumentou a adoção entre usuários não técnicos",
+          ],
+        },
+      },
+      {
         title: "Aplicativo de Demandas + Service Desk",
         description:
           "Desenvolvido em Power Apps, este aplicativo centraliza demandas e tarefas intersetoriais, eliminando solicitações via e-mail. Quando integrado a outras soluções internas e serviços do Microsoft 365, otimiza fluxos de trabalho e comunicação corporativa.",

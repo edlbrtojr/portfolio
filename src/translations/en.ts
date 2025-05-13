@@ -262,6 +262,43 @@ export const en = {
     viewProject: "View Project",
     projects: [
       {
+        title: "Official Gazette Search Tool",
+        description:
+          "Automation tool that downloads official gazettes from government sources, renames files with formatted dates, and searches for specific terms within the PDFs. Features both CLI and GUI interfaces for efficient document processing and analysis.",
+        year: "2024",
+        technologies: [
+          "Python",
+          "Selenium",
+          "PDF Processing",
+          "GUI Development",
+        ],
+        github: true,
+        live: false,
+        slug: "official-gazette-search",
+        details: {
+          overview:
+            "An automated solution for downloading and searching through official gazettes from Acre's State Government and Court of Justice. The tool eliminates manual downloads and text searches, significantly improving efficiency for legal professionals and researchers.",
+          challenges: [
+            "Manual downloading of daily gazettes was time-consuming",
+            "Searching for specific terms across multiple PDF documents was inefficient",
+            "Different gazette sources used varying formats and websites",
+            "Need for both command-line and graphical interfaces for different use cases",
+          ],
+          solutions: [
+            "Implemented Selenium web automation to handle downloads from official sources",
+            "Created PDF text extraction and search functionality using pdfplumber",
+            "Developed standardized file naming convention with dates for better organization",
+            "Built both CLI and GUI interfaces for flexibility in usage scenarios",
+          ],
+          results: [
+            "Completely eliminated manual download process",
+            "Reduced search time from hours to minutes",
+            "Standardized file organization improved document management",
+            "User-friendly interface increased adoption among non-technical users",
+          ],
+        },
+      },
+      {
         title: "Tasks + Service Desk App",
         description:
           "Developed in Power Apps, this application centralizes inter-sectoral demands and tasks, eliminating email requests. When integrated with other internal solutions and Microsoft 365 services, it optimizes workflows and corporate communication.",

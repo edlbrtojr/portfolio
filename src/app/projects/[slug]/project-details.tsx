@@ -195,9 +195,20 @@ export function ProjectDetails({ slug }: { slug: string }) {
                 <Button
                   variant="outline"
                   className="w-full gap-2 bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50 backdrop-blur-lg"
+                  asChild
                 >
-                  <Github className="h-4 w-4" />
-                  View on GitHub
+                  <a
+                    href={
+                      project.slug === "official-gazette-search"
+                        ? "https://github.com/edlbrtojr/BuscaDiarios"
+                        : "#"
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Github className="h-4 w-4" />
+                    View on GitHub
+                  </a>
                 </Button>
               )}
 
