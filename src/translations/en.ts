@@ -262,6 +262,38 @@ export const en = {
     viewProject: "View Project",
     projects: [
       {
+        title: "Personal Portfolio Website",
+        description:
+          "A modern, responsive portfolio website built with Next.js, showcasing professional experience, skills, and projects. Features bilingual support, responsive design, and an interactive UI with animations and transitions.",
+        year: "2025",
+        technologies: ["Next.js", "TypeScript", "TailwindCSS", "Framer Motion"],
+        github: true,
+        live: true,
+        slug: "personal-portfolio",
+        details: {
+          overview:
+            "A comprehensive personal portfolio website built using modern web technologies. The site showcases my professional journey, skills, and projects with a clean, responsive design that works across all devices.",
+          challenges: [
+            "Creating a fully responsive design that works on all device sizes",
+            "Implementing seamless bilingual support for English and Portuguese",
+            "Building an engaging user interface with smooth animations",
+            "Ensuring accessibility and performance across different browsers",
+          ],
+          solutions: [
+            "Utilized Next.js App Router for optimized page routing and server components",
+            "Implemented React Context for language switching and state management",
+            "Used TailwindCSS for responsive, utility-first styling approach",
+            "Added Framer Motion for smooth, performant animations and transitions",
+          ],
+          results: [
+            "A modern, fast-loading portfolio that showcases skills and projects effectively",
+            "Seamless language switching between English and Portuguese",
+            "Responsive design that works perfectly on mobile, tablet, and desktop",
+            "Interactive UI elements that enhance user engagement and experience",
+          ],
+        },
+      },
+      {
         title: "Official Gazette Search Tool",
         description:
           "Automation tool that downloads official gazettes from government sources, renames files with formatted dates, and searches for specific terms within the PDFs. Features both CLI and GUI interfaces for efficient document processing and analysis.",
@@ -471,6 +503,6 @@ export const en = {
     challenges: "Challenges",
     solutions: "Solutions",
     results: "Results",
-    relatedProjects: "Related Projects",
+    relatedProjects: "Other Projects",
   },
 };

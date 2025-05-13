@@ -264,6 +264,38 @@ export const pt = {
     viewProject: "Ver Projeto",
     projects: [
       {
+        title: "Website de Portfólio Pessoal",
+        description:
+          "Um site de portfólio moderno e responsivo construído com Next.js, mostrando experiência profissional, habilidades e projetos. Apresenta suporte bilíngue, design responsivo e uma interface interativa com animações e transições.",
+        year: "2025",
+        technologies: ["Next.js", "TypeScript", "TailwindCSS", "Framer Motion"],
+        github: true,
+        live: true,
+        slug: "personal-portfolio",
+        details: {
+          overview:
+            "Um site de portfólio pessoal abrangente construído usando tecnologias web modernas. O site apresenta minha jornada profissional, habilidades e projetos com um design limpo e responsivo que funciona em todos os dispositivos.",
+          challenges: [
+            "Criar um design totalmente responsivo que funciona em todos os tamanhos de dispositivos",
+            "Implementar suporte bilíngue perfeito para inglês e português",
+            "Construir uma interface de usuário envolvente com animações suaves",
+            "Garantir acessibilidade e desempenho em diferentes navegadores",
+          ],
+          solutions: [
+            "Utilização do App Router do Next.js para roteamento de páginas otimizado e componentes de servidor",
+            "Implementação de React Context para troca de idiomas e gerenciamento de estado",
+            "Uso de TailwindCSS para uma abordagem de estilização responsiva e baseada em utilitários",
+            "Adição de Framer Motion para animações e transições suaves e de alto desempenho",
+          ],
+          results: [
+            "Um portfólio moderno e de carregamento rápido que apresenta habilidades e projetos de forma eficaz",
+            "Troca de idioma perfeita entre inglês e português",
+            "Design responsivo que funciona perfeitamente em dispositivos móveis, tablets e desktop",
+            "Elementos de interface interativos que melhoram o engajamento e a experiência do usuário",
+          ],
+        },
+      },
+      {
         title: "Busca Diários",
         description:
           "Ferramenta de automação que baixa diários oficiais de fontes governamentais, renomeia arquivos com datas formatadas e pesquisa termos específicos dentro dos PDFs. Apresenta interfaces CLI e GUI para processamento e análise eficiente de documentos.",
@@ -473,6 +505,6 @@ export const pt = {
     challenges: "Desafios",
     solutions: "Soluções",
     results: "Resultados",
-    relatedProjects: "Projetos Relacionados",
+    relatedProjects: "Outros Projetos",
   },
 };

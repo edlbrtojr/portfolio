@@ -195,6 +195,8 @@ export function ProjectDetailsClient({ slug }: { slug: string }) {
                     href={
                       project.slug === "official-gazette-search"
                         ? "https://github.com/edlbrtojr/BuscaDiarios"
+                        : project.slug === "personal-portfolio"
+                        ? "https://github.com/edlbrtojr/portfolio"
                         : "#"
                     }
                     target="_blank"
@@ -210,9 +212,20 @@ export function ProjectDetailsClient({ slug }: { slug: string }) {
                 <Button
                   variant="outline"
                   className="w-full gap-2 bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50 backdrop-blur-lg"
+                  asChild
                 >
-                  <ExternalLink className="h-4 w-4" />
-                  {language === "en" ? "Live Demo" : "Demo Ao Vivo"}
+                  <a
+                    href={
+                      project.slug === "personal-portfolio"
+                        ? "https://edilbertojunior.vercel.app/"
+                        : "#"
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    {language === "en" ? "Live Demo" : "Demo Ao Vivo"}
+                  </a>
                 </Button>
               )}
             </div>

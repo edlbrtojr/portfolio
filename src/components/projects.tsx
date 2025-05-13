@@ -176,6 +176,8 @@ export function Projects() {
                         href={
                           project.slug === "official-gazette-search"
                             ? "https://github.com/edlbrtojr/BuscaDiarios"
+                            : project.slug === "personal-portfolio"
+                            ? "https://github.com/edlbrtojr/portfolio"
                             : "#"
                         }
                         target="_blank"
