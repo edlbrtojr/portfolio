@@ -8,6 +8,7 @@ import { PortfolioSidebar } from "@/components/portfolio-sidebar";
 import { LanguageProvider } from "@/context/language-context";
 import { MobileHeader } from "@/components/mobile-header";
 import { BackgroundElements } from "@/components/background-elements";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -67,6 +68,7 @@ export default function RootLayout({
                   </main>
                 </div>
               </div>
+              <Analytics />
             </SidebarProvider>
           </LanguageProvider>
         </ThemeProvider>
