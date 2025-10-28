@@ -741,3 +741,38 @@ html {
 .float-3d-reverse {
   animation: float-3d-reverse 18s ease-in-out infinite;
 }
+
+/* Loading animation and reveal */
+.scale-reveal {
+  transform-origin: center;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: transform, opacity;
+}
+
+/* 3D transform for the checkmark expansion */
+@keyframes expand-3d {
+  0% {
+    transform: scale3d(1, 1, 1) translateZ(0);
+  }
+  50% {
+    transform: scale3d(10, 10, 2) translateZ(100px);
+  }
+  100% {
+    transform: scale3d(30, 30, 3) translateZ(200px);
+  }
+}
+
+.checkmark-expanding {
+  animation: expand-3d 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+/* Improve rendering on different browsers */
+.hardware-accelerated {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: subpixel-antialiased;
+}

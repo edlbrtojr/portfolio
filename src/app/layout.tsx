@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { PortfolioSidebar } from "@/components/portfolio-sidebar";
 import { LanguageProvider } from "@/context/language-context";
+import { LoadingProvider } from "@/context/loading-context";
 import { MobileHeader } from "@/components/mobile-header";
 import { BackgroundElements } from "@/components/background-elements";
 import { Analytics } from "@vercel/analytics/next";
@@ -49,27 +50,29 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <LanguageProvider>
-            <SidebarProvider>
-              {/* Background Elements */}
-              <BackgroundElements />
+            <LoadingProvider>
+              <SidebarProvider>
+                {/* Background Elements */}
+                <BackgroundElements />
 
-              <div className="flex flex-col lg:flex-row min-h-screen">
-                {/* Desktop Sidebar - hidden on small screens */}
-                <PortfolioSidebar />
+                <div className="flex flex-col lg:flex-row min-h-screen">
+                  {/* Desktop Sidebar - hidden on small screens */}
+                  <PortfolioSidebar />
 
-                {/* Main Content with Mobile Header */}
-                <div className="flex-1 flex flex-col lg:ml-[320px]">
-                  {/* Mobile Header - visible only on small screens */}
-                  <MobileHeader />
+                  {/* Main Content with Mobile Header */}
+                  <div className="flex-1 flex flex-col lg:ml-[320px]">
+                    {/* Mobile Header - visible only on small screens */}
+                    <MobileHeader />
 
-                  {/* Main Content */}
-                  <main className="flex-1 overflow-auto w-full">
-                    {children}
-                  </main>
+                    {/* Main Content */}
+                    <main className="flex-1 overflow-auto w-full">
+                      {children}
+                    </main>
+                  </div>
                 </div>
-              </div>
-              <Analytics />
-            </SidebarProvider>
+                <Analytics />
+              </SidebarProvider>
+            </LoadingProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>
