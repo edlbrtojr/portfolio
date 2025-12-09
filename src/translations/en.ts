@@ -272,6 +272,51 @@ export const en = {
     viewProject: "View Project",
     projects: [
       {
+        title: "Smilix - Clinic Management System",
+        description:
+          "Complete multi-tenant SaaS platform for dental clinic management. Includes smart scheduling with conflict checking, patient and dentist management, admin dashboard, customizable per-clinic branding system, and much more.",
+        year: "2025",
+        technologies: [
+          "Next.js 15",
+          "React 19",
+          "Supabase",
+          "TypeScript",
+          "TailwindCSS",
+          "shadcn/ui",
+        ],
+        github: false,
+        live: true,
+        liveUrl: "https://smilix.com.br",
+        slug: "smilix-multiclinic",
+        featured: true,
+        image: "/images/projects/smilix-multiclinic.png",
+        details: {
+          overview:
+            "Smilix is a complete SaaS management system for dental clinics, built with the most modern technologies available. The platform offers multi-tenant isolation with Supabase RLS policies, ensuring security and data privacy for each clinic. The system was designed to scale and serve from small clinics to large dental networks.",
+          challenges: [
+            "Implement secure multi-tenant architecture with complete data isolation between clinics",
+            "Create intelligent scheduling system with real-time conflict checking",
+            "Develop dynamic branding system allowing full customization per clinic",
+            "Ensure performance and scalability for multiple simultaneous clinics",
+            "Implement complete care flow with electronic medical records and attachments",
+          ],
+          solutions: [
+            "Using Supabase with Row Level Security (RLS) for secure multi-tenant isolation",
+            "Development of robust API with availability and conflict checking before each appointment",
+            "Branding system with logo upload, custom colors and dynamic favicon per clinic",
+            "Optimized architecture with Next.js 15 App Router and React Server Components",
+            "Modern and responsive interface with shadcn/ui and Tailwind CSS v4",
+          ],
+          results: [
+            "Complete SaaS platform ready for production and commercialization",
+            "Scheduling system with zero conflicts and real-time verification",
+            "Complete administrative interface for plan, user and permission management",
+            "Support for attachments, comments and complete patient history",
+            "Fully configurable queue, room and working hours system",
+          ],
+        },
+      },
+      {
         title: "Personal Portfolio Website",
         description:
           "A modern, responsive portfolio website built with Next.js, showcasing professional experience, skills, and projects. Features bilingual support, responsive design, and an interactive UI with animations and transitions.",

@@ -1,6 +1,6 @@
 import { useParams } from "next/navigation";
-import pt from "../translations/pt.json";
-import en from "../translations/en.json";
+import { pt } from "../translations/pt";
+import { en } from "../translations/en";
 
 type TranslationType = typeof pt;
 type NestedKeys<T> = T extends object

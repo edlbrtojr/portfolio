@@ -88,7 +88,10 @@ export interface Translation {
       technologies: string[];
       github: boolean;
       live: boolean;
+      liveUrl?: string;
       slug: string;
+      featured?: boolean;
+      image?: string;
       details: {
         overview: string;
         challenges: string[];

@@ -8,13 +8,16 @@ import "./section-styles.css";
 
 export default function Home() {
   return (
-    <div className="container mx-auto py-8 px-4 md:px-8 animate-fade-in">
+    <div className="w-full mx-auto py-8 px-4 md:px-8 animate-fade-in">
       <Hero />
       <Projects />
       <Experience />
       <Education />
       <Skills />
       <Certifications />
+      
+      {/* Footer spacer */}
+      <div className="h-16" />
     </div>
   );
 }

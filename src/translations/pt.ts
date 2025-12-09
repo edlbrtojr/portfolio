@@ -274,6 +274,51 @@ export const pt = {
     viewProject: "Ver Projeto",
     projects: [
       {
+        title: "Smilix - Sistema de Gestão para Clínicas",
+        description:
+          "Plataforma SaaS multi-tenant completa para gestão de clínicas odontológicas. Inclui agendamento inteligente com verificação de conflitos, gestão de pacientes e dentistas, dashboard administrativo, sistema de branding personalizado por clínica, e muito mais.",
+        year: "2025",
+        technologies: [
+          "Next.js 15",
+          "React 19",
+          "Supabase",
+          "TypeScript",
+          "TailwindCSS",
+          "shadcn/ui",
+        ],
+        github: false,
+        live: true,
+        liveUrl: "https://smilix.com.br",
+        slug: "smilix-multiclinic",
+        featured: true,
+        image: "/images/projects/smilix-multiclinic.png",
+        details: {
+          overview:
+            "O Smilix é um sistema SaaS de gestão completo para clínicas odontológicas, desenvolvido com as tecnologias mais modernas do mercado. A plataforma oferece isolamento multi-tenant com políticas RLS do Supabase, garantindo segurança e privacidade dos dados de cada clínica. O sistema foi projetado para escalar e atender desde pequenas clínicas até grandes redes odontológicas.",
+          challenges: [
+            "Implementar arquitetura multi-tenant segura com isolamento completo de dados entre clínicas",
+            "Criar sistema de agendamento inteligente com verificação de conflitos em tempo real",
+            "Desenvolver sistema de branding dinâmico que permite personalização completa por clínica",
+            "Garantir performance e escalabilidade para múltiplas clínicas simultâneas",
+            "Implementar fluxo completo de atendimento com prontuário eletrônico e anexos",
+          ],
+          solutions: [
+            "Utilização do Supabase com Row Level Security (RLS) para isolamento seguro multi-tenant",
+            "Desenvolvimento de API robusta com verificação de disponibilidade e conflitos antes de cada agendamento",
+            "Sistema de branding com upload de logos, cores customizadas e favicon dinâmico por clínica",
+            "Arquitetura otimizada com Next.js 15 App Router e React Server Components",
+            "Interface moderna e responsiva com shadcn/ui e Tailwind CSS v4",
+          ],
+          results: [
+            "Plataforma SaaS completa pronta para produção e comercialização",
+            "Sistema de agendamento com zero conflitos e verificação em tempo real",
+            "Interface administrativa completa para gestão de planos, usuários e permissões",
+            "Suporte a anexos, comentários e histórico completo de pacientes",
+            "Sistema de filas, salas e horários de funcionamento totalmente configurável",
+          ],
+        },
+      },
+      {
         title: "Website de Portfólio Pessoal",
         description:
           "Um site de portfólio moderno e responsivo construído com Next.js, mostrando experiência profissional, habilidades e projetos. Apresenta suporte bilíngue, design responsivo e uma interface interativa com animações e transições.",

@@ -5,12 +5,14 @@ import { ProjectDetailsClient } from "./project-details-client";
 
 export const dynamic = "force-dynamic";
 
+type PageProps = {
+  params: Promise<{ slug: string }>;
+};
+
 export async function generateMetadata({
   params,
-}: {
-  params: { slug: string };
-}): Promise<Metadata> {
-  const { slug } = params;
+}: PageProps): Promise<Metadata> {
+  const { slug } = await params;
 
   // Get both translations to find the project - we'll use the title for SEO
   const enProject = en.projects.projects.find((p) => p.slug === slug);
@@ -24,8 +26,8 @@ export async function generateMetadata({
   };
 }
 
-export default function ProjectPage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+export default async function ProjectPage({ params }: PageProps) {
+  const { slug } = await params;
 
   return <ProjectDetailsClient slug={slug} />;
 }

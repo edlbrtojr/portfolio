@@ -1,10 +1,11 @@
 "use client";
+
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/context/language-context";
-import { Briefcase } from "lucide-react";
+import { Briefcase, ChevronRight, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
-// Define types for the career positions and responsibilities
 type Position = {
   title: string;
   company: string;
@@ -22,28 +23,45 @@ type ExperienceData = {
 export function CareerTimeline() {
   const { t, language } = useLanguage() as any;
 
-  // Default experience content in case t.experience is undefined
   const defaultExperienceEn = {
     timeline: "Career at Federação das Indústrias do Acre - Sistema FIEAC",
     positions: [
       {
         title: "Systems Analyst",
-        company: "Observatório da Indústria - Federação das Indústrias do Acre - Sistema FIEAC",
+        company:
+          "Observatório da Indústria do Acre - Federação das Indústrias do Acre - Sistema FIEAC",
         location: "Rio Branco",
-        period: "Feb 2025 - Present",
+        period: "Nov 2025 - Present",
         current: true,
         responsibilities: [
-          "Working in a data intelligence center integrated with the Observatórios Network of the Sistema Indústria (CNI).",
-          "Data analysis and development of strategic intelligence systems for the Observatório da Indústria do Acre.",
-          "Creation of strategic dashboards and reports with Power BI and Microsoft Fabric to support strategic decision-making in the industrial sector.",
-          "Development and maintenance of low-code/no-code applications using Power Apps and Power Automate for industrial data monitoring and analysis.",
-          "System integration with Dataverse, Dynamics 365 and external APIs for industrial data collection and processing.",
-          "Development of custom solutions with Next.js and TypeScript focused on data intelligence and strategic analysis.",
+          "Working in the data intelligence center of the Observatório da Indústria do Acre, integrated with the Observatórios Network of the Sistema Indústria (CNI).",
+          "Collection, processing and analysis of socioeconomic and industrial data for the state of Acre.",
+          "Development of strategic studies, economic research and market analysis to support the industrial sector's decision-making.",
+          "Creation of interactive dashboards and analytical reports with Power BI and Microsoft Fabric for monitoring industrial indicators.",
+          "Development of data intelligence systems and web applications with Next.js and TypeScript for dissemination of industrial information.",
+          "Integration with national databases and CNI systems for consolidation of regional industrial statistics.",
+          "Production of technical publications, newsletters and strategic content about the industrial panorama of Acre.",
+        ],
+      },
+      {
+        title: "Systems Analyst",
+        company:
+          "Unidade de Tecnologia - UNITEC - Federação das Indústrias do Acre - Sistema FIEAC",
+        location: "Rio Branco",
+        period: "Feb 2025 - Nov 2025",
+        responsibilities: [
+          "Technological leadership in the IT unit, coordinating development projects and internal solutions.",
+          "Architecture and development of corporate systems using Next.js, TypeScript and Microsoft Power Platform.",
+          "Implementation of business intelligence solutions with Power BI and Microsoft Fabric for different departments.",
+          "Development and maintenance of low-code/no-code applications using Power Apps and Power Automate.",
+          "Integration of corporate systems with Dataverse, Dynamics 365 and external APIs.",
+          "Technical mentoring and support to the development team in projects and automations.",
         ],
       },
       {
         title: "IT Assistant",
-        company: "Unidade de Tecnologia - UNITEC - Federação das Indústrias do Acre - Sistema FIEAC",
+        company:
+          "Unidade de Tecnologia - UNITEC - Federação das Indústrias do Acre - Sistema FIEAC",
         location: "Rio Branco",
         period: "Jan 2024 - Feb 2025",
         responsibilities: [
@@ -57,9 +75,10 @@ export function CareerTimeline() {
       },
       {
         title: "IT Intern",
-        company: "Unidade de Tecnologia - UNITEC - Federação das Indústrias do Acre - Sistema FIEAC",
+        company:
+          "Unidade de Tecnologia - UNITEC - Federação das Indústrias do Acre - Sistema FIEAC",
         location: "Rio Branco",
-        period: "Sep 2023 - Dec 2023",
+        period: "Mar 2023 - Jan 2024",
         responsibilities: [
           "Working in corporate IT, providing technical support and development of internal solutions.",
           "Development and maintenance of internal applications with Power Platform for different organizational sectors.",
@@ -75,22 +94,40 @@ export function CareerTimeline() {
     positions: [
       {
         title: "Analista de Sistemas",
-        company: "Observatório da Indústria - Federação das Indústrias do Acre - Sistema FIEAC",
+        company:
+          "Observatório da Indústria do Acre - Federação das Indústrias do Acre - Sistema FIEAC",
         location: "Rio Branco",
-        period: "Fev/2025 - Atual",
+        period: "Nov/2025 - Atual",
         current: true,
         responsibilities: [
-          "Atuação em centro de inteligência de dados integrado à Rede de Observatórios do Sistema Indústria (CNI).",
-          "Análise de dados e desenvolvimento de sistemas de inteligência estratégica para o Observatório da Indústria do Acre.",
-          "Criação de dashboards e relatórios estratégicos com Power BI e Microsoft Fabric para subsidiar decisões estratégicas do setor industrial.",
-          "Desenvolvimento e manutenção de aplicações low-code/no-code utilizando Power Apps e Power Automate para monitoramento e análise de dados industriais.",
-          "Integração de sistemas com Dataverse, Dynamics 365 e APIs externas para coleta e processamento de dados industriais.",
-          "Desenvolvimento de soluções personalizadas com Next.js e TypeScript focadas em inteligência de dados e análise estratégica.",
+          "Atuação no centro de inteligência de dados do Observatório da Indústria do Acre, integrado à Rede de Observatórios do Sistema Indústria (CNI).",
+          "Coleta, tratamento e análise de dados socioeconômicos e industriais do estado do Acre.",
+          "Elaboração de estudos estratégicos, pesquisas econômicas e análises de mercado para subsidiar tomadas de decisão do setor industrial.",
+          "Criação de dashboards interativos e relatórios analíticos com Power BI e Microsoft Fabric para acompanhamento de indicadores industriais.",
+          "Desenvolvimento de sistemas de inteligência de dados e aplicações web com Next.js e TypeScript para disseminação de informações industriais.",
+          "Integração com bases de dados nacionais e sistemas da CNI para consolidação de estatísticas industriais regionais.",
+          "Produção de publicações técnicas, boletins e conteúdos estratégicos sobre o panorama industrial do Acre.",
+        ],
+      },
+      {
+        title: "Analista de Sistemas",
+        company:
+          "Unidade de Tecnologia - UNITEC - Federação das Indústrias do Acre - Sistema FIEAC",
+        location: "Rio Branco",
+        period: "Fev/2025 - Nov/2025",
+        responsibilities: [
+          "Liderança técnica na unidade de TI, coordenando projetos de desenvolvimento e soluções internas.",
+          "Arquitetura e desenvolvimento de sistemas corporativos utilizando Next.js, TypeScript e Microsoft Power Platform.",
+          "Implementação de soluções de business intelligence com Power BI e Microsoft Fabric para diferentes departamentos.",
+          "Desenvolvimento e manutenção de aplicações low-code/no-code utilizando Power Apps e Power Automate.",
+          "Integração de sistemas corporativos com Dataverse, Dynamics 365 e APIs externas.",
+          "Mentoria técnica e suporte à equipe de desenvolvimento em projetos e automações.",
         ],
       },
       {
         title: "Assistente de TI",
-        company: "Unidade de Tecnologia - UNITEC - Federação das Indústrias do Acre - Sistema FIEAC",
+        company:
+          "Unidade de Tecnologia - UNITEC - Federação das Indústrias do Acre - Sistema FIEAC",
         location: "Rio Branco",
         period: "Jan/2024 - Fev/2025",
         responsibilities: [
@@ -104,9 +141,10 @@ export function CareerTimeline() {
       },
       {
         title: "Estagiário de TI",
-        company: "Unidade de Tecnologia - UNITEC - Federação das Indústrias do Acre - Sistema FIEAC",
+        company:
+          "Unidade de Tecnologia - UNITEC - Federação das Indústrias do Acre - Sistema FIEAC",
         location: "Rio Branco",
-        period: "Set/2023 - Dez/2023",
+        period: "Mar/2023 - Jan/2024",
         responsibilities: [
           "Atuação na TI corporativa da organização, fornecendo suporte técnico e desenvolvimento de soluções internas.",
           "Desenvolvimento e manutenção de aplicações internas com Power Platform para diferentes setores organizacionais.",
@@ -117,17 +155,12 @@ export function CareerTimeline() {
     ],
   };
 
-  // Use appropriate default experience based on language
   const defaultExperience =
     language === "en" ? defaultExperienceEn : defaultExperiencePt;
-
-  // Use t.experience if available, otherwise use default based on language
   const experience = t?.experience || defaultExperience;
 
-  // Find the first position with responsibilities or the current one to set as initial selected
   const getInitialSelectedIndex = (positions: Position[]) => {
     if (!positions || positions.length === 0) return 0;
-    // Try to find current position first
     const currentIndex = positions.findIndex((p: Position) => p.current);
     if (
       currentIndex !== -1 &&
@@ -136,7 +169,6 @@ export function CareerTimeline() {
     ) {
       return currentIndex;
     }
-    // Otherwise find first with responsibilities
     const firstWithResponsibilities = positions.findIndex(
       (p: Position) => p.responsibilities && p.responsibilities.length > 0
     );
@@ -147,14 +179,11 @@ export function CareerTimeline() {
   const initialIndex = getInitialSelectedIndex(positions);
   const [selectedIndex, setSelectedIndex] = useState(initialIndex);
 
-  // Update selected index when language changes (experience will change too)
   useEffect(() => {
     const newIndex = getInitialSelectedIndex(positions);
     setSelectedIndex(newIndex);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language]);
 
-  // Get responsibilities for the selected position
   const getSelectedResponsibilities = () => {
     const positions = experience.positions || [];
     if (positions.length === 0) return [];
@@ -164,7 +193,6 @@ export function CareerTimeline() {
       return selectedPosition.responsibilities;
     }
 
-    // Fallback to default responsibilities based on language
     const defaultPositions =
       language === "en"
         ? defaultExperienceEn.positions
@@ -181,31 +209,25 @@ export function CareerTimeline() {
   const selectedPosition = experience.positions?.[selectedIndex];
 
   return (
-    <Card className="overflow-hidden icloud-card border-none relative group">
-      {/* Top shine effect */}
-      <div className="absolute -inset-1 bg-gradient-to-r from-transparent via-white/8 to-transparent -top-[100%] opacity-0 group-hover:opacity-100 group-hover:animate-[shine_2.5s_ease-in-out]"></div>
-
-      {/* Edge glow */}
-      <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none shadow-[0_0_15px_2px_rgba(101,157,255,0.05)]"></div>
-
-      <CardHeader className="p-4 flex flex-row items-center gap-2 bg-white/10 dark:bg-slate-800/80 backdrop-blur-xl border-b border-white/5 relative z-10">
-        <div className="p-2 rounded-full bg-white/5 backdrop-blur-md shadow-[0_0_10px_rgba(101,157,255,0.15)]">
-          <Briefcase className="h-5 w-5 text-blue-300 dark:text-blue-300" />
+    <Card className="aurora-glass-iridescent overflow-hidden">
+      <CardHeader className="flex flex-row items-center gap-3 border-b border-border/30">
+        <div className="w-10 h-10 rounded-xl bg-aurora-purple/10 flex items-center justify-center">
+          <Briefcase className="h-5 w-5 text-aurora-purple" />
         </div>
-        <h3 className="text-lg font-semibold text-white/90 dark:text-white/90">
+        <h3 className="text-lg font-display font-semibold text-foreground">
           {experience.timeline}
         </h3>
       </CardHeader>
 
-      <CardContent className="p-6 backdrop-blur-md bg-white/10 dark:bg-slate-800/80 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Left column: Job title evolution timeline */}
+      <CardContent className="p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left column: Timeline */}
           <div className="relative">
             {/* Vertical timeline line */}
-            <div className="absolute left-[6px] top-[10px] bottom-[36px] w-0.5 bg-gradient-to-b from-blue-400/50 to-blue-500/20"></div>
+            <div className="absolute left-[11px] top-3 bottom-3 w-0.5 bg-gradient-to-b from-aurora-purple via-aurora-cyan to-aurora-purple/20 rounded-full" />
 
             {/* Timeline items */}
-            <div className="space-y-12">
+            <div className="space-y-6">
               {(experience.positions || []).map(
                 (position: Position, index: number) => {
                   const isSelected = selectedIndex === index;
@@ -214,8 +236,11 @@ export function CareerTimeline() {
                     position.responsibilities.length > 0;
 
                   return (
-                    <div
+                    <motion.div
                       key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
                       className="relative pl-8 group/item"
                       onClick={() => {
                         if (hasResponsibilities) {
@@ -223,100 +248,131 @@ export function CareerTimeline() {
                         }
                       }}
                     >
-                      {/* Timeline circle with glow effect */}
-                      <div
-                        className={`absolute left-0 top-[6px] h-3 w-3 rounded-full transition-all duration-300 ${
+                      {/* Timeline dot */}
+                      <motion.div
+                        className={`absolute left-0 top-2 h-6 w-6 rounded-full flex items-center justify-center transition-all duration-300 ${
                           isSelected
-                            ? "bg-blue-500 shadow-[0_0_15px_rgba(101,157,255,0.8)] scale-125"
-                            : "bg-blue-400 shadow-[0_0_10px_rgba(101,157,255,0.4)] group-hover/item:shadow-[0_0_15px_rgba(101,157,255,0.6)]"
+                            ? "bg-aurora-purple shadow-lg shadow-aurora-purple/40"
+                            : "bg-muted border-2 border-aurora-purple/30 group-hover/item:border-aurora-purple/60"
                         } ${hasResponsibilities ? "cursor-pointer" : ""}`}
-                      ></div>
-
-                      <div
-                        className={`backdrop-blur-sm p-3 rounded-lg transition-all duration-300 ${
-                          isSelected
-                            ? "bg-white/20 dark:bg-slate-600/90 border-2 border-blue-400/50 shadow-[0_0_20px_rgba(101,157,255,0.2)]"
-                            : "bg-white/10 dark:bg-slate-700/80 border-2 border-transparent group-hover/item:bg-white/5"
-                        } ${hasResponsibilities ? "cursor-pointer" : ""}`}
+                        whileHover={
+                          hasResponsibilities ? { scale: 1.1 } : undefined
+                        }
                       >
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3
-                            className={`text-xl font-semibold transition-colors duration-300 ${
+                        {isSelected && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="w-2 h-2 rounded-full bg-white"
+                          />
+                        )}
+                      </motion.div>
+
+                      {/* Position card */}
+                      <motion.div
+                        className={`p-4 rounded-xl transition-all duration-300 ${
+                          isSelected
+                            ? "bg-aurora-purple/10 border border-aurora-purple/30"
+                            : "bg-muted/30 border border-transparent hover:bg-muted/50"
+                        } ${hasResponsibilities ? "cursor-pointer" : ""}`}
+                        whileHover={hasResponsibilities ? { x: 4 } : undefined}
+                      >
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <h4
+                            className={`font-display font-semibold transition-colors duration-300 ${
                               isSelected
-                                ? "text-white dark:text-white"
-                                : "text-white/90 dark:text-white/90 group-hover/item:text-white dark:group-hover/item:text-white"
+                                ? "text-aurora-purple"
+                                : "text-foreground group-hover/item:text-aurora-purple"
                             }`}
                           >
                             {position.title}
-                          </h3>
+                          </h4>
                           {position.current && (
-                            <span className="bg-blue-500/70 text-white dark:text-white text-xs px-2 py-0.5 rounded shadow-[0_0_10px_rgba(101,157,255,0.3)]">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                              <Sparkles className="w-3 h-3" />
                               {language === "en" ? "Current" : "Atual"}
                             </span>
                           )}
                         </div>
-                        <p
-                          className={`font-medium transition-colors duration-300 ${
-                            isSelected
-                              ? "text-blue-300 dark:text-blue-300"
-                              : "text-blue-300/80 dark:text-blue-300/80 group-hover/item:text-blue-300 dark:group-hover/item:text-blue-300"
-                          }`}
-                        >
+                        <p className="text-sm text-muted-foreground font-medium mb-1 line-clamp-2">
                           {position.company}
                         </p>
-                        <p
-                          className={`text-sm transition-colors duration-300 ${
-                            isSelected
-                              ? "text-white/80 dark:text-white/80"
-                              : "text-white/60 dark:text-white/60 group-hover/item:text-white/80 dark:group-hover/item:text-white/80"
-                          }`}
-                        >
-                          {position.location} | {position.period}
+                        <p className="text-xs text-muted-foreground">
+                          {position.location} • {position.period}
                         </p>
-                      </div>
-                    </div>
+
+                        {isSelected && hasResponsibilities && (
+                          <div className="mt-2 flex items-center text-xs text-aurora-purple">
+                            <ChevronRight className="w-3 h-3 mr-1" />
+                            <span>
+                              {language === "en"
+                                ? "View details"
+                                : "Ver detalhes"}
+                            </span>
+                          </div>
+                        )}
+                      </motion.div>
+                    </motion.div>
                   );
                 }
               )}
             </div>
           </div>
 
-          {/* Right column: Responsibilities for selected position */}
-          <div className="md:col-span-2 backdrop-blur-sm bg-white/10 dark:bg-slate-700/80 p-6 rounded-lg hover:bg-white/5 transition-colors duration-300 group/resp">
-            <div className="mb-4">
-              <h4 className="text-lg font-medium mb-2 text-blue-300/90 dark:text-blue-300/90 group-hover/resp:text-blue-300 dark:group-hover/resp:text-blue-300 transition-colors duration-300">
-                {language === "en"
-                  ? "Responsibilities & Achievements"
-                  : "Responsabilidades & Conquistas"}
-              </h4>
-              {selectedPosition && (
-                <p className="text-sm text-white/50 dark:text-white/50">
-                  {selectedPosition.title}
-                  {selectedPosition.current &&
-                    ` • ${language === "en" ? "Current" : "Atual"}`}
-                </p>
-              )}
-            </div>
+          {/* Right column: Responsibilities */}
+          <div className="lg:col-span-2">
+            <div className="aurora-glass rounded-2xl p-6 h-full">
+              <div className="mb-4">
+                <h4 className="text-base font-display font-semibold text-aurora-purple mb-1">
+                  {language === "en"
+                    ? "Responsibilities & Achievements"
+                    : "Responsabilidades & Conquistas"}
+                </h4>
+                {selectedPosition && (
+                  <p className="text-sm text-muted-foreground">
+                    {selectedPosition.title}
+                    {selectedPosition.current &&
+                      ` • ${language === "en" ? "Current" : "Atual"}`}
+                  </p>
+                )}
+              </div>
 
-            {responsibilities.length > 0 ? (
-              <ul className="list-disc list-inside space-y-3 text-sm">
-                {responsibilities.map((resp: string, idx: number) => (
-                  <li
-                    key={idx}
-                    className="text-white/70 dark:text-white/70 group-hover/resp:text-white/90 dark:group-hover/resp:text-white/90 transition-colors duration-300 animate-in fade-in slide-in-from-right-4 duration-300"
-                    style={{ animationDelay: `${idx * 50}ms` }}
+              <AnimatePresence mode="wait">
+                {responsibilities.length > 0 ? (
+                  <motion.ul
+                    key={selectedIndex}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-3"
                   >
-                    {resp}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-white/50 dark:text-white/50 italic">
-                {language === "en"
-                  ? "No responsibilities listed for this position."
-                  : "Nenhuma responsabilidade listada para esta posição."}
-              </p>
-            )}
+                    {responsibilities.map((resp: string, idx: number) => (
+                      <motion.li
+                        key={idx}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.05 }}
+                        className="flex items-start gap-3 text-sm text-muted-foreground"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-aurora-cyan mt-2 shrink-0" />
+                        <span className="leading-relaxed">{resp}</span>
+                      </motion.li>
+                    ))}
+                  </motion.ul>
+                ) : (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-muted-foreground italic"
+                  >
+                    {language === "en"
+                      ? "No responsibilities listed for this position."
+                      : "Nenhuma responsabilidade listada para esta posição."}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </CardContent>

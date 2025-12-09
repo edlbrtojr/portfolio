@@ -2,22 +2,29 @@
 
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, MapPin, Calendar } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
 
 export function Education() {
   const { t } = useLanguage();
 
-  // Return early if t is not defined yet
   if (!t) {
-    return <div>Loading...</div>;
+    return (
+      <div className="py-12">
+        <div className="aurora-glass rounded-2xl p-8 animate-pulse">
+          <div className="h-8 bg-muted/50 rounded w-1/3 mb-4" />
+          <div className="h-4 bg-muted/50 rounded w-2/3" />
+        </div>
+      </div>
+    );
   }
 
   return (
     <section id="education" className="py-12 relative">
-      {/* Decorative elements */}
-      <div className="absolute -top-10 -right-20 w-40 h-40 bg-blue-500/5 rounded-full blur-3xl"></div>
+      {/* Decorative blur */}
+      <div className="absolute -top-10 -right-20 w-40 h-40 bg-aurora-cyan/10 rounded-full blur-3xl" />
 
+      {/* Section header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -25,14 +32,22 @@ export function Education() {
         transition={{ duration: 0.5 }}
         className="mb-8 relative z-10"
       >
-        <h2 className="text-3xl font-bold tracking-tight mb-4 text-white dark:text-white">
-          {t.education.title}
-        </h2>
-        <p className="text-white/70 dark:text-white/70 max-w-2xl backdrop-blur-sm bg-white/10 dark:bg-slate-800/50 p-4 rounded-lg">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 rounded-2xl bg-aurora-purple/10 flex items-center justify-center">
+            <GraduationCap className="w-6 h-6 text-aurora-purple" />
+          </div>
+          <div>
+            <h2 className="text-3xl font-display font-bold tracking-tight text-foreground">
+              {t.education.title}
+            </h2>
+          </div>
+        </div>
+        <p className="text-muted-foreground max-w-2xl ml-15">
           {t.education.subtitle}
         </p>
       </motion.div>
 
+      {/* Education cards */}
       <div className="grid md:grid-cols-2 gap-6">
         {t.education.degrees.map((edu, index) => (
           <motion.div
@@ -43,31 +58,37 @@ export function Education() {
             transition={{ duration: 0.5, delay: index * 0.1 }}
             className="group"
           >
-            <Card className="h-full icloud-card border-none shadow-lg transition-all relative overflow-hidden">
-              {/* Top shine effect */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-transparent via-white/8 to-transparent -top-[100%] opacity-0 group-hover:opacity-100 group-hover:animate-[shine_2s_ease-in-out]"></div>
-
-              {/* Edge glow */}
-              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none shadow-[0_0_15px_2px_rgba(101,157,255,0.07)]"></div>
-
-              <CardHeader className="flex flex-row items-center gap-4 pb-2 bg-white/10 dark:bg-slate-800/80 backdrop-blur-xl relative z-10 group-hover:bg-white/15 dark:group-hover:bg-slate-700/90 transition-colors duration-300">
-                <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center backdrop-blur-md shadow-[0_0_15px_rgba(101,157,255,0.2)] group-hover:shadow-[0_0_20px_rgba(101,157,255,0.3)] transition-all">
-                  <GraduationCap className="h-6 w-6 text-blue-300 dark:text-blue-300" />
+            <Card className="h-full aurora-glass-iridescent overflow-hidden hover-lift">
+              <CardHeader className="flex flex-row items-start gap-4 pb-3">
+                <div className="w-14 h-14 rounded-2xl bg-aurora-purple/10 flex items-center justify-center shrink-0 group-hover:bg-aurora-purple/20 transition-colors duration-300">
+                  <GraduationCap className="h-7 w-7 text-aurora-purple" />
                 </div>
-                <div>
-                  <CardTitle className="text-xl text-white/90 dark:text-white/90 group-hover:text-white dark:group-hover:text-white transition-colors duration-300">
+                <div className="flex-1 min-w-0">
+                  <CardTitle className="text-lg font-display font-semibold text-foreground group-hover:text-aurora-purple transition-colors duration-300 leading-tight">
                     {edu.degree}
                   </CardTitle>
-                  <p className="text-blue-300/80 dark:text-blue-300/80 font-medium group-hover:text-blue-300 dark:group-hover:text-blue-300 transition-colors duration-300">
+                  <p className="text-aurora-purple/80 font-medium mt-1">
                     {edu.institution}
                   </p>
                 </div>
               </CardHeader>
-              <CardContent className="bg-white/10 dark:bg-slate-800/80 backdrop-blur-md relative z-10 group-hover:bg-white/15 dark:group-hover:bg-slate-700/90 transition-colors duration-300">
-                <p className="text-sm text-white/60 dark:text-white/60 group-hover:text-white/80 dark:group-hover:text-white/80 transition-colors duration-300">
-                  {edu.location} | {edu.period}
-                </p>
+              <CardContent className="pt-0">
+                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-aurora-cyan" />
+                    <span>{edu.location}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-aurora-cyan" />
+                    <span>{edu.period}</span>
+                  </div>
+                </div>
               </CardContent>
+
+              {/* Decorative corner */}
+              <div className="absolute top-0 right-0 w-16 h-16 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                <div className="absolute top-3 right-3 w-6 h-6 border-t-2 border-r-2 border-aurora-purple/30 rounded-tr-lg" />
+              </div>
             </Card>
           </motion.div>
         ))}
