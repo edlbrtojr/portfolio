@@ -4,10 +4,10 @@ import path from "path";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { lang: string } }
+  { params }: { params: Promise<{ lang: string }> }
 ) {
   try {
-    const lang = params.lang;
+    const { lang } = await params;
 
     // Validate the language parameter
     if (lang !== "en" && lang !== "pt") {

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// This middleware ensures that the site defaults to Portuguese
+// This proxy ensures that the site defaults to Portuguese
 // without changing the URL structure
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Get the language preference cookie if it exists
   const language = request.cookies.get("language")?.value;
 
