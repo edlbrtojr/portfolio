@@ -31,6 +31,16 @@ export function ProjectDetails({ slug }: { slug: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredTech, setHoveredTech] = useState<number | null>(null);
 
+  const handleBackToProjects = () => {
+    // Use window.location for reliable hash navigation
+    if (typeof window !== "undefined") {
+      window.location.href = "/#projects";
+    } else {
+      // Fallback to router if window is not available
+      router.push("/#projects");
+    }
+  };
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end start"],
@@ -120,28 +130,28 @@ export function ProjectDetails({ slug }: { slug: string }) {
         className="relative overflow-hidden"
       >
         {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-aurora-purple/10 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-aurora-purple/10 via-transparent to-transparent pointer-events-none" />
         
         {/* Floating decorative elements */}
-        <div className="absolute top-10 right-10 w-32 h-32 bg-aurora-purple/20 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-10 left-10 w-24 h-24 bg-aurora-cyan/20 rounded-full blur-3xl animate-float-reverse" />
+        <div className="absolute top-10 right-10 w-32 h-32 bg-aurora-purple/20 rounded-full blur-3xl animate-float pointer-events-none" />
+        <div className="absolute bottom-10 left-10 w-24 h-24 bg-aurora-cyan/20 rounded-full blur-3xl animate-float-reverse pointer-events-none" />
 
-        <div className="px-4 md:px-8 pt-8 pb-12">
+        <div className="px-4 md:px-8 pt-8 pb-12 relative z-10">
           {/* Back button */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
+            className="relative z-10"
           >
-            <Link href="/#projects" scroll={false}>
-              <Button
-                variant="ghost"
-                className="group mb-8 rounded-xl hover:bg-aurora-purple/10"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" />
-                {t.projectDetails.backToProjects}
-              </Button>
-            </Link>
+            <Button
+              variant="ghost"
+              className="group mb-8 rounded-xl hover:bg-aurora-purple/10 relative z-10"
+              onClick={handleBackToProjects}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" />
+              {t.projectDetails.backToProjects}
+            </Button>
           </motion.div>
 
           {/* Project Hero Card */}
@@ -149,8 +159,9 @@ export function ProjectDetails({ slug }: { slug: string }) {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
+            className="relative z-10"
           >
-            <Card className="aurora-glass-glow overflow-hidden border-0 relative">
+            <Card className="aurora-glass-glow overflow-hidden border-0 relative z-10">
               {/* Featured badge */}
               {project.featured && (
                 <div className="absolute top-4 right-4 z-10">
@@ -168,8 +179,8 @@ export function ProjectDetails({ slug }: { slug: string }) {
                 </div>
               )}
 
-              <CardHeader className="p-8 md:p-10 pb-6">
-                <div className="flex flex-col md:flex-row md:items-start gap-6">
+              <CardHeader className="p-8 md:p-10 pb-6 relative z-10">
+                <div className="flex flex-col md:flex-row md:items-start gap-6 relative z-10">
                   {/* Icon */}
                   <motion.div
                     whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
@@ -214,12 +225,12 @@ export function ProjectDetails({ slug }: { slug: string }) {
                 </div>
               </CardHeader>
 
-              <CardContent className="px-8 md:px-10 pb-8 md:pb-10">
+              <CardContent className="px-8 md:px-10 pb-8 md:pb-10 relative z-10">
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
-                  className="text-lg md:text-xl text-muted-foreground leading-relaxed"
+                  className="text-lg md:text-xl text-muted-foreground leading-relaxed relative z-10"
                 >
                   {project.description}
                 </motion.p>
@@ -229,18 +240,19 @@ export function ProjectDetails({ slug }: { slug: string }) {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6 }}
-                  className="flex flex-wrap gap-4 mt-8"
+                  className="flex flex-wrap gap-4 mt-8 relative z-10"
                 >
                   {project.liveUrl && (
-                    <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                    <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="relative z-10">
                       <Button
-                        className="aurora-btn-primary rounded-xl px-6 h-12 text-base group"
+                        className="aurora-btn-primary rounded-xl px-6 h-12 text-base group relative z-10"
                         asChild
                       >
                         <a
                           href={project.liveUrl}
                           target="_blank"
                           rel="noopener noreferrer"
+                          className="relative z-10"
                         >
                           <Rocket className="w-5 h-5 mr-2 transition-transform group-hover:-translate-y-0.5" />
                           {language === "pt" ? "Acessar Projeto" : "Visit Project"}
@@ -249,10 +261,10 @@ export function ProjectDetails({ slug }: { slug: string }) {
                     </motion.div>
                   )}
                   {project.github && (
-                    <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                    <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="relative z-10">
                       <Button
                         variant="outline"
-                        className="aurora-btn rounded-xl px-6 h-12 text-base"
+                        className="aurora-btn rounded-xl px-6 h-12 text-base relative z-10"
                         asChild
                       >
                         <a
@@ -265,6 +277,7 @@ export function ProjectDetails({ slug }: { slug: string }) {
                           }
                           target="_blank"
                           rel="noopener noreferrer"
+                          className="relative z-10"
                         >
                           <Github className="w-5 h-5 mr-2" />
                           GitHub

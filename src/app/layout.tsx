@@ -75,7 +75,7 @@ export default function RootLayout({
                 <PortfolioSidebar />
 
                 {/* Main Content with Mobile Header */}
-                <div className="flex-1 flex flex-col lg:ml-[320px]">
+                <div className="flex-1 flex flex-col lg:ml-[280px] xl:ml-[300px]">
                   {/* Mobile Header - visible only on small screens */}
                   <MobileHeader />
 
