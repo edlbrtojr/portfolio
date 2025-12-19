@@ -276,7 +276,7 @@ export const pt = {
       {
         title: "Smilix - Sistema de Gestão para Clínicas",
         description:
-          "Plataforma SaaS multi-tenant completa para gestão de clínicas odontológicas. Inclui agendamento inteligente com verificação de conflitos, gestão de pacientes e dentistas, dashboard administrativo, sistema de branding personalizado por clínica, e muito mais.",
+          "Meu primeiro SaaS em produção e rentável! Plataforma multi-tenant completa para gestão de clínicas odontológicas. Inclui agendamento inteligente com verificação de conflitos, gestão de pacientes e dentistas, dashboard administrativo, sistema de branding personalizado por clínica, e muito mais.",
         year: "2025",
         technologies: [
           "Next.js 15",
@@ -294,7 +294,7 @@ export const pt = {
         image: "/images/projects/smilix-multiclinic.png",
         details: {
           overview:
-            "O Smilix é um sistema SaaS de gestão completo para clínicas odontológicas, desenvolvido com as tecnologias mais modernas do mercado. A plataforma oferece isolamento multi-tenant com políticas RLS do Supabase, garantindo segurança e privacidade dos dados de cada clínica. O sistema foi projetado para escalar e atender desde pequenas clínicas até grandes redes odontológicas.",
+            "O Smilix representa um marco importante na minha carreira: é meu primeiro SaaS em produção e atualmente rentável. Desenvolvido com as tecnologias mais modernas do mercado, este sistema de gestão completo para clínicas odontológicas oferece isolamento multi-tenant com políticas RLS do Supabase, garantindo segurança e privacidade dos dados de cada clínica. O sistema foi projetado para escalar e atender desde pequenas clínicas até grandes redes odontológicas, e está atualmente em uso por clientes reais, gerando receita recorrente.",
           challenges: [
             "Implementar arquitetura multi-tenant segura com isolamento completo de dados entre clínicas",
             "Criar sistema de agendamento inteligente com verificação de conflitos em tempo real",
@@ -310,11 +310,13 @@ export const pt = {
             "Interface moderna e responsiva com shadcn/ui e Tailwind CSS v4",
           ],
           results: [
-            "Plataforma SaaS completa pronta para produção e comercialização",
+            "🎯 Primeiro SaaS em produção e atualmente rentável - marco importante na minha carreira",
+            "Plataforma SaaS completa em uso por clientes reais, gerando receita recorrente",
             "Sistema de agendamento com zero conflitos e verificação em tempo real",
             "Interface administrativa completa para gestão de planos, usuários e permissões",
             "Suporte a anexos, comentários e histórico completo de pacientes",
             "Sistema de filas, salas e horários de funcionamento totalmente configurável",
+            "Experiência prática completa no ciclo de vida de um produto SaaS: desenvolvimento, deploy, vendas e suporte",
           ],
         },
       },

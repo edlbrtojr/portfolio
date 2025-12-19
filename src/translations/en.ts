@@ -274,7 +274,7 @@ export const en = {
       {
         title: "Smilix - Clinic Management System",
         description:
-          "Complete multi-tenant SaaS platform for dental clinic management. Includes smart scheduling with conflict checking, patient and dentist management, admin dashboard, customizable per-clinic branding system, and much more.",
+          "My first SaaS in production and currently generating revenue! Complete multi-tenant platform for dental clinic management. Includes smart scheduling with conflict checking, patient and dentist management, admin dashboard, customizable per-clinic branding system, and much more.",
         year: "2025",
         technologies: [
           "Next.js 15",
@@ -292,7 +292,7 @@ export const en = {
         image: "/images/projects/smilix-multiclinic.png",
         details: {
           overview:
-            "Smilix is a complete SaaS management system for dental clinics, built with the most modern technologies available. The platform offers multi-tenant isolation with Supabase RLS policies, ensuring security and data privacy for each clinic. The system was designed to scale and serve from small clinics to large dental networks.",
+            "Smilix represents an important milestone in my career: it's my first SaaS in production and currently generating revenue. Built with the most modern technologies available, this complete management system for dental clinics offers multi-tenant isolation with Supabase RLS policies, ensuring security and data privacy for each clinic. The system was designed to scale and serve from small clinics to large dental networks, and is currently being used by real clients, generating recurring revenue.",
           challenges: [
             "Implement secure multi-tenant architecture with complete data isolation between clinics",
             "Create intelligent scheduling system with real-time conflict checking",
@@ -308,11 +308,13 @@ export const en = {
             "Modern and responsive interface with shadcn/ui and Tailwind CSS v4",
           ],
           results: [
-            "Complete SaaS platform ready for production and commercialization",
+            "🎯 First SaaS in production and currently generating revenue - important milestone in my career",
+            "Complete SaaS platform in use by real clients, generating recurring revenue",
             "Scheduling system with zero conflicts and real-time verification",
             "Complete administrative interface for plan, user and permission management",
             "Support for attachments, comments and complete patient history",
             "Fully configurable queue, room and working hours system",
+            "Complete hands-on experience in the full SaaS lifecycle: development, deployment, sales, and support",
           ],
         },
       },

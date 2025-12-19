@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Github, Star, Rocket, Folder, ArrowUpRight } from "lucide-react";
+import { ExternalLink, Github, Star, Rocket, Folder, ArrowUpRight, TrendingUp } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -102,13 +102,25 @@ export function Projects() {
             >
               {/* Featured indicator */}
               {project.featured && (
-                <div className="absolute top-0 right-0 px-4 py-1.5 bg-gradient-to-l from-amber-500/20 to-transparent">
-                  <div className="flex items-center gap-1.5">
-                    <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
-                    <span className="text-xs font-medium text-amber-400">
-                      {language === "pt" ? "Destaque" : "Featured"}
-                    </span>
+                <div className="absolute top-0 right-0 flex flex-col gap-1.5">
+                  <div className="px-4 py-1.5 bg-gradient-to-l from-amber-500/20 to-transparent rounded-bl-lg">
+                    <div className="flex items-center gap-1.5">
+                      <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
+                      <span className="text-xs font-medium text-amber-400">
+                        {language === "pt" ? "Destaque" : "Featured"}
+                      </span>
+                    </div>
                   </div>
+                  {project.slug === "smilix-multiclinic" && (
+                    <div className="px-4 py-1.5 bg-gradient-to-l from-emerald-500/20 to-transparent rounded-bl-lg">
+                      <div className="flex items-center gap-1.5">
+                        <TrendingUp className="h-4 w-4 text-emerald-400" />
+                        <span className="text-xs font-medium text-emerald-400">
+                          {language === "pt" ? "Rentável" : "Revenue"}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
