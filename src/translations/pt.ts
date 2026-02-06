@@ -194,6 +194,11 @@ export const pt = {
         name: "Desenvolvimento & Automação",
         certifications: [
           {
+            title: "Fundamentos de Gestão de Projetos",
+            provider: "Sistema INDÚSTRIA - Universidade Corporativa (CNI | SESI | SENAI | IEL)",
+            date: "Dez/2025",
+          },
+          {
             title: "Django REST APIs: Criação de APIs em Python",
             provider: "Alura",
             date: "Set/2024 - em andamento",
@@ -224,6 +229,11 @@ export const pt = {
       {
         name: "Bancos de Dados & BI",
         certifications: [
+          {
+            title: "Capacitação Data Analytics",
+            provider: "Sistema INDÚSTRIA - Universidade Corporativa (CNI | SESI | SENAI | IEL)",
+            date: "Dez/2025",
+          },
           {
             title: "SQL Avançado e MySQL",
             provider: "Alura",
@@ -288,7 +298,7 @@ export const pt = {
         ],
         github: false,
         live: true,
-        liveUrl: "https://smilix.com.br",
+        liveUrl: "http://www.smilix.com.br",
         slug: "smilix-multiclinic",
         featured: true,
         image: "/images/projects/smilix-multiclinic.png",
