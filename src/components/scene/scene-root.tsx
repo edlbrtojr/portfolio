@@ -86,23 +86,40 @@ export function SceneRoot({ name }: { name: string }) {
 }
 
 /**
- * Observa as seções com `data-stage` e avisa a cena qual delas cruza a linha
- * do meio da tela. Uma linha fina no centro (rootMargin -50%/-50%) garante
- * exatamente uma seção ativa por vez.
+ * Avisa a cena qual etapa vale: a do último elemento com `data-stage` (em
+ * ordem do documento) cujo topo já passou do meio da tela. A versão anterior,
+ * com IntersectionObserver numa linha fina, só reagia a elementos cruzando a
+ * linha: num salto (âncora, recarregar no meio da página) ou num vão entre
+ * blocos, nada cruzava e o nome em vaga-lumes ficava preso atrás do texto.
+ * Só troca quando o elemento muda, para não desfazer a forma escolhida
+ * passando o mouse numa linha da lista de trabalhos.
  */
 export function StageObserver() {
   useEffect(() => {
-    const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-stage]"));
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) setStage(e.target.getAttribute("data-stage") as ShapeKey, e.target.hasAttribute("data-dim"));
-        }
-      },
-      { rootMargin: "-50% 0px -50% 0px" },
-    );
-    sections.forEach((s) => io.observe(s));
-    return () => io.disconnect();
+    const els = Array.from(document.querySelectorAll<HTMLElement>("[data-stage]"));
+    let raf = 0;
+    let last: HTMLElement | null = null;
+    const update = () => {
+      raf = 0;
+      const mid = window.innerHeight / 2;
+      let current: HTMLElement | null = els[0] ?? null;
+      for (const el of els) if (el.getBoundingClientRect().top <= mid) current = el;
+      if (current && current !== last) {
+        last = current;
+        setStage(current.dataset.stage as ShapeKey, current.hasAttribute("data-dim"));
+      }
+    };
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
   }, []);
   return null;
 }

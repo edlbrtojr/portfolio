@@ -1,9 +1,12 @@
 import type { Content } from "./types";
 
 // Regras do texto (revisões de 2026-11-25, pedidas pelo Edilberto):
+// - A home é uma página escrita em primeira pessoa, não um molde de seções
+//   repetido ("01 · rótulo", título-slogan, chips, botão). Rótulos são uma
+//   palavra em minúsculas; serviços entram no texto, não numa grade de cards.
 // - Sem faixa de KPI e sem contagem de inventário (bases, pipelines, telas,
 //   testes). O lake ganha fonte nova em um dia, e número interno não diz nada
-//   a quem lê. Nenhum dos 20 portfólios de referência pesquisados usava isso.
+//   a quem lê. Nenhum dos portfólios de referência pesquisados usava isso.
 // - Lake e plataforma foram feitos com a equipe do Observatório, com o
 //   Edilberto como desenvolvedor principal. Nunca escrever "sozinho" nesses
 //   dois. No Milix, sim: ele é o único desenvolvedor.
@@ -20,10 +23,9 @@ export const pt: Content = {
       "Desenvolvedor full-stack e engenheiro de dados em Rio Branco, AC. Desenvolvedor principal do data lake e da plataforma de dados do Observatório da Indústria do Acre, e criador do Milix, um SaaS para clínicas.",
   },
   nav: {
-    work: "Projetos",
-    career: "Trajetória",
-    services: "Serviços",
-    contact: "Contato",
+    work: "trabalho",
+    now: "agora",
+    contact: "contato",
     resume: "Currículo",
     switchLang: "EN",
     switchLangHref: "/en",
@@ -33,30 +35,39 @@ export const pt: Content = {
     mainLabel: "Principal",
   },
   hero: {
-    eyebrow: "Rio Branco, Acre · aberto a vagas e freelas",
     name: "Edilberto Lima Jr.",
-    role: "Desenvolvedor full-stack e engenheiro de dados",
-    lead: "Pego o dado do jeito que o governo publica e entrego do jeito que um empresário entende. Sou o desenvolvedor principal do data lake e da plataforma do Observatório da Indústria do Acre, e criei o Milix, um sistema para clínicas.",
-    ctaPrimary: "Ver projetos",
-    ctaWhatsapp: "Falar no WhatsApp",
-    scrollHint: "Role e desça o rio",
+    line: "Desenvolvedor full-stack e engenheiro de dados em Rio Branco, no Acre.",
+    scrollHint: "Role e sobrevoe o rio",
   },
-  path: {
-    // "Nascente" é onde o rio começa e, no jargão de dados, a fonte.
-    eyebrow: "00 · a nascente",
-    title: "Do arquivo bruto à tela.",
-    body: "Quase todo trabalho meu começa num arquivo cru e termina num gráfico que alguém abre na segunda de manhã. Gosto de cuidar do caminho inteiro entre os dois: a coleta, o modelo de dados e a aplicação.",
-    steps: [
-      { value: "Coletar", label: "Python e PySpark buscando dados de órgãos públicos, APIs e sistemas internos" },
-      { value: "Modelar", label: "Camadas bronze, silver e gold no Databricks, prontas para consulta" },
-      { value: "Mostrar", label: "Dashboards e aplicações em Next.js para quem precisa decidir" },
-      { value: "Automatizar", label: "Rotinas agendadas e atendimento com IA no WhatsApp" },
+  bio: [
+    [
+      "Oi, eu sou o Edilberto. Faço sistemas inteiros: busco o dado onde ele estiver, organizo num ",
+      { text: "data lake", term: "Um depósito central onde dados de várias fontes ficam guardados, limpos e prontos para consulta." },
+      " e entrego numa tela que alguém usa no dia seguinte.",
     ],
-  },
-  featured: [
+    [
+      "Hoje sou o desenvolvedor principal do ",
+      { text: "data lake", href: "/projetos/observatorio-data-lake" },
+      " e da ",
+      { text: "plataforma de dados", href: "/projetos/observatorio-plataforma" },
+      " do ",
+      { text: "Observatório da Indústria do Acre", href: "https://observatorio.fieac.org.br" },
+      ", junto com a equipe de lá. Fora dele, criei o ",
+      { text: "Milix", href: "/projetos/milix" },
+      ", um sistema para clínicas que eu programo, vendo e atendo.",
+    ],
+    [
+      "Antes de programar, dei aula de inglês na rede estadual. Ficou a mania de explicar as coisas: passe o mouse nas ",
+      { text: "palavras sublinhadas", term: "Assim mesmo. Termo técnico aqui vem com legenda." },
+      ".",
+    ],
+  ],
+  work: { label: "trabalho", more: "mais coisas que fiz" },
+  projects: [
     {
       slug: "observatorio-data-lake",
-      title: "Data lake do Observatório da Indústria",
+      title: "Data lake do Observatório",
+      line: "Junta dados públicos de emprego, comércio e empresas num lugar só.",
       kicker: "Engenharia de dados · em produção",
       year: "2025–2026",
       role: "Arquitetura e desenvolvimento principal",
@@ -103,7 +114,8 @@ export const pt: Content = {
     },
     {
       slug: "observatorio-plataforma",
-      title: "Plataforma de dados do Observatório",
+      title: "Plataforma do Observatório",
+      line: "Onde empresários e gestores do Acre consultam esses dados.",
       kicker: "Full-stack · em produção",
       year: "2025–2026",
       role: "Desenvolvedor principal",
@@ -157,7 +169,9 @@ export const pt: Content = {
     },
     {
       slug: "milix",
-      title: "Milix: gestão para clínicas",
+      title: "Milix",
+      line: "Meu sistema para clínicas, com atendimento por IA no WhatsApp.",
+      tag: "produto próprio",
       kicker: "SaaS próprio · com clientes pagantes",
       year: "2025–2026",
       role: "Fundador e único desenvolvedor",
@@ -211,266 +225,191 @@ export const pt: Content = {
         ],
       },
     },
-  ],
-  more: {
-    eyebrow: "04 · sob medida",
-    title: "Feitos sob encomenda e usados todo dia.",
-    body: "Dois sistemas que fiz como freelancer e que seguem em produção, e um projeto pessoal com os dados públicos das eleições.",
-    projects: [
-      {
-        slug: "distribuidora-flow",
-        title: "Distribuidora Flow",
-        kicker: "Freelance · em produção",
-        year: "2025",
-        role: "Desenvolvedor full-stack",
-        summary:
-          "Caixa, estoque e pedidos de uma distribuidora de bebidas. Um chatbot recebe os pedidos no WhatsApp, o painel mostra cada um em tempo real e o entregador recebe a rota no celular.",
-        stack: ["React", "TypeScript", "Supabase", "OpenAI", "WhatsApp API", "Redis", "XState", "Google Maps"],
-        links: [],
-        shots: [],
-        diagram: "order-flow",
-        stage: "tree",
-        details: {
-          overview:
-            "Sistema para uma distribuidora de bebidas: frente de caixa, estoque e atendimento pelo WhatsApp. O chatbot conversa com o cliente, monta o pedido e avisa cada etapa pela API oficial do WhatsApp. No painel, os pedidos andam num quadro Kanban em tempo real, e o entregador recebe a rota pelo Google Maps.",
-          decisions: [
-            {
-              problem: "Chatbot que inventa produto ou preço dá prejuízo.",
-              choice: "Toda resposta passa por validação com Zod, limiar de confiança e guardrails contra alucinação.",
-            },
-            {
-              problem: "Conversa e pedido têm muitas etapas, e é fácil um deles se perder no meio.",
-              choice: "Uma máquina de estados em XState controla o fluxo da conversa e as fases do pedido.",
-            },
-            {
-              problem: "WhatsApp, painel e entregador precisam ver o mesmo pedido ao mesmo tempo.",
-              choice: "Supabase Realtime em todas as telas e sessões do bot no Redis, com expiração.",
-            },
-            {
-              problem: "Casco retornável some quando ninguém controla.",
-              choice: "Controle de retornáveis com rastreamento e aviso automático.",
-            },
-          ],
-          results: [
-            "Em uso diário no caixa, no estoque e nos pedidos.",
-            "Pedidos de clientes reais entram pelo chatbot sem ninguém digitar.",
-            "Cada pedido é rastreado da mensagem no WhatsApp até a entrega.",
-          ],
-        },
-      },
-      {
-        slug: "biblioteca-de-processos",
-        title: "Biblioteca de Processos",
-        kicker: "Freelance · em produção",
-        year: "2025",
-        role: "Desenvolvedor full-stack",
-        summary:
-          "Base de conhecimento de um provedor de internet. O atendente segue uma árvore de decisão passo a passo, e o gestor monta e corrige esses fluxos num editor visual, sem chamar desenvolvedor.",
-        stack: ["Next.js", "React", "TypeScript", "Drizzle ORM", "PostgreSQL", "NextAuth", "React Flow", "TipTap"],
-        links: [],
-        shots: [],
-        diagram: "decision-tree",
-        stage: "tree",
-        details: {
-          overview:
-            "O suporte de um provedor de internet precisava que todo atendente resolvesse o mesmo problema do mesmo jeito. A Biblioteca guarda os processos como árvores de decisão: o atendente responde às perguntas e chega à solução. Gestores editam os fluxos num editor visual e escrevem artigos num editor de texto rico. Cada setor vê o que é dele.",
-          decisions: [
-            {
-              problem: "Gestor sem formação técnica precisa montar fluxo sozinho.",
-              choice: "Editor em React Flow com nós próprios e layout automático com dagre. O gestor arrasta e liga os passos.",
-            },
-            {
-              problem: "Cada setor só pode ver o próprio conteúdo.",
-              choice: "NextAuth com JWT e permissão por setor filtrando todo o conteúdo.",
-            },
-            {
-              problem: "Saber quais processos ajudam de verdade.",
-              choice: "O visualizador registra o caminho do atendente pelos nós, e um log de acesso mostra o que é mais usado.",
-            },
-          ],
-          results: [
-            "Em produção no servidor do cliente.",
-            "Gestores criam e atualizam processos sem depender de desenvolvedor.",
-            "O atendimento segue o mesmo padrão em todos os setores.",
-          ],
-        },
-      },
-      {
-        slug: "vizu-eleicoes",
-        title: "Vizu Eleições",
-        kicker: "Projeto pessoal · dados públicos",
-        year: "2026",
-        role: "Autor",
-        summary:
-          "Os resultados das eleições no Acre, do estado inteiro até a seção eleitoral. Mapa, ranking e comparação de candidatos com dados do TSE, sobre um ETL em Python que gera sempre o mesmo resultado.",
-        stack: ["Python", "Next.js", "TypeScript", "Convex", "MapLibre", "Vitest", "Playwright"],
-        links: [],
-        shots: [
+    {
+      slug: "distribuidora-flow",
+      title: "Distribuidora Flow",
+      line: "Pedidos pelo WhatsApp, caixa e entregas de uma distribuidora de bebidas.",
+      tag: "freelance",
+      kicker: "Freelance · em produção",
+      year: "2025",
+      role: "Desenvolvedor full-stack",
+      summary:
+        "Caixa, estoque e pedidos de uma distribuidora de bebidas. Um chatbot recebe os pedidos no WhatsApp, o painel mostra cada um em tempo real e o entregador recebe a rota no celular.",
+      stack: ["React", "TypeScript", "Supabase", "OpenAI", "WhatsApp API", "Redis", "XState", "Google Maps"],
+      links: [],
+      shots: [],
+      diagram: "order-flow",
+      stage: "tree",
+      details: {
+        overview:
+          "Sistema para uma distribuidora de bebidas: frente de caixa, estoque e atendimento pelo WhatsApp. O chatbot conversa com o cliente, monta o pedido e avisa cada etapa pela API oficial do WhatsApp. No painel, os pedidos andam num quadro Kanban em tempo real, e o entregador recebe a rota pelo Google Maps.",
+        decisions: [
           {
-            src: "/images/projects/capturas/vizu-mapa.png",
-            alt: "Mapa municipal do Acre colorido pela opção mais votada para governador, com resumo de votos ao lado",
-            width: 1440,
-            height: 900,
+            problem: "Chatbot que inventa produto ou preço dá prejuízo.",
+            choice: "Toda resposta passa por validação com Zod, limiar de confiança e guardrails contra alucinação.",
+          },
+          {
+            problem: "Conversa e pedido têm muitas etapas, e é fácil um deles se perder no meio.",
+            choice: "Uma máquina de estados em XState controla o fluxo da conversa e as fases do pedido.",
+          },
+          {
+            problem: "WhatsApp, painel e entregador precisam ver o mesmo pedido ao mesmo tempo.",
+            choice: "Supabase Realtime em todas as telas e sessões do bot no Redis, com expiração.",
+          },
+          {
+            problem: "Casco retornável some quando ninguém controla.",
+            choice: "Controle de retornáveis com rastreamento e aviso automático.",
           },
         ],
-        stage: "tree",
-        details: {
-          overview:
-            "Um pipeline em Python prepara os resultados do TSE, importa no Convex e mostra em mapas, rankings e comparações, do estado inteiro até uma seção, com exportação em CSV.",
-          decisions: [
-            {
-              problem: "Rodar o ETL duas vezes não pode dar resultados diferentes.",
-              choice: "Preparação determinística com hashes SHA-256: a segunda execução gera exatamente os mesmos arquivos.",
-            },
-            {
-              problem: "Importação longa cai no meio.",
-              choice: "Importação em lotes com ponto de retomada, que pode ser repetida sem duplicar.",
-            },
-            {
-              problem: "Total errado num mapa eleitoral é pior do que mapa nenhum.",
-              choice: "Os totais são conferidos automaticamente entre o Python e o banco, e o mapa usa a malha municipal do IBGE 2025 no MapLibre.",
-            },
-          ],
-          results: ["660 locais de votação, 22 municípios e 341 candidatos, consultáveis até a seção."],
+        results: [
+          "Em uso diário no caixa, no estoque e nos pedidos.",
+          "Pedidos de clientes reais entram pelo chatbot sem ninguém digitar.",
+          "Cada pedido é rastreado da mensagem no WhatsApp até a entrega.",
+        ],
+      },
+    },
+    {
+      slug: "biblioteca-de-processos",
+      title: "Biblioteca de Processos",
+      line: "Árvores de decisão para o suporte de um provedor de internet.",
+      tag: "freelance",
+      kicker: "Freelance · em produção",
+      year: "2025",
+      role: "Desenvolvedor full-stack",
+      summary:
+        "Base de conhecimento de um provedor de internet. O atendente segue uma árvore de decisão passo a passo, e o gestor monta e corrige esses fluxos num editor visual, sem chamar desenvolvedor.",
+      stack: ["Next.js", "React", "TypeScript", "Drizzle ORM", "PostgreSQL", "NextAuth", "React Flow", "TipTap"],
+      links: [],
+      shots: [],
+      diagram: "decision-tree",
+      stage: "tree",
+      details: {
+        overview:
+          "O suporte de um provedor de internet precisava que todo atendente resolvesse o mesmo problema do mesmo jeito. A Biblioteca guarda os processos como árvores de decisão: o atendente responde às perguntas e chega à solução. Gestores editam os fluxos num editor visual e escrevem artigos num editor de texto rico. Cada setor vê o que é dele.",
+        decisions: [
+          {
+            problem: "Gestor sem formação técnica precisa montar fluxo sozinho.",
+            choice: "Editor em React Flow com nós próprios e layout automático com dagre. O gestor arrasta e liga os passos.",
+          },
+          {
+            problem: "Cada setor só pode ver o próprio conteúdo.",
+            choice: "NextAuth com JWT e permissão por setor filtrando todo o conteúdo.",
+          },
+          {
+            problem: "Saber quais processos ajudam de verdade.",
+            choice: "O visualizador registra o caminho do atendente pelos nós, e um log de acesso mostra o que é mais usado.",
+          },
+        ],
+        results: [
+          "Em produção no servidor do cliente.",
+          "Gestores criam e atualizam processos sem depender de desenvolvedor.",
+          "O atendimento segue o mesmo padrão em todos os setores.",
+        ],
+      },
+    },
+    {
+      slug: "vizu-eleicoes",
+      title: "Vizu Eleições",
+      line: "As eleições no Acre, do estado inteiro até a seção eleitoral.",
+      tag: "projeto pessoal",
+      kicker: "Projeto pessoal · dados públicos",
+      year: "2026",
+      role: "Autor",
+      summary:
+        "Os resultados das eleições no Acre, do estado inteiro até a seção eleitoral. Mapa, ranking e comparação de candidatos com dados do TSE, sobre um ETL em Python que gera sempre o mesmo resultado.",
+      stack: ["Python", "Next.js", "TypeScript", "Convex", "MapLibre", "Vitest", "Playwright"],
+      links: [],
+      shots: [
+        {
+          src: "/images/projects/capturas/vizu-mapa.png",
+          alt: "Mapa municipal do Acre colorido pela opção mais votada para governador, com resumo de votos ao lado",
+          width: 1440,
+          height: 900,
         },
+      ],
+      // A hélice fica para a trajetória; mapa e ranking lembram painéis.
+      stage: "dashboards",
+      details: {
+        overview:
+          "Um pipeline em Python prepara os resultados do TSE, importa no Convex e mostra em mapas, rankings e comparações, do estado inteiro até uma seção, com exportação em CSV.",
+        decisions: [
+          {
+            problem: "Rodar o ETL duas vezes não pode dar resultados diferentes.",
+            choice: "Preparação determinística com hashes SHA-256: a segunda execução gera exatamente os mesmos arquivos.",
+          },
+          {
+            problem: "Importação longa cai no meio.",
+            choice: "Importação em lotes com ponto de retomada, que pode ser repetida sem duplicar.",
+          },
+          {
+            problem: "Total errado num mapa eleitoral é pior do que mapa nenhum.",
+            choice: "Os totais são conferidos automaticamente entre o Python e o banco, e o mapa usa a malha municipal do IBGE 2025 no MapLibre.",
+          },
+        ],
+        results: ["660 locais de votação, 22 municípios e 341 candidatos, consultáveis até a seção."],
       },
+    },
+  ],
+  archive: [
+    { title: "Smilix", year: "2025", description: "A primeira versão do Milix, só para dentistas." },
+    { title: "Dados fiscais de 21 prefeituras", year: "2026", description: "Os portais de transparência de 21 municípios do Acre numa base só." },
+    { title: "Apresentações de dados", year: "2026", description: "Apresentações do Observatório em HTML, como o Panorama das Exportações do Acre." },
+    { title: "Skills para agentes de IA", year: "2026", description: "Ensina o Claude Code e o Codex a trabalhar do jeito da equipe." },
+    { title: "Busca Diários", year: "2024", description: "Procura termos dentro dos diários oficiais do Acre.", href: "https://github.com/edlbrtojr/BuscaDiarios" },
+    { title: "Service desk do Sistema FIEAC", year: "2024", description: "Tirou os pedidos internos do e-mail e do papel." },
+    { title: "Intranet do Sistema FIEAC", year: "2024", description: "Refeita no SharePoint moderno, com web parts próprias." },
+    { title: "Gerador de QR Code", year: "2026", description: "QR codes para Instagram, WhatsApp, Pix e Wi-Fi." },
+  ],
+  now: {
+    label: "agora",
+    body: [
+      [
+        "No Observatório, sigo colocando bases novas no lake e painéis novos na plataforma. No Milix, cuido das clínicas que já usam o sistema e do que elas pedem.",
+      ],
+      [
+        "Também pego projetos para empresas: sistemas sob medida, atendimento com IA no WhatsApp, ",
+        { text: "dashboards", term: "Painéis com os números do negócio, atualizados sozinhos, no lugar da planilha que alguém monta toda semana." },
+        " e automações. Se a sua empresa roda em planilha e WhatsApp, ",
+        { text: "me chama", href: "whatsapp" },
+        ".",
+      ],
     ],
+    signature: "Rio Branco, AC · novembro de 2026",
   },
-  archive: {
-    title: "Arquivo",
-    items: [
-      {
-        title: "Smilix",
-        year: "2025",
-        description: "A primeira versão do Milix, só para dentistas, com Supabase e RLS, Stripe e bot de WhatsApp em Docker numa VPS.",
-        stack: ["Next.js", "Supabase", "Stripe", "Redis"],
-      },
-      {
-        title: "Dados fiscais de 21 prefeituras",
-        year: "2026",
-        description: "Junta os portais de transparência de 21 municípios do Acre numa base só, com 2,09 milhões de registros.",
-        stack: ["Python", "Pydantic", "DuckDB", "Streamlit"],
-      },
-      {
-        title: "Apresentações de dados do Observatório",
-        year: "2026",
-        description: "Apresentações em HTML que abrem em qualquer navegador, com three.js e CI que valida cada versão. Entre elas, o Panorama das Exportações do Acre.",
-        stack: ["React", "three.js", "Motion"],
-      },
-      {
-        title: "Catálogo de skills para agentes",
-        year: "2026",
-        description: "Ensina o Claude Code e o Codex a modelar, ingerir e montar dashboards do jeito da equipe, com casos de avaliação para cada skill.",
-        stack: ["Node.js", "YAML", "Azure DevOps"],
-      },
-      {
-        title: "Busca Diários",
-        year: "2024",
-        description: "Baixa os diários oficiais do Acre e do Tribunal de Justiça e procura termos dentro dos PDFs.",
-        stack: ["Python", "Selenium", "pdfplumber"],
-        href: "https://github.com/edlbrtojr/BuscaDiarios",
-      },
-      {
-        title: "Service desk e fluxo de documentos",
-        year: "2024–2025",
-        description: "App de demandas entre setores e aprovação de documentos com assinatura, que tiraram os pedidos internos do Sistema FIEAC do e-mail e do papel.",
-        stack: ["Power Apps", "Power Automate", "SharePoint"],
-      },
-      {
-        title: "Intranet do Sistema FIEAC",
-        year: "2024",
-        description: "A intranet refeita no SharePoint moderno, com web parts próprias em SharePoint Framework.",
-        stack: ["SPFx", "TypeScript", "React"],
-      },
-      {
-        title: "Gerador de QR Code",
-        year: "2026",
-        description: "QR codes personalizados para Instagram, WhatsApp, Pix e Wi-Fi, em PNG ou SVG.",
-        stack: ["Vite", "TypeScript"],
-      },
+  past: {
+    label: "antes",
+    hint: "passe o mouse ou toque nos anos",
+    steps: [
+      { year: "2016", title: "Letras", text: "Licenciatura em língua inglesa na Universidade Federal do Acre." },
+      { year: "2021", title: "Sala de aula", text: "Professor de inglês na rede estadual, enquanto cursava Sistemas de Informação na Estácio. No mesmo ano, um estágio de help desk na Uninorte." },
+      { year: "2023", title: "Suporte", text: "Estagiário de TI na UNITEC, do Sistema FIEAC: chamados e os primeiros aplicativos internos." },
+      { year: "2024", title: "Automação", text: "Assistente de TI: Power Apps, Power Automate, Python e a nova intranet do Sistema FIEAC." },
+      { year: "2025", title: "Dados", text: "Analista de TI no Observatório da Indústria, à frente do data lake e da plataforma. E o Milix, por conta própria." },
     ],
-  },
-  career: {
-    eyebrow: "05 · trajetória",
-    title: "De professor de inglês a engenheiro de dados.",
-    body: "Dei aula de inglês na rede estadual enquanto cursava Sistemas de Informação. Entrei na TI como estagiário de suporte e cheguei à engenharia de dados passando pela automação. Da sala de aula ficou o hábito de explicar: apresento uma arquitetura para quem não é técnico e escrevo documentação pensando em quem vem depois.",
-    positions: [
-      {
-        title: "Analista de TI · engenharia de dados e full-stack",
-        company: "Observatório da Indústria, Sistema FIEAC",
-        period: "out/2025 – atual",
-        summary: "Desenvolvedor principal do data lake e da plataforma de dados. Também organizei como a equipe usa agentes de IA no código.",
-        current: true,
-      },
-      {
-        title: "Fundador e desenvolvedor",
-        company: "Milix",
-        period: "ago/2025 – atual",
-        summary: "Meu SaaS para clínicas: produto, venda, implantação e suporte.",
-        current: true,
-      },
-      {
-        title: "Desenvolvedor full-stack freelance",
-        company: "Autônomo",
-        period: "2025 – atual",
-        summary: "Sistemas em produção para uma distribuidora de bebidas e um provedor de internet.",
-        current: true,
-      },
-      {
-        title: "Assistente de TI",
-        company: "UNITEC, Sistema FIEAC",
-        period: "jan/2024 – out/2025",
-        summary: "Apps em Power Apps, fluxos no Power Automate, automações em Python e a nova intranet em SPFx.",
-      },
-      {
-        title: "Estagiário de TI",
-        company: "UNITEC, Sistema FIEAC",
-        period: "set/2023 – dez/2023",
-        summary: "Suporte, chamados e meus primeiros apps internos em Power Platform.",
-      },
-    ],
-    earlier: "Antes disso: professor de inglês na rede estadual do Acre (2021–2024) e estagiário de help desk na Uninorte (2021).",
-    educationTitle: "Formação",
-    education: [
-      { degree: "Bacharelado em Sistemas de Informação", institution: "Estácio-Unimeta", period: "2021–2024" },
-      { degree: "Licenciatura em Língua Inglesa", institution: "Universidade Federal do Acre", period: "2016–2019" },
-    ],
-    certificationsTitle: "Cursos",
-    certifications: "Data Analytics e Gestão de Projetos pela Universidade Corporativa da Indústria. Python avançado, Django, SQL avançado e Power BI pela Alura.",
-    skillsTitle: "Ferramentas",
-    skills: [
-      { group: "Dados", items: ["Python", "SQL", "PySpark", "KQL", "Databricks", "Delta Lake", "Azure Data Factory", "Azure Data Explorer", "DuckDB", "Power BI"] },
-      { group: "Aplicação", items: ["TypeScript", "Next.js", "React", "Node.js", "PostgreSQL", "Drizzle", "Prisma", "Convex", "Supabase", "Tailwind CSS"] },
-      { group: "IA", items: ["Vercel AI SDK", "OpenAI", "Anthropic", "Embeddings", "Agentes", "Claude Code", "Codex"] },
-      { group: "Nuvem e qualidade", items: ["Azure", "Key Vault", "Bicep", "Vercel", "Docker", "GitHub Actions", "Azure DevOps", "Vitest", "Playwright", "pytest"] },
-    ],
-  },
-  services: {
-    eyebrow: "06 · para sua empresa",
-    title: "Se a sua empresa roda em planilha e WhatsApp, eu sei por onde começar.",
-    body: "Atendo empresas pequenas e grandes, do primeiro rascunho ao sistema no ar. Você me conta como o trabalho acontece hoje, eu proponho o menor sistema que resolve, e a gente cresce a partir dele.",
-    items: [
-      { title: "Sistema sob medida", description: "Caixa, estoque, agenda, base de conhecimento. O software segue o seu processo, e não o contrário." },
-      { title: "Atendimento com IA no WhatsApp", description: "Um agente que recebe pedido, marca horário e tira dúvida, sem inventar preço nem produto." },
-      { title: "Dados e dashboards", description: "Suas planilhas e sistemas numa base só, e um painel com os números que importam para o seu negócio." },
-      { title: "Automação", description: "Aprovação de documento, relatório, e-mail repetido. O trabalho manual acontece sozinho, com registro de tudo." },
-      { title: "SaaS do zero", description: "Do MVP ao produto cobrando: várias empresas no mesmo sistema, planos, pagamento recorrente e nota fiscal." },
-      { title: "Integrações", description: "Pagamento, nota fiscal, WhatsApp, ERP e qualquer API, ligados ao que você já usa." },
-    ],
-    cta: "Contar meu projeto",
+    tools: "No dia a dia: Python, PySpark, Databricks, Azure, TypeScript, Next.js e PostgreSQL.",
   },
   contact: {
-    eyebrow: "07 · contato",
-    title: "Tem uma vaga ou um projeto? Me chama.",
-    body: "Respondo rápido no WhatsApp e no e-mail. Se for vaga, o currículo em PDF está logo aqui embaixo.",
-    whatsapp: "WhatsApp",
-    email: "edlbrtojr@gmail.com",
-    resume: "Currículo em PDF",
-    resumeAlt: "Resume in English",
-    note: "Rio Branco, Acre · remoto ou presencial, aberto a mudança",
+    label: "contato",
+    body: [
+      [
+        "O jeito mais rápido de falar comigo é pelo ",
+        { text: "WhatsApp", href: "whatsapp" },
+        ". Também respondo no ",
+        { text: "edlbrtojr@gmail.com", href: "email" },
+        ". O currículo está em ",
+        { text: "português", href: "resume:pt" },
+        " e em ",
+        { text: "inglês", href: "resume:en" },
+        ", e o resto, no ",
+        { text: "LinkedIn", href: "https://www.linkedin.com/in/edilbertolimajr/" },
+        " e no ",
+        { text: "GitHub", href: "https://github.com/edlbrtojr" },
+        ".",
+      ],
+    ],
+    copied: "copiado",
   },
   ui: {
-    viewCase: "Ver o case",
     visitSite: "Abrir o site",
     stack: "Stack",
     role: "Papel",
@@ -481,7 +420,8 @@ export const pt: Content = {
     choice: "O que fiz",
     results: "Onde está hoje",
     nextProject: "Próximo projeto",
-    footer: "Feito em Rio Branco, à beira do rio Acre, com Next.js e three.js.",
+    footer: "Feito à beira do rio Acre, com Next.js e three.js.",
+    localTime: "em Rio Branco",
     notFoundTitle: "Esse dado não chegou ao gold.",
     notFoundBody: "A página que você procurou não existe ou mudou de endereço.",
     notFoundCta: "Voltar ao início",

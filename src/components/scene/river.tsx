@@ -3,12 +3,12 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { horizonFrac } from "./layout";
 import { sceneState } from "./store";
 
-// Noite no rio Acre, num quad de tela cheia: céu, estrelas, a mata com
-// açaizeiros no horizonte e a água com o reflexo da mata. Tudo num só
-// shader, porque é uma chamada de desenho só, sem textura para baixar.
+// A Amazônia vista de cima, à noite: copas desenhadas uma a uma, o rio Acre
+// serpenteando com brilho de lua, praias nas curvas, lagos em ferradura,
+// igarapés e névoa. Rolar a página é voar rio abaixo. Tudo num shader de tela
+// cheia: uma chamada de desenho, nenhuma textura para baixar.
 
 const vertex = /* glsl */ `
   varying vec2 vUv;
@@ -22,134 +22,159 @@ const vertex = /* glsl */ `
 const fragment = /* glsl */ `
   precision highp float;
   uniform vec2 uRes;
-  uniform float uHorizon;
   uniform float uTime;
   uniform float uTravel;
+  uniform float uBias;   // centro do rio, em alturas de tela a partir do meio
+  uniform float uAmp;    // amplitude das curvas
+  uniform float uShade;  // escurecimento à esquerda, atrás da coluna de texto
+  uniform float uWidth;  // meia largura do rio, em alturas de tela
   varying vec2 vUv;
 
-  float hash(float n) { return fract(sin(n) * 43758.5453123); }
-  float hash2(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-  float noise(float x) {
-    float i = floor(x);
-    float f = fract(x);
-    return mix(hash(i), hash(i + 1.0), f * f * (3.0 - 2.0 * f));
+  float hash1(float n) { return fract(sin(n) * 43758.5453123); }
+  vec2 hash2(vec2 p) {
+    p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
+    return fract(sin(p) * 43758.5453);
   }
-  float fbm(float x) {
-    float v = 0.0;
-    float a = 0.5;
-    for (int i = 0; i < 4; i++) { v += a * noise(x); x *= 2.03; a *= 0.5; }
+  float noise1(float x) {
+    float i = floor(x); float f = fract(x);
+    return mix(hash1(i), hash1(i + 1.0), f * f * (3.0 - 2.0 * f));
+  }
+  float noise2(vec2 p) {
+    vec2 i = floor(p); vec2 f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    float a = hash2(i).x, b = hash2(i + vec2(1.0, 0.0)).x;
+    float c = hash2(i + vec2(0.0, 1.0)).x, d = hash2(i + vec2(1.0, 1.0)).x;
+    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+  }
+  float fbm2(vec2 p) {
+    float v = 0.0; float a = 0.5;
+    for (int i = 0; i < 4; i++) { v += a * noise2(p); p = p * 2.03 + 11.7; a *= 0.5; }
     return v;
   }
 
-  // Copas arredondadas lado a lado: o recorte "em bolhas" da mata amazônica.
-  float crowns(float x, float cell, float amp, float seed) {
-    float id = floor(x / cell);
-    float f = fract(x / cell) - 0.5;
-    return sqrt(max(0.0, 0.25 - f * f)) * 2.0 * amp * (0.5 + hash(id * 7.1 + seed));
+  // Worley: distância ao centro da copa mais próxima e um sorteio por copa.
+  vec2 crowns(vec2 p) {
+    vec2 i = floor(p); vec2 f = fract(p);
+    float md = 8.0; float id = 0.0;
+    for (int y = -1; y <= 1; y++) {
+      for (int x = -1; x <= 1; x++) {
+        vec2 g = vec2(float(x), float(y));
+        vec2 h = hash2(i + g);
+        vec2 r = g + 0.5 + 0.42 * sin(6.2831 * h) - f;
+        float d = dot(r, r);
+        if (d < md) { md = d; id = h.x; }
+      }
+    }
+    return vec2(sqrt(md), id);
   }
 
-  // Alturas da mata acima da linha d'água, em fração da altura da tela.
-  float canopyFar(float x) { return 0.05 + 0.03 * fbm(x * 2.2 + 7.0) + crowns(x, 0.035, 0.012, 3.0); }
-  float canopyNear(float x) {
-    // Duas grades de copas com larguras que não se dividem (0,043 e 0,067):
-    // uma só grade dava o recorte repetido de cerca viva.
-    float h = 0.026 + 0.034 * fbm(x * 3.0 + 3.0)
-      + max(crowns(x, 0.043, 0.014, 0.0), crowns(x + 0.021, 0.067, 0.02, 5.0) - 0.004);
-    // Árvore emergente (tipo sumaúma): copa larga bem acima das outras.
-    float cell = 0.37;
-    float id = floor(x / cell);
-    float f = fract(x / cell) - 0.5;
-    if (hash(id * 2.3) > 0.62) h += sqrt(max(0.0, 0.04 - f * f)) / 0.2 * 0.045;
-    return h;
+  // Linha central do rio: duas senoides de períodos que não se repetem mais
+  // ruído lento. Dá meandros irregulares como os do Acre visto de satélite.
+  // Meandros com comprimento de onda de ~0,9 tela: com períodos maiores o rio
+  // parecia uma faixa reta. Três senoides fora de fase evitam a curva repetida.
+  float riverX(float y) {
+    return uBias + uAmp * (0.6 * sin(y * 6.8) + 0.45 * sin(y * 3.1 + 1.3) + 0.25 * sin(y * 11.3 + 2.0))
+      + 0.05 * (noise1(y * 2.0) - 0.5);
   }
 
-  // Açaizeiro: tronco fino acima da mata e folhas compridas que arqueiam para baixo.
-  float palm(float x, float y) {
-    float cell = 0.21;
-    float id = floor(x / cell);
-    if (hash(id * 3.7 + 1.0) < 0.6) return 0.0;
-    float px = (id + 0.25 + 0.5 * hash(id * 1.3)) * cell;
-    float top = canopyNear(px) + 0.045 + 0.04 * hash(id * 5.1);
-    float lean = (hash(id * 9.7) - 0.5) * 0.03;
-    float tx = px + lean * clamp(y / top, 0.0, 1.0);
-    float trunk = step(abs(x - tx), 0.0011) * step(y, top);
-    vec2 d = vec2(x - (px + lean), y - top);
-    float r = length(d);
-    float len = 0.032;
-    if (r > len) return trunk;
-    // Dobra o espaço para baixo com o quadrado da distância: folha reta perto
-    // do tronco, caída na ponta. Nove folhas, girando por palmeira.
-    vec2 q = vec2(d.x, d.y + 22.0 * r * r);
-    float a = atan(q.y, q.x);
-    float sector = 6.28318 / 9.0;
-    float da = abs(mod(a + hash(id) * sector, sector) - sector * 0.5);
-    float leaf = step(da * r, 0.0011 + 0.0022 * (1.0 - r / len));
-    return max(trunk, leaf);
-  }
+  vec3 forest(vec2 p) {
+    // Cada copa é um domo iluminado de cima à esquerda (luz da lua): a
+    // diferença de altura entre o ponto e um vizinho deslocado dá o relevo.
+    vec2 a = crowns(p * 34.0);
+    vec2 b = crowns(p * 34.0 + vec2(0.16, -0.16));
+    float dome = 1.0 - a.x;
+    float lit = clamp((dome - (1.0 - b.x)) * 2.2 + 0.5, 0.0, 1.0);
+    vec2 big = crowns(p * 12.0 + 3.1);
 
-  vec3 forest(float x, float y, vec3 base, vec3 far, vec3 near) {
-    vec3 c = base;
-    if (y < canopyFar(x)) c = far;
-    if (y < canopyNear(x) || palm(x, y) > 0.5) c = near;
-    return c;
+    // Tons de verde variando por copa.
+    vec3 g1 = vec3(0.03, 0.075, 0.045);
+    vec3 g2 = vec3(0.05, 0.085, 0.04);
+    vec3 g3 = vec3(0.025, 0.06, 0.055);
+    vec3 tone = a.y < 0.33 ? g1 : a.y < 0.66 ? g2 : g3;
+    vec3 col = tone * (0.45 + 0.9 * lit) * smoothstep(0.95, 0.35, a.x);
+    // Vãos entre copas: sombra funda.
+    col = mix(vec3(0.004, 0.01, 0.007), col, smoothstep(0.98, 0.7, a.x));
+    // Árvores emergentes, maiores e mais claras.
+    float emergent = smoothstep(0.5, 0.05, big.x) * step(0.8, big.y);
+    col = mix(col, vec3(0.06, 0.11, 0.06) * (0.6 + 0.6 * lit), emergent * 0.75);
+    // Ipê florido: copa nítida, rara, amarela ou rosa.
+    if (a.y > 0.995) col = mix(col, a.y > 0.9975 ? vec3(0.2, 0.15, 0.035) : vec3(0.16, 0.07, 0.1), smoothstep(0.7, 0.35, a.x) * (0.4 + 0.5 * lit));
+    // Manchas mais abertas e mais fechadas na mata.
+    col *= 0.7 + 0.6 * fbm2(p * 2.5);
+    return col;
   }
 
   void main() {
     float aspect = uRes.x / uRes.y;
-    vec2 uv = vUv;
-    float x = uv.x * aspect;
-    float h = uHorizon;
+    vec2 s = vec2((vUv.x - 0.5) * aspect, vUv.y - 0.5);
+    // O mapa sobe com a página, mais devagar que o texto (paralaxe), e anda
+    // um fio sozinho para a cena nunca ficar congelada.
+    vec2 p = vec2(s.x, s.y - uTravel * 0.55 - uTime * 0.004);
 
-    vec3 skyTop = vec3(0.014, 0.022, 0.032);
-    vec3 skyLow = vec3(0.05, 0.085, 0.1);
-    vec3 farTrees = vec3(0.026, 0.046, 0.054);
-    vec3 nearTrees = vec3(0.006, 0.013, 0.014);
-    vec3 col;
+    vec3 col = forest(p);
 
-    if (uv.y >= h) {
-      col = mix(skyLow, skyTop, smoothstep(h, h + 0.6, uv.y));
-      // Brilho de lua atrás das formas, à direita, longe do texto.
-      vec2 moon = vec2(0.74 * aspect, h + 0.46);
-      float md = length(vec2(x, uv.y) - moon);
-      col += vec3(0.06, 0.08, 0.085) * exp(-md * md * 9.0);
-      // Estrelas: ~0,7% das células de uma grade, piscando devagar.
-      vec2 g = vec2(x, uv.y) * 140.0;
-      float s = hash2(floor(g));
-      if (s > 0.993) {
-        float tw = 0.6 + 0.4 * sin(uTime * (0.8 + s * 2.5) + s * 90.0);
-        float star = smoothstep(0.14, 0.0, length(fract(g) - 0.5));
-        col += vec3(0.7, 0.76, 0.82) * star * tw * smoothstep(h + 0.1, h + 0.32, uv.y) * 0.7;
-      }
-      col = forest(x, uv.y - h, col, farTrees, nearTrees);
-    } else {
-      float dd = h - uv.y;
-      float depth = dd / h;
-      vec3 water = mix(skyLow * 0.8, vec3(0.005, 0.01, 0.014), smoothstep(0.0, 1.0, depth));
-      // Reflexo da mata, ondulando mais perto de quem olha.
-      float wob = sin(dd * 900.0 / (1.0 + dd * 30.0) + uTime * 1.1) * 0.005 * (0.2 + depth);
-      water = forest(x + wob, dd * 1.08, water, mix(water, farTrees, 0.75), mix(water, nearTrees, 0.85));
-      // Marolas em perspectiva: mais juntas no horizonte, andando com o scroll.
-      float z = 1.0 / (dd + 0.02);
-      float rip = sin(z * 1.4 - uTravel * 5.0 + uTime * 0.25 + noise(x * 2.0 + z * 0.2) * 3.0);
-      float broken = smoothstep(0.5, 0.85, noise(x * 10.0 / (1.0 + dd * 5.0) + z * 0.6));
-      water += skyLow * 0.8 * smoothstep(0.9, 1.0, rip) * broken * (1.0 - depth * 0.5);
-      // Rastro da lua: coluna de reflexos picados sob o brilho do céu,
-      // alargando perto de quem olha.
-      float mx = 0.74 * aspect;
-      float width = 0.03 + depth * 0.12;
-      float streak = exp(-pow((x - mx) / width, 2.0));
-      float glint = smoothstep(0.55, 1.0, sin(z * 3.0 + noise(x * 24.0) * 5.0 - uTravel * 5.0 + uTime * 0.5));
-      water += vec3(0.1, 0.13, 0.14) * streak * glint * (1.0 - depth * 0.6);
-      // Fio de luz na linha d'água.
-      water += skyLow * 0.5 * exp(-dd * 500.0);
-      col = water;
+    // Igarapés: linhas finas e sinuosas, só em parte da mata.
+    float v = fbm2(p * 2.4 + 20.0);
+    float creek = (1.0 - smoothstep(0.0, 0.01, abs(v - 0.5))) * smoothstep(0.5, 0.65, fbm2(p * 0.8 + 5.0));
+    col = mix(col, vec3(0.02, 0.035, 0.045), creek * 0.85);
+
+    // Lagos em ferradura: arcos de água parada perto das curvas do rio.
+    float cell = 1.35;
+    float cid = floor(p.y / cell);
+    for (int k = -1; k <= 1; k++) {
+      float id = cid + float(k);
+      float cy = (id + 0.5) * cell;
+      float side = hash1(id * 3.1) > 0.5 ? 1.0 : -1.0;
+      vec2 c = vec2(riverX(cy) + side * (0.14 + 0.06 * hash1(id * 7.3)), cy);
+      float r = 0.055 + 0.03 * hash1(id * 5.7);
+      vec2 d = p - c;
+      float ring = abs(length(d) - r);
+      float ang = atan(d.y, d.x) + hash1(id) * 6.2831;
+      float arc = step(0.9, mod(ang, 6.2831));
+      float lake = (1.0 - smoothstep(0.008, 0.012, ring)) * (1.0 - arc) * step(0.35, hash1(id * 9.1));
+      col = mix(col, vec3(0.018, 0.03, 0.038) + 0.03 * noise2(p * 80.0), lake);
     }
+
+    // O rio.
+    float e = 0.01;
+    float xc = riverX(p.y);
+    float dx = (riverX(p.y + e) - riverX(p.y - e)) / (2.0 * e);
+    float curv = riverX(p.y + e) + riverX(p.y - e) - 2.0 * xc;
+    float dist = (p.x - xc) / sqrt(1.0 + dx * dx);
+    float w = uWidth * (1.0 + 0.2 * sin(p.y * 2.3));
+    float side = sign(dist);
+    // Praia de areia na parte de dentro da curva, mais larga quanto mais fechada a curva.
+    // Curvatura em unidades de e²: 0,0004 já é uma curva fechada nesta escala.
+    float bar = clamp(abs(curv) * 2500.0, 0.0, 1.0) * step(0.0, side * curv);
+    float sand = (1.0 - smoothstep(w, w + 0.03 * bar, abs(dist))) * step(w - 0.002, abs(dist)) * bar;
+    col = mix(col, vec3(0.13, 0.115, 0.085) * (0.8 + 0.4 * noise2(p * 60.0)), sand);
+    float water = 1.0 - smoothstep(w - 0.004, w, abs(dist));
+    // Água barrenta do Acre refletindo a lua: mais clara que a mata, para o
+    // rio se ler como rio e não como sombra.
+    // Água escura e lisa com reflexos picados de lua, alongados na direção da
+    // correnteza. Sem sombra degradê nas margens: ela dava volume de tubo.
+    vec3 riverCol = vec3(0.045, 0.055, 0.055);
+    // Proporção 3:1 (antes 6:1): mais esticado, os reflexos viravam
+    // tracejado de faixa de estrada.
+    float glints = noise2(vec2(dist * 220.0, p.y * 75.0 - uTime * 0.6));
+    riverCol += vec3(0.16, 0.17, 0.16) * smoothstep(0.8, 0.96, glints) * (0.4 + 0.6 * fbm2(p * 6.0));
+    // Barranco: fio claro de lama na beira.
+    riverCol = mix(riverCol, vec3(0.1, 0.09, 0.07), smoothstep(w * 0.86, w, abs(dist)) * 0.7);
+    col = mix(col, riverCol, water);
+
+    // Névoa baixa, mais rápida que o mapa: dá altura ao voo.
+    float mist = smoothstep(0.55, 0.9, fbm2(p * 1.3 + vec2(uTime * 0.012, -uTravel * 0.3)));
+    col += vec3(0.07, 0.085, 0.09) * mist * 0.35;
+
+    // Vinheta e área mais escura atrás do texto.
+    col *= 0.6 + 0.4 * smoothstep(1.15, 0.25, length(vUv - 0.5) * 1.5);
+    col *= mix(1.0 - uShade, 1.0, smoothstep(0.08, 0.62, vUv.x));
     gl_FragColor = vec4(col, 1.0);
   }
 `;
 
 export function River({ reducedMotion }: { reducedMotion: boolean }) {
-  const { size, viewport } = useThree();
+  const { size } = useThree();
   const mesh = useRef<THREE.Mesh<THREE.PlaneGeometry, THREE.ShaderMaterial>>(null);
 
   const material = useMemo(
@@ -161,9 +186,12 @@ export function River({ reducedMotion }: { reducedMotion: boolean }) {
         depthTest: false,
         uniforms: {
           uRes: { value: new THREE.Vector2(1, 1) },
-          uHorizon: { value: 0.28 },
           uTime: { value: 0 },
           uTravel: { value: 0 },
+          uBias: { value: 0.3 },
+          uAmp: { value: 0.18 },
+          uShade: { value: 0.45 },
+          uWidth: { value: 0.04 },
         },
       }),
     [],
@@ -183,9 +211,17 @@ export function River({ reducedMotion }: { reducedMotion: boolean }) {
     // Material vem do objeto montado (ref), não do escopo do render.
     const u = obj.material.uniforms;
     (u.uRes.value as THREE.Vector2).set(size.width, size.height);
-    u.uHorizon.value = horizonFrac(viewport.width, viewport.height);
+    const aspect = size.width / size.height;
+    const portrait = aspect < 0.9;
+    // Desktop: rio no terço direito, longe da coluna de texto (que fica à
+    // esquerda). Retrato: centrado e com curvas menores, porque não há lado livre.
+    u.uBias.value = portrait ? 0 : aspect * 0.2;
+    u.uAmp.value = portrait ? aspect * 0.22 : 0.13;
+    u.uShade.value = portrait ? 0.25 : 0.45;
+    // No retrato a mesma fração da altura dava um rio de ~1/5 da largura da tela.
+    u.uWidth.value = portrait ? 0.022 : 0.04;
     u.uTime.value = reducedMotion ? 0 : state.clock.elapsedTime;
-    // Suavizado: o scroll chega aos saltos (roda do mouse) e as marolas pulariam.
+    // Suavizado: o scroll chega aos saltos (roda do mouse) e o voo pularia.
     u.uTravel.value += (sceneState.travel - u.uTravel.value) * 0.08;
   });
 

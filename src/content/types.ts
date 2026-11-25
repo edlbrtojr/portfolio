@@ -4,14 +4,27 @@ export type Locale = "pt" | "en";
 
 /** `frame`: proporção do recorte (a partir do topo) quando a captura tem sobra embaixo. */
 export type Shot = { src: string; alt: string; width: number; height: number; frame?: string };
-export type Metric = { value: string; label: string };
 export type ExternalLink = { label: string; href: string };
 
-/** Projeto com página própria de case (destaques e "mais projetos"). */
+/**
+ * Trecho de texto corrido. Strings simples são texto; objetos viram link ou
+ * termo explicado. `href` aceita URL, caminho interno ou um destino especial:
+ * "whatsapp", "email" (copia o endereço), "resume:pt" e "resume:en".
+ * `term` é a explicação em português simples que aparece ao passar o mouse:
+ * resquício do professor de inglês, que explica antes de usar jargão.
+ */
+export type Inline = string | { text: string; href?: string; term?: string };
+export type Rich = Inline[];
+
+/** Projeto com página própria de case. */
 export type Project = {
   slug: string;
   title: string;
-  /** Linha curta acima do título: tipo de projeto e estado. */
+  /** Uma linha para a lista da home: o que é, em palavras comuns. */
+  line: string;
+  /** Rótulo discreto na lista (freelance, projeto pessoal); vazio no trabalho principal. */
+  tag?: string;
+  /** Linha curta acima do título na página do case. */
   kicker: string;
   year: string;
   role: string;
@@ -40,17 +53,17 @@ export type Project = {
 
 export type Decision = { problem: string; choice: string };
 
-export type ArchiveItem = { title: string; year: string; description: string; stack: string[]; href?: string };
+export type ArchiveItem = { title: string; year: string; description: string; href?: string };
 
-export type Position = { title: string; company: string; period: string; summary: string; current?: boolean };
+/** Etapa da trajetória, explorada passando o mouse (ou tocando) no ano. */
+export type Step = { year: string; title: string; text: string };
 
 export type Content = {
   locale: Locale;
   meta: { title: string; description: string };
   nav: {
     work: string;
-    career: string;
-    services: string;
+    now: string;
     contact: string;
     resume: string;
     switchLang: string;
@@ -60,46 +73,18 @@ export type Content = {
     menuClose: string;
     mainLabel: string;
   };
-  hero: {
-    eyebrow: string;
-    name: string;
-    role: string;
-    lead: string;
-    ctaPrimary: string;
-    ctaWhatsapp: string;
-    scrollHint: string;
-  };
-  /** `steps`: etapas do que eu faço (verbo + uma linha), não contagens. */
-  path: { eyebrow: string; title: string; body: string; steps: Metric[] };
-  featured: Project[];
-  more: { eyebrow: string; title: string; body: string; projects: Project[] };
-  archive: { title: string; items: ArchiveItem[] };
-  career: {
-    eyebrow: string;
-    title: string;
-    body: string;
-    positions: Position[];
-    earlier: string;
-    education: { degree: string; institution: string; period: string }[];
-    educationTitle: string;
-    certificationsTitle: string;
-    certifications: string;
-    skillsTitle: string;
-    skills: { group: string; items: string[] }[];
-  };
-  services: { eyebrow: string; title: string; body: string; items: { title: string; description: string }[]; cta: string };
-  contact: {
-    eyebrow: string;
-    title: string;
-    body: string;
-    whatsapp: string;
-    email: string;
-    resume: string;
-    resumeAlt: string;
-    note: string;
-  };
+  /** Abertura: o nome é desenhado pelos vaga-lumes; `line` diz o que eu faço e onde. */
+  hero: { name: string; line: string; scrollHint: string };
+  /** Bio em primeira pessoa, sem rótulo de seção. */
+  bio: Rich[];
+  work: { label: string; more: string };
+  projects: Project[];
+  archive: ArchiveItem[];
+  /** Parágrafo no estilo /now, assinado com lugar e data. */
+  now: { label: string; body: Rich[]; signature: string };
+  past: { label: string; hint: string; steps: Step[]; tools: string };
+  contact: { label: string; body: Rich[]; copied: string };
   ui: {
-    viewCase: string;
     visitSite: string;
     stack: string;
     role: string;
@@ -111,6 +96,7 @@ export type Content = {
     results: string;
     nextProject: string;
     footer: string;
+    localTime: string;
     notFoundTitle: string;
     notFoundBody: string;
     notFoundCta: string;

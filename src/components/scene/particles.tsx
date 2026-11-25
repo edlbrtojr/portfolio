@@ -3,7 +3,7 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { horizonY, layoutFor, lerpLayout, type Layout } from "./layout";
+import { layoutFor, lerpLayout, type Layout } from "./layout";
 import { chaos, dashboards, helix, lake, nameShape, phone, randoms, sources, sphere, tree, type Shape, type ShapeKey } from "./shapes";
 import { sceneState } from "./store";
 
@@ -29,11 +29,8 @@ const vertex = /* glsl */ `
   uniform float uMotion;
   uniform vec3 uPointer;
   uniform float uPointerForce;
-  uniform float uHorizon;
   varying vec3 vColor;
   varying float vAlpha;
-  varying float vDepth;
-  varying float vAbove;
 
   void main() {
     float d = aRand * ${STAGGER.toFixed(2)};
@@ -55,18 +52,7 @@ const vertex = /* glsl */ `
     float dist = length(away);
     p.xy += normalize(away + 1e-5) * smoothstep(0.85, 0.0, dist) * 0.32 * uPointerForce;
 
-    vec4 world = modelMatrix * vec4(p, 1.0);
-    vDepth = 0.0;
-    vAbove = 1.0;
-  #ifdef REFLECT
-    // Espelha na linha d'água, um pouco achatado, e ondula mais quanto mais
-    // fundo: o reflexo de um vaga-lume no rio nunca fica parado.
-    vAbove = world.y - uHorizon;
-    world.y = uHorizon - vAbove * 0.9;
-    vDepth = uHorizon - world.y;
-    world.x += sin(world.y * 9.0 + uTime * 1.6 + aRand * 6.0) * 0.05 * vDepth * uMotion;
-  #endif
-    vec4 mv = viewMatrix * world;
+    vec4 mv = modelViewMatrix * vec4(p, 1.0);
     gl_Position = projectionMatrix * mv;
     gl_PointSize = uSize * (0.55 + aRand * 0.9) / -mv.z;
     // Vaga-lume: a cor da forma puxada para o amarelo-esverdeado da luz dele,
@@ -82,17 +68,10 @@ const fragment = /* glsl */ `
   uniform float uOpacity;
   varying vec3 vColor;
   varying float vAlpha;
-  varying float vDepth;
-  varying float vAbove;
   void main() {
     float r = length(gl_PointCoord - 0.5);
     if (r > 0.5) discard;
     float a = smoothstep(0.5, 0.05, r);
-  #ifdef REFLECT
-    // Vaga-lume que já está abaixo da linha d'água não tem reflexo.
-    if (vAbove < 0.0) discard;
-    a *= 0.32 * exp(-vDepth * 0.9);
-  #endif
     gl_FragColor = vec4(vColor, a * vAlpha * uOpacity);
   }
 `;
@@ -181,31 +160,34 @@ export function Particles({ count, reducedMotion, font, name }: Props) {
     return g;
   }, [count, rand, shapes]);
 
-  const [material, reflection] = useMemo(() => {
-    const uniforms = {
-      uMix: { value: 1 },
-      uTime: { value: 0 },
-      uSize: { value: 28 },
-      uMotion: { value: 1 },
-      uOpacity: { value: 1 },
-      uPointer: { value: new THREE.Vector3(99, 99, 0) },
-      uPointerForce: { value: 0 },
-      uHorizon: { value: -1 },
-    };
-    const base = { vertexShader: vertex, fragmentShader: fragment, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending };
-    // O reflexo usa os mesmos objetos de uniform: atualizar um atualiza os dois.
-    return [new THREE.ShaderMaterial({ ...base, uniforms }), new THREE.ShaderMaterial({ ...base, uniforms, defines: { REFLECT: 1 } })];
-  }, []);
+  const material = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        vertexShader: vertex,
+        fragmentShader: fragment,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        uniforms: {
+          uMix: { value: 1 },
+          uTime: { value: 0 },
+          uSize: { value: 28 },
+          uMotion: { value: 1 },
+          uOpacity: { value: 1 },
+          uPointer: { value: new THREE.Vector3(99, 99, 0) },
+          uPointerForce: { value: 0 },
+        },
+      }),
+    [],
+  );
 
   useEffect(
     () => () => {
       geometry.dispose();
       material.dispose();
-      reflection.dispose();
     },
-    [geometry, material, reflection],
+    [geometry, material],
   );
-  const mirror = useRef<THREE.Points<THREE.BufferGeometry, THREE.ShaderMaterial>>(null);
 
   // Estado da transformação em andamento (fora do React).
   const morph = useRef({
@@ -259,14 +241,6 @@ export function Particles({ count, reducedMotion, font, name }: Props) {
     const swayT = reducedMotion ? 0 : now;
     obj.rotation.y = L.sway * (Math.sin(swayT * 0.25) * 0.45 + p.x * 0.15);
     obj.rotation.x = L.sway * (p.y * -0.08);
-    u.uHorizon.value = horizonY(viewport.width, viewport.height);
-    // O reflexo é o mesmo enxame: mesma geometria e mesma transformação.
-    const m = mirror.current;
-    if (m) {
-      m.position.copy(obj.position);
-      m.scale.copy(obj.scale);
-      m.rotation.copy(obj.rotation);
-    }
 
     // Ponteiro → plano z=0 → espaço local do objeto.
     const force = p.active && !reducedMotion ? 1 : 0;
@@ -282,10 +256,5 @@ export function Particles({ count, reducedMotion, font, name }: Props) {
 
   // frustumCulled={false}: as partículas se movem no shader, e o culling do
   // three (que olha `position`, toda zerada) poderia esconder o objeto.
-  return (
-    <>
-      <points ref={mirror} geometry={geometry} material={reflection} frustumCulled={false} />
-      <points ref={points} geometry={geometry} material={material} frustumCulled={false} />
-    </>
-  );
+  return <points ref={points} geometry={geometry} material={material} frustumCulled={false} />;
 }

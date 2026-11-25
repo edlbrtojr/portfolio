@@ -27,9 +27,8 @@ export function SiteHeader({ nav, home, resume }: Props) {
   }, [open]);
 
   const links = [
-    { href: `${home}#projetos`, label: nav.work },
-    { href: `${home}#trajetoria`, label: nav.career },
-    { href: `${home}#servicos`, label: nav.services },
+    { href: `${home}#trabalho`, label: nav.work },
+    { href: `${home}#agora`, label: nav.now },
     { href: `${home}#contato`, label: nav.contact },
   ];
 

@@ -11,8 +11,7 @@ export const GITHUB_URL = "https://github.com/edlbrtojr";
 
 /** Todos os projetos com página de case, na ordem em que aparecem na home. */
 export function allProjects(locale: Locale): Project[] {
-  const c = content[locale];
-  return [...c.featured, ...c.more.projects];
+  return content[locale].projects;
 }
 
 export function homeHref(locale: Locale) {

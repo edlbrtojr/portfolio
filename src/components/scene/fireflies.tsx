@@ -3,25 +3,23 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { horizonY } from "./layout";
 import { rng } from "./shapes";
 import { sceneState } from "./store";
 
-// Vaga-lumes soltos na beira do rio, fora das formas: dão vida ao cenário
+// Vaga-lumes soltos sobre a floresta, fora das formas: dão vida ao cenário
 // enquanto o enxame principal está parado desenhando um projeto.
 
 const vertex = /* glsl */ `
-  attribute vec2 aPos;    // x em [-0,5; 0,5] da largura; y em telas acima da linha d'água
+  attribute vec2 aPos;    // posição em [-0,5; 0,5] da largura e da altura visíveis
   attribute float aSeed;
   uniform vec2 uView;     // largura e altura visíveis, em unidades do mundo
-  uniform float uHorizon;
   uniform float uTime;
   uniform float uMotion;
   uniform float uSize;
   varying float vGlow;
   void main() {
     float t = uTime * (0.15 + aSeed * 0.2);
-    vec3 p = vec3(aPos.x * uView.x, uHorizon + aPos.y * uView.y, 0.0);
+    vec3 p = vec3(aPos * uView, 0.0);
     // Voo errático e lento: duas senoides fora de fase por eixo.
     p.x += (sin(t + aSeed * 50.0) + 0.5 * sin(t * 2.3 + aSeed * 17.0)) * 0.35 * uMotion;
     p.y += (cos(t * 1.3 + aSeed * 31.0) + 0.5 * sin(t * 3.1 + aSeed * 7.0)) * 0.12 * uMotion;
@@ -55,9 +53,9 @@ export function Fireflies({ count, reducedMotion }: { count: number; reducedMoti
     const pos = new Float32Array(count * 2);
     const seed = new Float32Array(count);
     for (let i = 0; i < count; i++) {
+      // Espalhados sobre a mata vista de cima, com o voo no shader.
       pos[i * 2] = r() - 0.5;
-      // Concentrados na faixa da mata (logo acima da água); alguns sobre o rio.
-      pos[i * 2 + 1] = -0.06 + Math.pow(r(), 1.6) * 0.22;
+      pos[i * 2 + 1] = r() - 0.5;
       seed[i] = r();
     }
     const g = new THREE.BufferGeometry();
@@ -77,7 +75,6 @@ export function Fireflies({ count, reducedMotion }: { count: number; reducedMoti
         blending: THREE.AdditiveBlending,
         uniforms: {
           uView: { value: new THREE.Vector2(1, 1) },
-          uHorizon: { value: 0 },
           uTime: { value: 0 },
           uMotion: { value: 1 },
           uSize: { value: 60 },
@@ -100,7 +97,6 @@ export function Fireflies({ count, reducedMotion }: { count: number; reducedMoti
     if (!obj) return;
     const u = obj.material.uniforms;
     (u.uView.value as THREE.Vector2).set(viewport.width, viewport.height);
-    u.uHorizon.value = horizonY(viewport.width, viewport.height);
     u.uTime.value = reducedMotion ? 0 : state.clock.elapsedTime;
     u.uMotion.value = reducedMotion ? 0 : 1;
     u.uSize.value = 60 * Math.min(state.gl.getPixelRatio(), 2) * (size.height / 900) ** 0.5;
