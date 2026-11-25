@@ -4,7 +4,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { dawnAt } from "./river-curve";
-import { sceneState } from "./store";
+import { cameraNow, sceneState } from "./store";
 
 // Vaga-lumes soltos sobre a mata. Quando um topônimo ou uma nota recebe o
 // mouse ou o foco, cerca de um terço deles larga a mata e vai rodear a
@@ -29,15 +29,16 @@ const vertex = /* glsl */ `
   uniform float uTime;
   uniform float uMotion;
   uniform float uSize;
-  uniform float uDrift;   // telas roladas: a revoada sobe com a mata
+  uniform vec2 uDrift;    // a câmera em telas (x, y): a revoada anda com a mata
   uniform vec2 uTarget;   // centro da lanterna, em unidades do mundo
   uniform float uGather;  // 0 soltos, 1 em volta da lanterna
   uniform float uRadius;
   varying float vGlow;
   void main() {
     float t = uTime * (0.15 + aSeed * 0.2);
-    // Sobem com a página e reaparecem embaixo: a mata é a mesma carta.
-    vec2 base = vec2(aPos.x, fract(aPos.y + 0.5 + uDrift) - 0.5);
+    // Sobem com a página e reaparecem embaixo (e, na viagem entre páginas,
+    // saem por um lado e voltam pelo outro): a mata é a mesma carta.
+    vec2 base = vec2(fract(aPos.x + 0.5 - uDrift.x) - 0.5, fract(aPos.y + 0.5 + uDrift.y) - 0.5);
     vec3 p = vec3(base * uView, 0.0);
     p.x += (sin(t + aSeed * 50.0) + 0.5 * sin(t * 2.3 + aSeed * 17.0)) * 0.35 * uMotion;
     p.y += (cos(t * 1.3 + aSeed * 31.0) + 0.5 * sin(t * 3.1 + aSeed * 7.0)) * 0.12 * uMotion;
@@ -104,7 +105,7 @@ export function Fireflies({ count, reducedMotion }: { count: number; reducedMoti
           uMotion: { value: 1 },
           uSize: { value: 60 },
           uOpacity: { value: 1 },
-          uDrift: { value: 0 },
+          uDrift: { value: new THREE.Vector2(0, 0) },
           uTarget: { value: new THREE.Vector2(0, 0) },
           uGather: { value: 0 },
           uRadius: { value: 0.5 },
@@ -131,7 +132,8 @@ export function Fireflies({ count, reducedMotion }: { count: number; reducedMoti
     u.uTime.value = reducedMotion ? 0 : state.clock.elapsedTime;
     u.uMotion.value = reducedMotion ? 0 : 1;
     u.uSize.value = 60 * Math.min(state.gl.getPixelRatio(), 2) * (size.height / 900) ** 0.5;
-    u.uDrift.value = window.scrollY / size.height;
+    const cam = cameraNow();
+    (u.uDrift.value as THREE.Vector2).set(cam.x / size.width, cam.y / size.height);
 
     // px do documento → mundo (câmera olhando o plano z = 0).
     const ty = s.lantern.y - window.scrollY;
@@ -143,8 +145,10 @@ export function Fireflies({ count, reducedMotion }: { count: number; reducedMoti
 
     // Vaga-lume é bicho de noite: apagam conforme a manhã chega ao meio da
     // janela (o mesmo dawnAt do shader do rio).
-    const day = s.dim || !s.docH ? 0 : dawnAt((window.scrollY + size.height / 2) / s.unit, s.docH / s.unit);
-    const target = (s.dim ? 0.35 : 1) * (1 - day);
+    // Nas páginas de projeto (a leste) a cena recua e eles ficam a 35%.
+    const onCase = cam.x > size.width * 0.85;
+    const day = onCase || !s.homeDocH ? 0 : dawnAt((cam.y + size.height / 2) / s.unit, s.homeDocH / s.unit);
+    const target = (onCase ? 0.35 : 1) * (1 - day);
     u.uOpacity.value += (target - u.uOpacity.value) * 0.06;
   });
 

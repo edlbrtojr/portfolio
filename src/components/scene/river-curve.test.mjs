@@ -1,6 +1,24 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { COLUMN_END, DAWN_FROM, DAWN_TO, NOTES_START, RIVER_GLSL, SPINE_TEXT_START, dawnAt, fitName, halfRef, riverHalf, riverX, safeHalfPx } from "./river-curve.ts";
+import {
+  BRANCH_DROP,
+  BRANCH_EAST,
+  COLUMN_END,
+  DAWN_FROM,
+  DAWN_TO,
+  NOTES_START,
+  RIVER_GLSL,
+  SPINE_TEXT_START,
+  branchX,
+  caseOrigin,
+  dawnAt,
+  fitName,
+  halfRef,
+  riverHalf,
+  riverX,
+  safeHalfPx,
+  travelCamera,
+} from "./river-curve.ts";
 
 // O layout inteiro depende de a água nunca passar por baixo do texto: a
 // coluna termina em COLUMN_END, as notas começam em NOTES_START e, no
@@ -100,6 +118,33 @@ test("a noite dura até as últimas telas e o shader amanhece na mesma janela", 
   assert.equal(dawnAt(0.5, 0), 0);
   assert.equal(dawnAt(0.5, Infinity), 0);
   assert.ok(RIVER_GLSL.includes(`smoothstep(docU - ${DAWN_FROM}, docU - ${DAWN_TO}, y)`));
+});
+
+// O braço tem de nascer no meio do rio e terminar no rio da página do
+// projeto, sem degrau: a câmera viaja por ele e qualquer salto aparece.
+test("o braço sai do centro do rio e emenda no rio da página do projeto", () => {
+  for (const [W, H, mode] of [[1440, 900, "chart"], [1920, 1080, "chart"], [390, 844, "spine"]]) {
+    for (const y0 of [1600, 2400, 3900]) {
+      const end = y0 + BRANCH_DROP * H;
+      assert.ok(Math.abs(branchX(y0, y0, W, H, mode) - riverX(y0 / H, mode) * W) < 0.01, "começa no rio");
+      assert.ok(Math.abs(branchX(end, y0, W, H, mode) - (BRANCH_EAST + riverX(0, mode)) * W) < 0.01, "chega ao topo da página");
+      // Contínuo de ponta a ponta, inclusive na emenda: 1 px de y nunca move mais que 6 px de x.
+      for (let y = y0; y < end + 2 * H; y += 1) {
+        assert.ok(Math.abs(branchX(y + 1, y0, W, H, mode) - branchX(y, y0, W, H, mode)) < 6, `${W}×${H} y=${y}`);
+      }
+      // A página do projeto fica inteira a leste da home, e o rio dela na mesma faixa da tela.
+      const o = caseOrigin(y0, W, H);
+      assert.equal(o.x, BRANCH_EAST * W);
+      assert.ok(Math.abs(branchX(o.y + 1.7 * H, y0, W, H, mode) - o.x - riverX(1.7, mode) * W) < 0.01);
+    }
+  }
+  // A câmera começa e termina exatamente nas duas páginas.
+  const home = { x: 0, y: 1500 };
+  const page = { x: 1872, y: 3000 };
+  assert.deepEqual(travelCamera(0, home, page), home);
+  assert.deepEqual(travelCamera(1, home, page), page);
+  assert.ok(RIVER_GLSL.includes(`(y - y0) / (${BRANCH_DROP} * uUnit)`));
+  assert.ok(RIVER_GLSL.includes(`(${BRANCH_EAST} + uAxis + uAmp * riverWave(local)) * W`));
 });
 
 test("o shader usa as mesmas senoides do SVG", () => {

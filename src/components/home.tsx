@@ -8,7 +8,7 @@ import { Prose } from "./chart/prose";
 import { RiverType } from "./chart/river-type";
 import { Projects } from "./chart/projects";
 import { RichText } from "./home/rich-text";
-import { SceneRoot } from "./scene/scene-root";
+import { ScenePage } from "./scene/scene-page";
 
 /**
  * A home é uma carta do rio Acre à noite. O rio é a página: desce com a
@@ -25,7 +25,7 @@ export function Home({ locale }: { locale: Locale }) {
   const copy = { locale, copied: c.contact.copied };
   return (
     <>
-      <SceneRoot />
+      <ScenePage kind="home" />
       <ChartFrame locale={locale} nav={c.nav} channels={c.contact.channels} copied={c.contact.copied} home={homeHref(locale)} resume={resumeHref(locale)} />
       <main id="conteudo" tabIndex={-1} className="carta">
         {/* Nome sem sobrenome no rio: 9 letras cabem numa tela de rio; o h1 tem o nome inteiro. */}

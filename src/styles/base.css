@@ -11,6 +11,20 @@
 .carta > article {
   position: relative;
 }
+/*
+ * Viagem entre a home e um projeto (scene/travel.ts): o conteúdo some
+ * depressa, a câmera segue o braço do rio, e o conteúdo da página nova
+ * (que nasce com o atributo ainda no <html>) aparece mais devagar quando
+ * ela chega. A moldura e a navegação ficam: são da janela, não da página.
+ */
+.carta {
+  transition: opacity 0.5s ease;
+}
+html[data-viajando] .carta {
+  opacity: 0;
+  pointer-events: none;
+  transition-duration: 0.22s;
+}
 
 /* Coluna de texto: da margem esquerda até 0,44 de W, nunca sobre a água. */
 .col {

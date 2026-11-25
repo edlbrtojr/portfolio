@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { type ReactNode, useEffect, useRef } from "react";
 import { NOTES_MIN_WIDTH, riverX } from "../scene/river-curve";
+import { TravelLink } from "../scene/travel-link";
 import { useChart } from "./geometry";
 
 /** Quanto do ângulo do rio a tela acompanha, e o teto em graus. Mais que isso e a captura fica difícil de ler. */
@@ -27,7 +27,7 @@ const MAX_TILT = 4;
  * da ordem de tabulação e da árvore de acessibilidade, para leitor de tela e
  * teclado não passarem duas vezes pelo mesmo destino.
  */
-export function Raft({ href, children }: { href: string; children: ReactNode }) {
+export function Raft({ href, slug, children }: { href: string; slug: string; children: ReactNode }) {
   const geo = useChart();
   const ref = useRef<HTMLAnchorElement>(null);
 
@@ -60,10 +60,10 @@ export function Raft({ href, children }: { href: string; children: ReactNode }) 
   }, [geo]);
 
   return (
-    <Link ref={ref} href={href} className="barco" tabIndex={-1} aria-hidden data-lantern>
+    <TravelLink ref={ref} direction="ir" slug={slug} href={href} className="barco" tabIndex={-1} aria-hidden data-lantern>
       <span className="barco-deriva">
         <span className="barco-tela">{children}</span>
       </span>
-    </Link>
+    </TravelLink>
   );
 }

@@ -12,7 +12,7 @@ export const metadata: Metadata = { metadataBase: new URL(SITE_URL), title: "404
 // ter o caminho de volta.
 export default function GlobalNotFound() {
   return (
-    <RootDocument locale="pt">
+    <RootDocument locale="pt" scene={false}>
       <div aria-hidden className="moldura" />
       <main className="fim-do-mapa">
         <div className="col fim-texto">

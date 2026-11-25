@@ -1,7 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
 import { projectHref } from "@/content";
 import type { ArchiveItem, Content, Locale, Project } from "@/content/types";
+import { TravelLink } from "../scene/travel-link";
 import { Raft } from "./raft";
 
 type Props = { locale: Locale; projects: Project[]; archive: ArchiveItem[]; work: Content["work"]; ui: Content["ui"] };
@@ -31,15 +31,16 @@ export function Projects({ locale, projects, archive, work, ui }: Props) {
           const shot = p.shots[0];
           const site = p.links[0];
           return (
-            <li key={p.slug} id={p.slug} className="projeto">
+            // data-porto: a cena mede daqui de onde sai o braço do rio deste projeto (ScenePage).
+            <li key={p.slug} id={p.slug} className="projeto" data-porto="principal">
               <div className="col projeto-texto">
                 <p className="projeto-de">
                   {p.toponym.note} <span aria-hidden>·</span> {p.year}
                 </p>
                 <h3 className="nome-projeto projeto-nome">
-                  <Link href={href} data-lantern>
+                  <TravelLink direction="ir" slug={p.slug} href={href} data-lantern>
                     {p.toponym.name}
-                  </Link>
+                  </TravelLink>
                 </h3>
                 <p className="projeto-linha">{p.line}</p>
                 <dl className="projeto-ficha">
@@ -53,7 +54,9 @@ export function Projects({ locale, projects, archive, work, ui }: Props) {
                   </div>
                 </dl>
                 <p className="projeto-links">
-                  <Link href={href}>{work.open} →</Link>
+                  <TravelLink direction="ir" slug={p.slug} href={href}>
+                    {work.open} →
+                  </TravelLink>
                   {site && (
                     <a href={site.href} target="_blank" rel="noopener noreferrer">
                       {site.label} ↗
@@ -62,7 +65,7 @@ export function Projects({ locale, projects, archive, work, ui }: Props) {
                 </p>
               </div>
               {shot && (
-                <Raft href={href}>
+                <Raft href={href} slug={p.slug}>
                   {/* alt vazio: o link é decorativo (ver Raft) e a descrição completa da captura está no case. */}
                   <Image src={shot.src} alt="" fill sizes="(min-width: 1100px) 36vw, (min-width: 768px) 37vw, 72vw" />
                 </Raft>
@@ -75,14 +78,14 @@ export function Projects({ locale, projects, archive, work, ui }: Props) {
       <div className="menores-faixa">
         <ol className="col menores" start={main.length + 1}>
           {minor.map((p) => (
-            <li key={p.slug} id={p.slug} className="menor">
-              <Link href={projectHref(locale, p.slug)} data-lantern>
+            <li key={p.slug} id={p.slug} className="menor" data-porto="menor">
+              <TravelLink direction="ir" slug={p.slug} href={projectHref(locale, p.slug)} data-lantern>
                 <span className="menor-de">
                   {p.toponym.note} <span aria-hidden>·</span> {p.year}
                 </span>
                 <span className="nome-projeto menor-nome">{p.toponym.name}</span>
                 <span className="menor-linha">{p.line}</span>
-              </Link>
+              </TravelLink>
             </li>
           ))}
         </ol>

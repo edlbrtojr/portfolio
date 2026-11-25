@@ -25,14 +25,15 @@ function tierFor() {
   return coarse || cores <= 4 ? "coarse" : "full";
 }
 
-export function SceneRoot({ dim = false }: { dim?: boolean }) {
+/**
+ * A cena mora no documento raiz (root-document.tsx), não em cada página: o
+ * canvas não desmonta quando a rota muda, e é isso que deixa a câmera viajar
+ * de uma página a outra pelo braço do rio. Cada página só avisa onde está no
+ * mundo (ScenePage).
+ */
+export function SceneRoot() {
   const [config, setConfig] = useState<Config>(null);
   const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    sceneState.dim = dim;
-    wakeScene();
-  }, [dim]);
 
   useEffect(() => {
     // O script do <head> já testou o WebGL (e o ?webgl=off) antes da pintura.
@@ -98,10 +99,12 @@ export function SceneRoot({ dim = false }: { dim?: boolean }) {
     const focusOut = (e: FocusEvent) => {
       if (!e.relatedTarget) aimLantern(null);
     };
-    // Altura do documento: a foz alarga nas últimas 1,5 unidade.
-    const ro = new ResizeObserver(() => {
-      sceneState.docH = document.documentElement.scrollHeight;
-    });
+    // A página mudou de altura (fontes, imagens, troca de rota): redesenha.
+    // A altura da home, de que a foz e o amanhecer dependem, quem mede é a
+    // própria home (ScenePage). Medida aqui, ela pegava a altura do case no
+    // instante da troca de rota (o observer dispara antes de a página nova
+    // avisar quem é) e a manhã aparecia no meio da viagem.
+    const ro = new ResizeObserver(() => wakeScene());
     ro.observe(document.body);
 
     window.addEventListener("pointermove", move, { passive: true });

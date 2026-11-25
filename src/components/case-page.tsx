@@ -7,12 +7,14 @@ import { ChartFrame } from "./chart/chart-frame";
 import { MarginNote } from "./chart/margin-note";
 import { Diagram } from "./diagrams";
 import { numberNotes, RichText } from "./home/rich-text";
-import { SceneRoot } from "./scene/scene-root";
+import { ScenePage } from "./scene/scene-page";
+import { TravelLink } from "./scene/travel-link";
 
 /**
  * O case como folha de detalhe da carta: mesma moldura, o projeto como
  * topônimo, o texto na coluna esquerda e os problemas anotados na margem, do
- * outro lado do rio. A cena recua (dim) para as capturas mandarem.
+ * outro lado do rio. A página fica a leste da home no mapa, no fim do braço
+ * do projeto (ScenePage); lá a cena recua para as capturas mandarem.
  */
 export function CasePage({ project, locale }: { project: Project; locale: Locale }) {
   const c = content[locale];
@@ -30,7 +32,7 @@ export function CasePage({ project, locale }: { project: Project; locale: Locale
 
   return (
     <>
-      <SceneRoot dim />
+      <ScenePage kind="case" slug={project.slug} />
       <ChartFrame
         locale={locale}
         nav={c.nav}
@@ -44,8 +46,10 @@ export function CasePage({ project, locale }: { project: Project; locale: Locale
       <main id="conteudo" tabIndex={-1} className="carta caso">
         <article>
           <p className="col caso-volta">
-            {/* Volta ao topônimo exato na carta, não ao topo da home. */}
-            <Link href={`${home}#${project.slug}`}>← {c.ui.back}</Link>
+            {/* Volta ao projeto exato na home, não ao topo, e pelo braço do rio (TravelLink). */}
+            <TravelLink direction="voltar" slug={project.slug} href={`${home}#${project.slug}`}>
+              ← {c.ui.back}
+            </TravelLink>
           </p>
 
           <header className="caso-cabeca">
@@ -139,9 +143,9 @@ export function CasePage({ project, locale }: { project: Project; locale: Locale
           </section>
 
           <nav aria-label={c.ui.nextProject} className="caso-rio">
-            <Link href={`${home}#${project.slug}`} className="caso-rio-volta">
+            <TravelLink direction="voltar" slug={project.slug} href={`${home}#${project.slug}`} className="caso-rio-volta">
               ← {c.ui.back}
-            </Link>
+            </TravelLink>
             <Link href={projectHref(locale, next.slug)} className="caso-rio-abaixo" data-lantern>
               <span className="caso-rio-rotulo">{c.ui.nextProject} →</span>
               <span className="nome-projeto">{next.toponym.name}</span>

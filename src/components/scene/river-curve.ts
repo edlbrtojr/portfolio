@@ -80,6 +80,66 @@ export function dawnAt(y: number, docUnits: number) {
   return Number.isFinite(docUnits) && docUnits > 0 ? smoothstep(docUnits - DAWN_FROM, docUnits - DAWN_TO, y) : 0;
 }
 
+/**
+ * Os braços do rio. O site é um mapa só: a home é o rio principal e cada
+ * página de projeto fica a leste dele, ligada por um braço fino que sai do
+ * rio na altura do projeto. Abrir um projeto é a câmera seguir o braço até
+ * lá; "voltar" é o caminho de volta (ver scene/travel.ts).
+ *
+ * Todo braço tem a mesma forma, deslocada para a altura de onde sai (y0):
+ * desce BRANCH_DROP unidades enquanto anda BRANCH_EAST larguras para leste,
+ * em S, e ali começa a página do projeto, cujo rio é a continuação do braço
+ * com a curva normal (riverX) contada do topo dela. É função de y do começo
+ * ao fim, como o rio principal, então o shader usa a mesma conta de
+ * distância.
+ *
+ * 1,3 larguras: a página do projeto fica inteira fora da tela da home (e a
+ * home fora da tela dela), com 0,3 de mata entre as duas. 1,2 unidade de
+ * queda: menos que isso e o braço corre quase horizontal, e a distância
+ * calculada na horizontal engrossa o traço.
+ */
+export const BRANCH_EAST = 1.3;
+export const BRANCH_DROP = 1.2;
+/**
+ * Meia largura do braço, em fração da do rio principal: é um fio de rio.
+ * Com 0,5 (testado) os braços disputavam com o rio e, cruzando os meandros,
+ * a seção de trabalho lia como trança de três rios.
+ */
+export const BRANCH_HALF = 0.32;
+
+function smoother(u: number) {
+  const t = Math.min(1, Math.max(0, u));
+  return t * t * t * (t * (t * 6 - 15) + 10);
+}
+
+/** x (px do mundo) do braço que sai do rio em y0, na altura y (os dois em px do mundo). */
+export function branchX(y: number, y0: number, W: number, unit: number, mode: ChartMode, docUnits = Infinity) {
+  const x0 = riverX(y0 / unit, mode, docUnits) * W;
+  const local = Math.max(y - y0 - BRANCH_DROP * unit, 0) / unit;
+  const x1 = (BRANCH_EAST + riverX(local, mode)) * W;
+  return x0 + (x1 - x0) * smoother((y - y0) / (BRANCH_DROP * unit));
+}
+
+/** Canto superior esquerdo (px do mundo) da página do projeto cujo braço sai em y0. */
+export function caseOrigin(y0: number, W: number, unit: number) {
+  return { x: BRANCH_EAST * W, y: y0 + BRANCH_DROP * unit };
+}
+
+/**
+ * A câmera em viagem: `e` vai de 0 (parada na home, em `home`) a 1 (parada
+ * na página do projeto, em `page`). O x anda com o mesmo S do braço e o y
+ * anda reto; com isso o ponto do braço que a câmera acompanha fica na tela
+ * do começo ao fim, subindo de onde estava o projeto até o topo.
+ *
+ * `lift` (px): no meio do caminho a câmera fica até esse tanto mais acima,
+ * numa parábola que zera nas duas pontas. Sem ele o ponto acompanhado
+ * passava a viagem quase toda no terço de cima da tela e o braço saía pelo
+ * canto; com ~0,3 da altura da janela ele cruza o meio.
+ */
+export function travelCamera(e: number, home: { x: number; y: number }, page: { x: number; y: number }, lift = 0) {
+  return { x: home.x + (page.x - home.x) * smoother(e), y: home.y + (page.y - home.y) * e - lift * 4 * e * (1 - e) };
+}
+
 /** Passo de amostragem do SVG: 0,02 unidade (~18 px a 900 px) já não mostra quina. */
 export const SAMPLE_STEP = 0.02;
 
@@ -177,6 +237,15 @@ export const RIVER_GLSL = /* glsl */ `
     return smoothstep(docU - ${g(DAWN_FROM)}, docU - ${g(DAWN_TO)}, y);
   }
   float riverX(float y) { return uAxis + uAmp * riverWave(y) * (1.0 - uStraight * riverMouth(y)); }
+  // O mesmo branchX do JS: y e y0 em px do mundo, W a largura útil em px.
+  float branchX(float y, float y0, float W) {
+    float u = clamp((y - y0) / (${g(BRANCH_DROP)} * uUnit), 0.0, 1.0);
+    float s = u * u * u * (u * (u * 6.0 - 15.0) + 10.0);
+    float x0 = riverX(y0 / uUnit) * W;
+    float local = max(y - y0 - ${g(BRANCH_DROP)} * uUnit, 0.0) / uUnit;
+    float x1 = (${g(BRANCH_EAST)} + uAxis + uAmp * riverWave(local)) * W;
+    return mix(x0, x1, s);
+  }
   // Em px (já multiplicada pela régua de halfRef).
   float riverHalfPx(float y) {
     float head = 1.0 + uHead * (1.0 - smoothstep(${g(HEAD_FROM)}, ${g(HEAD_TO)}, y));

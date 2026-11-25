@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, Geist, Geist_Mono, Instrument_Serif } from "next/f
 import type { ReactNode } from "react";
 import type { Locale } from "@/content";
 import "@/app/globals.css";
+import { SceneRoot } from "./scene/scene-root";
 
 // Tipografia sem serifa (2026-11-25, pedido do Edilberto: a versão com
 // Instrument Serif + Newsreader em tudo "tinha pegada editorial até demais";
@@ -23,7 +24,13 @@ const river = Instrument_Serif({ subsets: ["latin"], weight: "400", style: ["ita
 // `?webgl=off` força o fallback, para testar sem desligar a GPU.
 const webglProbe = `try{if(/[?&]webgl=off\\b/.test(location.search))throw 0;var c=document.createElement('canvas');var g=c.getContext('webgl2')||c.getContext('webgl');document.documentElement.dataset.webgl=g?'on':'off'}catch(e){document.documentElement.dataset.webgl='off'}`;
 
-export function RootDocument({ locale, children }: { locale: Locale; children: ReactNode }) {
+/**
+ * `scene`: a cena WebGL mora aqui, uma por documento, e atravessa as trocas
+ * de rota sem desmontar (é o que permite a câmera viajar pelo braço do rio
+ * entre a home e um projeto). A 404 global passa `false`: quem cai lá só
+ * precisa do caminho de volta.
+ */
+export function RootDocument({ locale, children, scene = true }: { locale: Locale; children: ReactNode; scene?: boolean }) {
   return (
     <html lang={locale === "pt" ? "pt-BR" : "en"} className={`${display.variable} ${body.variable} ${code.variable} ${river.variable}`} suppressHydrationWarning>
       {/* A regra no-head-element é do Pages Router; no App Router o <head> no layout raiz é o caminho documentado. */}
@@ -32,6 +39,7 @@ export function RootDocument({ locale, children }: { locale: Locale; children: R
         <script dangerouslySetInnerHTML={{ __html: webglProbe }} />
       </head>
       <body>
+        {scene && <SceneRoot />}
         {children}
         <Analytics />
       </body>
