@@ -1,18 +1,23 @@
 import type { Content } from "./types";
 
-// Regra do texto (revisão de 2026-11-25): nada de contagem de inventário
-// (bases, pipelines, telas, arquivos de teste). Esses números só registram o
-// tamanho de hoje: o lake ganha fonte nova em um dia e o "15" vira mentira.
-// Número entra quando é fato que não envelhece: tamanho de uma base fechada,
-// custo, escopo do produto. O PDF do currículo segue a mesma regra, com uma
-// exceção: o PDF é datado, então "3 clínicas pagantes" pode ficar nele.
+// Regras do texto (revisões de 2026-11-25, pedidas pelo Edilberto):
+// - Sem faixa de KPI e sem contagem de inventário (bases, pipelines, telas,
+//   testes). O lake ganha fonte nova em um dia, e número interno não diz nada
+//   a quem lê. Nenhum dos 20 portfólios de referência pesquisados usava isso.
+// - Lake e plataforma foram feitos com a equipe do Observatório, com o
+//   Edilberto como desenvolvedor principal. Nunca escrever "sozinho" nesses
+//   dois. No Milix, sim: ele é o único desenvolvedor.
+// - Mostrar o que ele faz sem comparar com outros profissionais.
+// - Detalhe de bastidor (chaves, SSO) só no currículo e na stack, não no texto.
+// O PDF do currículo segue as mesmas regras; por ser datado, pode citar
+// "3 clínicas pagantes".
 
 export const pt: Content = {
   locale: "pt",
   meta: {
     title: "Edilberto Lima Jr. · Full-stack e engenharia de dados",
     description:
-      "Desenvolvedor full-stack e engenheiro de dados em Rio Branco, AC. Construí o data lake do Observatório da Indústria do Acre, desenvolvo a plataforma que mostra esses dados e criei o Milix, um SaaS para clínicas.",
+      "Desenvolvedor full-stack e engenheiro de dados em Rio Branco, AC. Desenvolvedor principal do data lake e da plataforma de dados do Observatório da Indústria do Acre, e criador do Milix, um SaaS para clínicas.",
   },
   nav: {
     work: "Projetos",
@@ -31,21 +36,20 @@ export const pt: Content = {
     eyebrow: "Rio Branco, Acre · aberto a vagas e freelas",
     name: "Edilberto Lima Jr.",
     role: "Desenvolvedor full-stack e engenheiro de dados",
-    lead: "Pego o dado do jeito que o governo publica e entrego do jeito que um empresário entende. No Observatório da Indústria do Acre, construí sozinho o data lake e desenvolvo a plataforma que mostra esses números. Fora de lá, criei o Milix, um sistema para clínicas que já tem cliente pagando.",
+    lead: "Pego o dado do jeito que o governo publica e entrego do jeito que um empresário entende. Sou o desenvolvedor principal do data lake e da plataforma do Observatório da Indústria do Acre, e criei o Milix, um sistema para clínicas.",
     ctaPrimary: "Ver projetos",
     ctaWhatsapp: "Falar no WhatsApp",
     scrollHint: "Role e acompanhe o dado",
   },
   path: {
     eyebrow: "00 · o caminho",
-    title: "Do arquivo bruto à tela, sem trocar de mãos.",
-    body: "Na maioria das equipes, uma pessoa trata o dado e outra faz a tela. Eu faço as duas coisas. O gráfico nasce junto com a tabela que o alimenta, e nenhum número chega à tela sem que eu saiba de onde ele veio.",
-    // Etapas, não contagens: dizem o que eu faço sem envelhecer.
-    metrics: [
-      { value: "Coletar", label: "Python e PySpark puxando de órgão público, API ou sistema interno" },
-      { value: "Modelar", label: "Bronze, silver e gold no Databricks, testado antes de subir" },
-      { value: "Mostrar", label: "Next.js, KQL e IA levando o número a quem decide" },
-      { value: "Manter", label: "Tudo agendado, sem chave exposta e com a conta da nuvem sob controle" },
+    title: "Do arquivo bruto à tela.",
+    body: "Quase todo trabalho meu começa num arquivo cru e termina num gráfico que alguém abre na segunda de manhã. Gosto de cuidar do caminho inteiro entre os dois: a coleta, o modelo de dados e a aplicação.",
+    steps: [
+      { value: "Coletar", label: "Python e PySpark buscando dados de órgãos públicos, APIs e sistemas internos" },
+      { value: "Modelar", label: "Camadas bronze, silver e gold no Databricks, prontas para consulta" },
+      { value: "Mostrar", label: "Dashboards e aplicações em Next.js para quem precisa decidir" },
+      { value: "Automatizar", label: "Rotinas agendadas e atendimento com IA no WhatsApp" },
     ],
   },
   featured: [
@@ -54,14 +58,9 @@ export const pt: Content = {
       title: "Data lake do Observatório da Indústria",
       kicker: "Engenharia de dados · em produção",
       year: "2025–2026",
-      role: "Arquiteto e único desenvolvedor",
+      role: "Arquitetura e desenvolvimento principal",
       summary:
-        "Cada órgão publica dado de um jeito: arquivo compactado enorme, planilha oficial, API paginada. Desenhei e construí sozinho o data lake que recebe tudo isso no Azure, limpa, confere os totais e entrega pronto para análise. Está em produção e roda por agendamento.",
-      metrics: [
-        { value: "R$ 0", label: "de nuvem para testar um pipeline" },
-        { value: "23,7 mi", label: "linhas na maior base" },
-        { value: "Nenhuma", label: "chave compartilhada entre os serviços" },
-      ],
+        "A base de dados do Observatório da Indústria do Acre, no Azure. Recebe dados públicos de emprego, comércio exterior e empresas, limpa, confere e deixa tudo pronto para dashboards e relatórios. Liderei a arquitetura e o desenvolvimento, junto com a equipe do Observatório.",
       stack: ["Python", "PySpark", "Databricks", "Delta Lake", "Unity Catalog", "Azure Data Factory", "Azure Data Explorer", "ADLS Gen2", "KQL"],
       links: [],
       shots: [
@@ -90,10 +89,6 @@ export const pt: Content = {
             choice: "As cargas são idempotentes e cada arquivo bruto ganha um hash SHA-256. Rodar de novo dá o mesmo resultado.",
           },
           {
-            problem: "Chave de acesso esquecida no código acaba vazando.",
-            choice: "Os serviços se autenticam por Managed Identity, com RBAC, e o que sobra fica no Key Vault.",
-          },
-          {
             problem: "O Azure Data Explorer cobra por hora ligado.",
             choice: "Uma automação desliga o cluster fora do horário de uso.",
           },
@@ -112,12 +107,7 @@ export const pt: Content = {
       year: "2025–2026",
       role: "Desenvolvedor principal",
       summary:
-        "É onde o lake encontra o público. Empresários e gestores escolhem um dashboard e cruzam emprego, salário, exportação e empresas do Acre sem baixar uma planilha. Sou o desenvolvedor principal, do login corporativo ao módulo de IA que resume os dados.",
-      metrics: [
-        { value: "0", label: "cópia do lake no banco da aplicação" },
-        { value: "SSO", label: "com permissão por usuário, grupo e prazo" },
-        { value: "3", label: "provedores de IA sob um limite de uso" },
-      ],
+        "O site onde empresários e gestores consultam os dados do Observatório. Dashboards de emprego, salário, exportação e empresas do Acre, relatórios e resumos com IA, sem precisar baixar uma planilha. Sou o desenvolvedor principal, junto com a equipe do Observatório.",
       stack: ["Next.js", "React", "TypeScript", "PostgreSQL", "Drizzle ORM", "Azure Data Explorer", "Microsoft Entra ID", "Vercel AI SDK", "Vitest", "Playwright"],
       links: [{ label: "observatorio.fieac.org.br", href: "https://observatorio.fieac.org.br" }],
       shots: [
@@ -150,8 +140,8 @@ export const pt: Content = {
             choice: "Login com Microsoft Entra ID e permissão por usuário ou grupo, recurso e ação, com vigência e trilha de auditoria.",
           },
           {
-            problem: "IA de vários provedores pode vazar chave ou estourar a conta.",
-            choice: "Vercel AI SDK com Anthropic, OpenAI e Google, chaves no Key Vault e limite de uso.",
+            problem: "Usar IA sobre os dados sem a conta sair do controle.",
+            choice: "Vercel AI SDK com Anthropic, OpenAI e Google atrás de um limite de uso.",
           },
           {
             problem: "Com dezenas de módulos, uma mudança quebra outra sem ninguém ver.",
@@ -171,12 +161,7 @@ export const pt: Content = {
       year: "2025–2026",
       role: "Fundador e único desenvolvedor",
       summary:
-        "Meu produto. Clínicas usam o Milix para agenda, prontuário, financeiro, estoque e nota fiscal, e um agente de IA atende os pacientes no WhatsApp. Ele nasceu do Smilix, a primeira versão que fiz para dentistas, e hoje tem clínicas pagando por ele.",
-      metrics: [
-        { value: "1", label: "pessoa por trás do produto inteiro" },
-        { value: "6", label: "especialidades, da odontologia à estética" },
-        { value: "14 dias", label: "de teste grátis, depois cobrança automática" },
-      ],
+        "Sistema de gestão para clínicas: agenda, prontuário, financeiro e nota fiscal, com um agente de IA que atende os pacientes no WhatsApp. É o meu produto. Faço o código, a venda e o suporte, e ele já tem clínicas pagando.",
       stack: ["Next.js", "TypeScript", "Convex", "Asaas", "WhatsApp Cloud API", "OpenAI", "Vercel AI SDK", "Vitest", "Playwright"],
       links: [{ label: "milix.app", href: "https://milix.app" }],
       shots: [
@@ -239,7 +224,6 @@ export const pt: Content = {
         role: "Desenvolvedor full-stack",
         summary:
           "Caixa, estoque e pedidos de uma distribuidora de bebidas. Um chatbot recebe os pedidos no WhatsApp, o painel mostra cada um em tempo real e o entregador recebe a rota no celular.",
-        metrics: [],
         stack: ["React", "TypeScript", "Supabase", "OpenAI", "WhatsApp API", "Redis", "XState", "Google Maps"],
         links: [],
         shots: [],
@@ -281,7 +265,6 @@ export const pt: Content = {
         role: "Desenvolvedor full-stack",
         summary:
           "Base de conhecimento de um provedor de internet. O atendente segue uma árvore de decisão passo a passo, e o gestor monta e corrige esses fluxos num editor visual, sem chamar desenvolvedor.",
-        metrics: [],
         stack: ["Next.js", "React", "TypeScript", "Drizzle ORM", "PostgreSQL", "NextAuth", "React Flow", "TipTap"],
         links: [],
         shots: [],
@@ -319,11 +302,6 @@ export const pt: Content = {
         role: "Autor",
         summary:
           "Os resultados das eleições no Acre, do estado inteiro até a seção eleitoral. Mapa, ranking e comparação de candidatos com dados do TSE, sobre um ETL em Python que gera sempre o mesmo resultado.",
-        // Base fechada de uma eleição: esses números não mudam com o tempo.
-        metrics: [
-          { value: "258 mil", label: "linhas de voto conferidas" },
-          { value: "2.270", label: "seções no mapa" },
-        ],
         stack: ["Python", "Next.js", "TypeScript", "Convex", "MapLibre", "Vitest", "Playwright"],
         links: [],
         shots: [
@@ -420,7 +398,7 @@ export const pt: Content = {
         title: "Analista de TI · engenharia de dados e full-stack",
         company: "Observatório da Indústria, Sistema FIEAC",
         period: "out/2025 – atual",
-        summary: "Construí o data lake no Azure, desenvolvo a plataforma de dados e defini como a equipe usa agentes de IA no código.",
+        summary: "Desenvolvedor principal do data lake e da plataforma de dados. Também organizei como a equipe usa agentes de IA no código.",
         current: true,
       },
       {
@@ -473,7 +451,7 @@ export const pt: Content = {
     items: [
       { title: "Sistema sob medida", description: "Caixa, estoque, agenda, base de conhecimento. O software segue o seu processo, e não o contrário." },
       { title: "Atendimento com IA no WhatsApp", description: "Um agente que recebe pedido, marca horário e tira dúvida, sem inventar preço nem produto." },
-      { title: "Dados e dashboards", description: "Suas planilhas e sistemas numa base só, e um painel com os números que você olha toda segunda-feira." },
+      { title: "Dados e dashboards", description: "Suas planilhas e sistemas numa base só, e um painel com os números que importam para o seu negócio." },
       { title: "Automação", description: "Aprovação de documento, relatório, e-mail repetido. O trabalho manual acontece sozinho, com registro de tudo." },
       { title: "SaaS do zero", description: "Do MVP ao produto cobrando: várias empresas no mesmo sistema, planos, pagamento recorrente e nota fiscal." },
       { title: "Integrações", description: "Pagamento, nota fiscal, WhatsApp, ERP e qualquer API, ligados ao que você já usa." },

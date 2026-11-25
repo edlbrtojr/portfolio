@@ -5,7 +5,7 @@ import { BrowserFrame } from "./browser-frame";
 import { Diagram } from "./diagrams";
 import { SceneRoot, StageObserver } from "./scene/scene-root";
 import { SiteHeader } from "./site-header";
-import { Arrow, ButtonLink, Chips, Metrics } from "./ui";
+import { Arrow, ButtonLink, Chips } from "./ui";
 
 export function CasePage({ project, locale }: { project: Project; locale: Locale }) {
   const c = content[locale];
@@ -53,8 +53,6 @@ export function CasePage({ project, locale }: { project: Project; locale: Locale
               )}
             </dl>
           </header>
-
-          {project.metrics.length > 0 && <Metrics items={project.metrics} className="mt-14 max-w-3xl" />}
 
           <div className="mt-14 grid gap-5">
             {project.shots.length > 0

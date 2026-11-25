@@ -11,10 +11,12 @@ export function PathSection({ path }: { path: Content["path"] }) {
           </h2>
           <p className="mt-6 text-pretty text-lg leading-relaxed text-muted">{path.body}</p>
           <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-8">
-            {path.metrics.map((m) => (
+            {path.steps.map((m) => (
               <div key={m.label} className="flex flex-col-reverse justify-end border-t border-line-strong pt-3">
                 <dt className="mt-1 text-sm leading-snug text-muted">{m.label}</dt>
-                <dd className="whitespace-nowrap font-display text-4xl font-bold tracking-tight sm:text-5xl">{m.value}</dd>
+                {/* "Automatizar" (11 letras) é o verbo mais longo: em 390 px cada
+                    coluna tem ~160 px, e só text-2xl cabe; text-4xl cabe na de 276 px. */}
+                <dd className="whitespace-nowrap font-display text-2xl font-bold tracking-tight sm:text-4xl">{m.value}</dd>
               </div>
             ))}
           </dl>

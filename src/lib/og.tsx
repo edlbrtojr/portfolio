@@ -4,8 +4,9 @@ import type { Locale } from "@/content/types";
 
 export const ogSize = { width: 1200, height: 630 };
 
-// Prévia de link (LinkedIn, WhatsApp): nome grande, papel e os três números
-// que mais pesam. Pontos em grade evocam as partículas da home sem WebGL.
+// Prévia de link (LinkedIn, WhatsApp): nome grande, papel e os três projetos
+// em destaque (números saíram do site inteiro; ver pt.ts). Pontos em grade
+// evocam as partículas da home sem WebGL.
 export function ogImage(locale: Locale) {
   const c = content[locale];
   const dots = Array.from({ length: 140 }, (_, i) => i);
@@ -22,11 +23,11 @@ export function ogImage(locale: Locale) {
           <div style={{ fontSize: 112, fontWeight: 800, letterSpacing: -4, lineHeight: 1 }}>Edilberto Lima Jr.</div>
           <div style={{ fontSize: 44, marginTop: 18, color: "#e9b949" }}>{c.hero.role}</div>
         </div>
-        <div style={{ display: "flex", gap: 56 }}>
-          {c.path.metrics.slice(0, 3).map((m) => (
-            <div key={m.label} style={{ display: "flex", flexDirection: "column", borderTop: "2px solid rgba(237,235,230,0.18)", paddingTop: 14, width: 300 }}>
-              <div style={{ fontSize: 52, fontWeight: 700 }}>{m.value}</div>
-              <div style={{ fontSize: 22, color: "#a3a29b" }}>{m.label}</div>
+        <div style={{ display: "flex", gap: 40 }}>
+          {c.featured.map((p) => (
+            <div key={p.slug} style={{ display: "flex", flexDirection: "column", borderTop: "2px solid rgba(237,235,230,0.18)", paddingTop: 14, width: 320 }}>
+              <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.15 }}>{p.title}</div>
+              <div style={{ fontSize: 20, color: "#a3a29b", marginTop: 8 }}>{p.kicker}</div>
             </div>
           ))}
         </div>

@@ -11,7 +11,7 @@ export const en: Content = {
   meta: {
     title: "Edilberto Lima Jr. · Full-stack & data engineering",
     description:
-      "Full-stack developer and data engineer in Brazil. I built the Acre Industry Observatory's data lake, develop the platform that serves it, and created Milix, a SaaS for clinics.",
+      "Full-stack developer and data engineer in Brazil. Lead developer of the Acre Industry Observatory's data lake and data platform, and creator of Milix, a SaaS for clinics.",
   },
   nav: {
     work: "Work",
@@ -30,20 +30,20 @@ export const en: Content = {
     eyebrow: "Rio Branco, Brazil · open to roles and projects",
     name: "Edilberto Lima Jr.",
     role: "Full-stack developer and data engineer",
-    lead: "I take data the way the government publishes it and deliver it the way a business owner can read it. At the Acre Industry Observatory, I built the data lake on my own and develop the platform that puts those numbers on screen. On the side, I created Milix, a clinic management system that already has paying customers.",
+    lead: "I take data the way the government publishes it and deliver it the way a business owner can read it. I'm the lead developer of the Acre Industry Observatory's data lake and platform, and I created Milix, a clinic management system.",
     ctaPrimary: "See the work",
     ctaWhatsapp: "Message me on WhatsApp",
     scrollHint: "Scroll and follow the data",
   },
   path: {
     eyebrow: "00 · the path",
-    title: "From raw file to screen, in one pair of hands.",
-    body: "On most teams, one person wrangles the data and another builds the screen. I do both. The chart is designed alongside the table that feeds it, and no number reaches the screen unless I know where it came from.",
-    metrics: [
-      { value: "Collect", label: "Python and PySpark pulling from government agencies, APIs or internal systems" },
-      { value: "Model", label: "Bronze, silver and gold on Databricks, tested before it ships" },
-      { value: "Show", label: "Next.js, KQL and AI putting the number in front of whoever decides" },
-      { value: "Run", label: "Scheduled, no exposed keys, and the cloud bill kept in check" },
+    title: "From raw file to screen.",
+    body: "Most of my work starts in a raw file and ends in a chart someone opens on Monday morning. I like owning the whole way between them: the collection, the data model and the app.",
+    steps: [
+      { value: "Collect", label: "Python and PySpark pulling data from government agencies, APIs and internal systems" },
+      { value: "Model", label: "Bronze, silver and gold layers on Databricks, ready to query" },
+      { value: "Show", label: "Dashboards and Next.js apps for the people who make the call" },
+      { value: "Automate", label: "Scheduled routines and AI customer service on WhatsApp" },
     ],
   },
   featured: [
@@ -51,14 +51,9 @@ export const en: Content = {
       ...lakePt,
       title: "Acre Industry Observatory data lake",
       kicker: "Data engineering · in production",
-      role: "Architect and sole developer",
+      role: "Architecture and lead development",
       summary:
-        "Every agency publishes data its own way: huge zipped files, official spreadsheets, paginated APIs. I designed and built the data lake that takes all of it into Azure, cleans it, checks the totals and hands it over ready for analysis. It's in production and runs on a schedule.",
-      metrics: [
-        { value: "$0", label: "in cloud costs to test a pipeline" },
-        { value: "23.7M", label: "rows in the largest dataset" },
-        { value: "Zero", label: "shared keys between services" },
-      ],
+        "The Acre Industry Observatory's data foundation, on Azure. It takes in public data on jobs, foreign trade and companies, cleans it, checks it and gets it ready for dashboards and reports. I led the architecture and development, together with the Observatory team.",
       shots: [{ ...lakePt.shots[0], alt: "Cover of the Acre Exports Overview 2021–2025 deck, with exports rising from US$48.8M to US$98.8M" }],
       details: {
         overview:
@@ -75,10 +70,6 @@ export const en: Content = {
           {
             problem: "Reprocessing a month must never duplicate a row.",
             choice: "Loads are idempotent and every raw file gets a SHA-256 hash. Running it again gives the same result.",
-          },
-          {
-            problem: "An access key left in the code eventually leaks.",
-            choice: "Services authenticate with Managed Identity and RBAC, and whatever is left lives in Key Vault.",
           },
           {
             problem: "Azure Data Explorer bills for every hour it's on.",
@@ -98,12 +89,7 @@ export const en: Content = {
       kicker: "Full-stack · in production",
       role: "Lead developer",
       summary:
-        "This is where the lake meets the public. Business owners and managers pick a dashboard and cross-reference Acre's jobs, wages, exports and companies without downloading a spreadsheet. I'm the lead developer, from corporate sign-in to the AI module that summarizes the data.",
-      metrics: [
-        { value: "0", label: "copies of the lake in the app database" },
-        { value: "SSO", label: "with per-user, per-group, time-boxed access" },
-        { value: "3", label: "AI providers under one usage cap" },
-      ],
+        "The site where business owners and managers explore the Observatory's data. Dashboards on Acre's jobs, wages, exports and companies, reports and AI summaries, without downloading a spreadsheet. I'm the lead developer, working with the Observatory team.",
       shots: [
         { ...platformPt.shots[0], alt: "Acre Industry Observatory home page, with a globe highlighting the state of Acre" },
         { ...platformPt.shots[1], alt: "Salary Radar dashboard: median pay, coverage and the distribution of RAIS employment records by minimum-wage band" },
@@ -121,8 +107,8 @@ export const en: Content = {
             choice: "Microsoft Entra ID sign-in and permissions by user or group, resource and action, with validity windows and an audit trail.",
           },
           {
-            problem: "AI from several providers can leak keys or blow the budget.",
-            choice: "Vercel AI SDK with Anthropic, OpenAI and Google, keys in Key Vault and a usage cap.",
+            problem: "Using AI on the data without the bill getting out of hand.",
+            choice: "Vercel AI SDK with Anthropic, OpenAI and Google behind a usage cap.",
           },
           {
             problem: "With dozens of modules, one change breaks another and nobody notices.",
@@ -141,12 +127,7 @@ export const en: Content = {
       kicker: "My own SaaS · paying customers",
       role: "Founder and sole developer",
       summary:
-        "My product. Clinics use Milix for scheduling, patient records, finance, inventory and invoicing, and an AI agent answers patients on WhatsApp. It grew out of Smilix, the first version I built for dentists, and clinics now pay for it.",
-      metrics: [
-        { value: "1", label: "person behind the whole product" },
-        { value: "6", label: "specialties, from dental to aesthetics" },
-        { value: "14 days", label: "free trial, then automatic billing" },
-      ],
+        "Clinic management software: scheduling, patient records, finance and invoicing, with an AI agent that answers patients on WhatsApp. It's my own product. I write the code, sell it and run support, and clinics already pay for it.",
       shots: [
         { ...milixPt.shots[0], alt: "Milix demo with sample data: today's schedule next to a WhatsApp chat where the patient confirms her slot" },
         { ...milixPt.shots[1], alt: "Milix home page: Your clinic, all in tune." },
@@ -259,10 +240,6 @@ export const en: Content = {
         role: "Author",
         summary:
           "Acre's election results, from the whole state down to a single polling section. Maps, rankings and candidate comparison on electoral court data, built on a Python ETL that always produces the same output.",
-        metrics: [
-          { value: "258K", label: "vote rows reconciled" },
-          { value: "2,270", label: "polling sections on the map" },
-        ],
         shots: [{ ...vizuPt.shots[0], alt: "Municipal map of Acre colored by the leading candidate for governor, with a vote summary alongside" }],
         details: {
           overview:
@@ -304,7 +281,7 @@ export const en: Content = {
     title: "From English teacher to data engineer.",
     body: "I taught English in Acre's public schools while studying Information Systems. I got into IT as a support intern and worked my way through automation into data engineering. The classroom left me with a habit of explaining: I can walk non-technical people through an architecture, and I write docs for whoever comes next.",
     positions: [
-      { ...pt.career.positions[0], title: "IT Analyst · data engineering and full-stack", company: "Acre Industry Observatory, FIEAC System", period: "Oct 2025 – now", summary: "Built the Azure data lake, develop the data platform and set how the team uses AI coding agents." },
+      { ...pt.career.positions[0], title: "IT Analyst · data engineering and full-stack", company: "Acre Industry Observatory, FIEAC System", period: "Oct 2025 – now", summary: "Lead developer of the data lake and the data platform. Also set up how the team uses AI coding agents." },
       { ...pt.career.positions[1], title: "Founder and developer", period: "Aug 2025 – now", summary: "My clinic SaaS: product, sales, onboarding and support." },
       { ...pt.career.positions[2], title: "Freelance full-stack developer", company: "Self-employed", period: "2025 – now", summary: "Systems in production for a beverage distributor and an internet provider." },
       { ...pt.career.positions[3], title: "IT Assistant", company: "UNITEC, FIEAC System", period: "Jan 2024 – Oct 2025", summary: "Power Apps, Power Automate flows, Python automation and the new SPFx intranet." },
@@ -333,7 +310,7 @@ export const en: Content = {
     items: [
       { title: "Custom systems", description: "Point of sale, stock, scheduling, knowledge bases. The software follows your process, not the other way around." },
       { title: "AI support on WhatsApp", description: "An agent that takes orders, books appointments and answers questions, without making up prices or products." },
-      { title: "Data and dashboards", description: "Your spreadsheets and systems in one place, and a dashboard with the numbers you check every Monday." },
+      { title: "Data and dashboards", description: "Your spreadsheets and systems in one place, and a dashboard with the numbers that matter to your business." },
       { title: "Automation", description: "Document approvals, reports, repetitive email. The manual work happens on its own, with a log of everything." },
       { title: "SaaS from scratch", description: "From MVP to a product that bills: many companies on one system, plans, recurring payments and invoicing." },
       { title: "Integrations", description: "Payments, invoicing, WhatsApp, ERPs and any API, wired into the tools you already use." },

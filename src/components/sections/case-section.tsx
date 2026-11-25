@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Content, Locale, Project } from "@/content/types";
 import { projectHref } from "@/content";
 import { BrowserFrame } from "../browser-frame";
-import { Arrow, ButtonLink, Chips, Metrics } from "../ui";
+import { Arrow, ButtonLink, Chips } from "../ui";
 
 type Props = { project: Project; index: number; locale: Locale; ui: Content["ui"] };
 
@@ -22,8 +22,11 @@ export function CaseSection({ project, index, locale, ui }: Props) {
               {project.title}
             </h2>
             <p className="mt-6 text-pretty text-lg leading-relaxed text-muted">{project.summary}</p>
-            <Metrics items={project.metrics} className="mt-9" />
-            <Chips items={project.stack} className="mt-8" />
+            {/* Metadado seco no lugar da antiga faixa de números. */}
+            <p className="mt-6 text-sm text-muted">
+              <span className="text-ink">{project.role}</span> · {project.year}
+            </p>
+            <Chips items={project.stack} className="mt-5" />
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link
                 href={projectHref(locale, project.slug)}

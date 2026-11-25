@@ -15,8 +15,12 @@ export type Project = {
   kicker: string;
   year: string;
   role: string;
+  /**
+   * Uma ou duas frases: o que é e qual foi o meu papel. Sem faixa de números:
+   * em 20 portfólios de referência nenhum usava KPI embaixo de projeto, e os
+   * números internos ("0 cópias", "3 provedores") não diziam nada a quem lê.
+   */
   summary: string;
-  metrics: Metric[];
   stack: string[];
   links: ExternalLink[];
   shots: Shot[];
@@ -65,7 +69,8 @@ export type Content = {
     ctaWhatsapp: string;
     scrollHint: string;
   };
-  path: { eyebrow: string; title: string; body: string; metrics: Metric[] };
+  /** `steps`: etapas do que eu faço (verbo + uma linha), não contagens. */
+  path: { eyebrow: string; title: string; body: string; steps: Metric[] };
   featured: Project[];
   more: { eyebrow: string; title: string; body: string; projects: Project[] };
   archive: { title: string; items: ArchiveItem[] };
