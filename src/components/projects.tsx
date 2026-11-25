@@ -31,6 +31,8 @@ type Project = {
   slug: string;
   featured?: boolean;
   image?: string;
+  logo?: string;
+  highlight?: string;
   details?: {
     overview: string;
     challenges: string[];
@@ -95,20 +97,20 @@ function FeaturedProjectCard({ project, language, viewText }: {
         <div className="relative grid lg:grid-cols-2 gap-0">
           {/* Left: Image/Visual */}
           <div className="relative h-64 lg:h-auto lg:min-h-[400px] overflow-hidden">
-            {project.slug === "smilix-multiclinic" ? (
+            {project.logo ? (
               <div className="absolute inset-0 bg-gradient-to-br from-white via-slate-50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-teal-950 flex items-center justify-center p-8">
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5 }}
-                  className="relative w-full max-w-[280px] lg:max-w-[320px]"
+                  className="relative w-full max-w-[160px] lg:max-w-[200px]"
                 >
                   <Image
-                    src="/Smilix Logo com Nome.png"
-                    alt="Smilix Logo"
+                    src={project.logo}
+                    alt={project.title}
                     width={400}
-                    height={120}
-                    className="w-full h-auto object-contain drop-shadow-lg transition-transform duration-700 group-hover:scale-105"
+                    height={400}
+                    className="w-full h-auto object-contain rounded-full drop-shadow-lg transition-transform duration-700 group-hover:scale-105"
                     priority
                   />
                 </motion.div>
@@ -151,7 +153,7 @@ function FeaturedProjectCard({ project, language, viewText }: {
                 <Star className="w-3.5 h-3.5 fill-current" />
                 {language === "pt" ? "Destaque" : "Featured"}
               </motion.div>
-              {project.slug === "smilix-multiclinic" && (
+              {project.highlight && (
                 <motion.div
                   initial={{ x: -20, opacity: 0 }}
                   whileInView={{ x: 0, opacity: 1 }}
@@ -159,7 +161,7 @@ function FeaturedProjectCard({ project, language, viewText }: {
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/90 text-white text-xs font-semibold shadow-lg shadow-emerald-500/30"
                 >
                   <TrendingUp className="w-3.5 h-3.5" />
-                  {language === "pt" ? "Gerando receita" : "Generating revenue"}
+                  {project.highlight}
                 </motion.div>
               )}
             </div>
@@ -399,7 +401,9 @@ export function Projects() {
   });
 
   const featuredProject = sortedProjects.find((p) => p.featured);
-  const otherProjects = sortedProjects.filter((p) => !p.featured);
+  // Só um projeto ocupa o card grande; os demais marcados como destaque precisam
+  // continuar na grade — antes o filtro por !featured os escondia por completo.
+  const otherProjects = sortedProjects.filter((p) => p !== featuredProject);
 
   return (
     <section id="projects" className="py-12 relative">

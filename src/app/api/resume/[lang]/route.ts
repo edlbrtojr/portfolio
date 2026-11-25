@@ -17,6 +17,12 @@ export async function GET(
     // Define the file path based on language
     const fileName = lang === "pt" ? "resume-pt.pdf" : "resume-en.pdf";
     const filePath = path.join(process.cwd(), "public", fileName);
+    // Nome com que o recrutador salva o arquivo: "resume-pt.pdf" se perde numa
+    // pasta de downloads cheia de currículos.
+    const downloadName =
+      lang === "pt"
+        ? "Curriculo_Edilberto_Lima_Junior.pdf"
+        : "Resume_Edilberto_Lima_Junior.pdf";
 
     // Check if the file exists
     if (!fs.existsSync(filePath)) {
@@ -32,8 +38,11 @@ export async function GET(
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename=${fileName}`,
-        "Cache-Control": "public, max-age=31536000, immutable",
+        "Content-Disposition": `attachment; filename="${downloadName}"`,
+        // O PDF é trocado no mesmo caminho a cada atualização do currículo. Com
+        // "immutable" de 1 ano, navegador e CDN seguiam servindo a versão velha;
+        // 1 h na CDN e revalidação no navegador bastam para um arquivo deste porte.
+        "Cache-Control": "public, max-age=0, s-maxage=3600, must-revalidate",
       },
     });
   } catch (error) {

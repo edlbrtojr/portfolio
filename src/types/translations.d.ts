@@ -92,6 +92,10 @@ export interface Translation {
       slug: string;
       featured?: boolean;
       image?: string;
+      /** Logo exibido no card de destaque, centralizado sobre fundo claro. */
+      logo?: string;
+      /** Selo de tração no card de destaque (ex.: "3 clínicas pagantes"). */
+      highlight?: string;
       details: {
         overview: string;
         challenges: string[];
