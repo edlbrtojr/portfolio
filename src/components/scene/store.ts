@@ -8,6 +8,8 @@ export const sceneState = {
   /** true quando a seção no centro mostra capturas: a cena recua. */
   dim: false,
   pointer: { x: 0, y: 0, active: false },
+  /** Quantas telas já foram roladas: move as marolas, como um barco descendo o rio. */
+  travel: 0,
 };
 
 export function setStage(stage: ShapeKey, dim = false) {

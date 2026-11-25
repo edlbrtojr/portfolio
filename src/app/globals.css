@@ -6,9 +6,11 @@
  * propósito: as partículas usam blending aditivo, que some num fundo claro.
  */
 @theme {
-  --color-bg: #0a0b0a;
-  --color-surface: #121412;
-  --color-surface-2: #181b18;
+  /* Azul-noite: o mesmo tom do alto do céu da cena (river.tsx), para a
+     página e a cena não mostrarem emenda no overscroll. */
+  --color-bg: #04070a;
+  --color-surface: #0c1317;
+  --color-surface-2: #121b20;
   --color-line: rgb(237 235 230 / 0.09);
   --color-line-strong: rgb(237 235 230 / 0.18);
   --color-ink: #edebe6;
@@ -80,11 +82,15 @@ body {
   pointer-events: none;
 }
 
-/* Sem WebGL (ou contexto perdido): um brilho estático no lugar da cena. */
+/*
+ * Sem WebGL (ou contexto perdido): a mesma noite, parada. Céu escurecendo para
+ * cima, faixa clara na linha d'água (28% de baixo, como em layout.ts) e a
+ * água escurecendo para baixo.
+ */
 html:not([data-webgl="on"]) .scene-layer {
   background:
-    radial-gradient(60% 50% at 75% 40%, rgb(233 185 73 / 0.1), transparent 70%),
-    radial-gradient(50% 40% at 20% 80%, rgb(200 131 74 / 0.08), transparent 70%);
+    radial-gradient(40% 30% at 74% 26%, rgb(110 150 160 / 0.1), transparent 70%),
+    linear-gradient(to top, #030608 0%, #0b1418 27.5%, #0d171b 28%, #040608 85%);
 }
 
 /*
@@ -119,7 +125,7 @@ html[data-webgl="on"] .hero-name {
 
 /* Painel de leitura sobre a cena: vidro escuro, legível sobre as partículas. */
 .panel {
-  background: rgb(18 20 18 / 0.72);
+  background: rgb(12 19 23 / 0.72);
   border: 1px solid var(--color-line);
   border-radius: 1rem;
   backdrop-filter: blur(14px) saturate(1.1);

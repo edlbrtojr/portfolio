@@ -29,7 +29,7 @@ export const PALETTE = {
 
 // PRNG determinístico (mulberry32): a mesma forma sai igual a cada carga,
 // o que evita "pulos" quando a forma é regenerada no resize.
-function rng(seed: number) {
+export function rng(seed: number) {
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) >>> 0;

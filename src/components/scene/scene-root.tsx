@@ -58,10 +58,16 @@ export function SceneRoot({ name }: { name: string }) {
     const leave = () => {
       sceneState.pointer.active = false;
     };
+    const scroll = () => {
+      sceneState.travel = window.scrollY / window.innerHeight;
+    };
+    scroll();
     window.addEventListener("pointermove", move, { passive: true });
+    window.addEventListener("scroll", scroll, { passive: true });
     document.addEventListener("pointerleave", leave);
     return () => {
       window.removeEventListener("pointermove", move);
+      window.removeEventListener("scroll", scroll);
       document.removeEventListener("pointerleave", leave);
     };
   }, []);

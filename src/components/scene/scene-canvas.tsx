@@ -1,7 +1,9 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
+import { Fireflies } from "./fireflies";
 import { Particles } from "./particles";
+import { River } from "./river";
 
 type Props = { count: number; reducedMotion: boolean; font: string; name: string; onFail: () => void };
 
@@ -21,6 +23,9 @@ export default function SceneCanvas({ count, reducedMotion, font, name, onFail }
         });
       }}
     >
+      <River reducedMotion={reducedMotion} />
+      {/* ~1% do enxame: o bastante para a margem parecer viva sem virar ruído. */}
+      <Fireflies count={Math.round(count / 70)} reducedMotion={reducedMotion} />
       <Particles count={count} reducedMotion={reducedMotion} font={font} name={name} />
     </Canvas>
   );

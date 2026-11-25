@@ -39,10 +39,11 @@ export const pt: Content = {
     lead: "Pego o dado do jeito que o governo publica e entrego do jeito que um empresário entende. Sou o desenvolvedor principal do data lake e da plataforma do Observatório da Indústria do Acre, e criei o Milix, um sistema para clínicas.",
     ctaPrimary: "Ver projetos",
     ctaWhatsapp: "Falar no WhatsApp",
-    scrollHint: "Role e acompanhe o dado",
+    scrollHint: "Role e desça o rio",
   },
   path: {
-    eyebrow: "00 · o caminho",
+    // "Nascente" é onde o rio começa e, no jargão de dados, a fonte.
+    eyebrow: "00 · a nascente",
     title: "Do arquivo bruto à tela.",
     body: "Quase todo trabalho meu começa num arquivo cru e termina num gráfico que alguém abre na segunda de manhã. Gosto de cuidar do caminho inteiro entre os dois: a coleta, o modelo de dados e a aplicação.",
     steps: [
@@ -480,7 +481,7 @@ export const pt: Content = {
     choice: "O que fiz",
     results: "Onde está hoje",
     nextProject: "Próximo projeto",
-    footer: "Feito por Edilberto Lima Jr. com Next.js e three.js.",
+    footer: "Feito em Rio Branco, à beira do rio Acre, com Next.js e three.js.",
     notFoundTitle: "Esse dado não chegou ao gold.",
     notFoundBody: "A página que você procurou não existe ou mudou de endereço.",
     notFoundCta: "Voltar ao início",

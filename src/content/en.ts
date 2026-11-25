@@ -33,10 +33,10 @@ export const en: Content = {
     lead: "I take data the way the government publishes it and deliver it the way a business owner can read it. I'm the lead developer of the Acre Industry Observatory's data lake and platform, and I created Milix, a clinic management system.",
     ctaPrimary: "See the work",
     ctaWhatsapp: "Message me on WhatsApp",
-    scrollHint: "Scroll and follow the data",
+    scrollHint: "Scroll down the river",
   },
   path: {
-    eyebrow: "00 · the path",
+    eyebrow: "00 · the source",
     title: "From raw file to screen.",
     body: "Most of my work starts in a raw file and ends in a chart someone opens on Monday morning. I like owning the whole way between them: the collection, the data model and the app.",
     steps: [
@@ -339,7 +339,7 @@ export const en: Content = {
     choice: "What I did",
     results: "Where it stands",
     nextProject: "Next project",
-    footer: "Built by Edilberto Lima Jr. with Next.js and three.js.",
+    footer: "Made in Rio Branco, on the banks of the Acre River, with Next.js and three.js.",
     notFoundTitle: "This data never made it to gold.",
     notFoundBody: "The page you're looking for doesn't exist or has moved.",
     notFoundCta: "Back to start",

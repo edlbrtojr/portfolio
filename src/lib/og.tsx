@@ -12,7 +12,7 @@ export function ogImage(locale: Locale) {
   const dots = Array.from({ length: 140 }, (_, i) => i);
   return new ImageResponse(
     (
-      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", background: "#0a0b0a", color: "#edebe6", padding: 72, position: "relative" }}>
+      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", background: "#04070a", color: "#edebe6", padding: 72, position: "relative" }}>
         <div style={{ position: "absolute", right: 60, top: 60, width: 420, height: 420, display: "flex", flexWrap: "wrap", gap: 22, opacity: 0.9 }}>
           {dots.map((i) => (
             <div key={i} style={{ width: 8, height: 8, borderRadius: 8, background: i % 7 === 0 ? "#e9b949" : i % 5 === 0 ? "#c8834a" : "#b8c4cc", opacity: 0.25 + ((i * 37) % 60) / 100 }} />
