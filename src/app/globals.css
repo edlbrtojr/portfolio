@@ -6,8 +6,8 @@
  *   classes dos outros arquivos sobrescrevem a largura da .col (convite,
  *   decisões) e, com a mesma especificidade, vale a que vem depois;
  * - styles/frame.css: moldura, cantos, régua e a folha do celular;
- * - styles/chart.css: a home (nome no rio, abertura, bio, toponímia, diário,
- *   marcos e a foz);
+ * - styles/chart.css: a home (nome no rio, abertura, bio, trabalho, agora,
+ *   trajetória e a foz);
  * - styles/notes.css: as notas de professor (margem e rodapé);
  * - styles/case.css: a folha de detalhe do projeto e o 404.
  * Caminhos relativos a este arquivo (src/app → src/styles).
@@ -42,9 +42,11 @@
   --color-pen: #dcb25c;
 
   /* --nf-* vêm do next/font (root-document.tsx). */
-  --font-body: var(--nf-body), Georgia, "Times New Roman", serif;
-  --font-display: var(--nf-display), Georgia, serif;
+  --font-body: var(--nf-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--nf-display), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--nf-code), ui-monospace, monospace;
+  /* Só o nome escrito no rio (ver root-document.tsx). */
+  --font-river: var(--nf-river), Georgia, serif;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }

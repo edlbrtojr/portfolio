@@ -41,6 +41,7 @@ export const pt: Content = {
     name: "Edilberto Lima Jr.",
     line: "Desenvolvedor full-stack e engenheiro de dados em Rio Branco, no Acre.",
     cta: { work: "ver o trabalho", contact: "falar no WhatsApp" },
+    portraitAlt: "Edilberto sorrindo, de óculos e camisa clara, na frente de uma parede de folhagem tropical.",
   },
   bio: [
     [
@@ -66,12 +67,12 @@ export const pt: Content = {
       "Antes de programar, dei aula de inglês na rede estadual. Ficou a mania de explicar: termo técnico, aqui, vem com nota.",
     ],
   ],
-  work: { label: "trabalho", more: "mais coisas que fiz" },
+  work: { label: "trabalho", more: "mais coisas que fiz", open: "ver o projeto" },
   projects: [
     {
       slug: "observatorio-data-lake",
       title: "Data lake do Observatório",
-      toponym: { name: "Data lake", note: "do Observatório" },
+      toponym: { name: "Data Lake", note: "Observatório da Indústria do Acre" },
       rank: "capital",
       line: "Junta dados públicos de emprego, comércio e empresas num lugar só.",
       // A relação ("no Observatório") mora no kicker; o case não repete a nota do topônimo.
@@ -121,7 +122,8 @@ export const pt: Content = {
     {
       slug: "observatorio-plataforma",
       title: "Plataforma do Observatório",
-      toponym: { name: "Plataforma", note: "do Observatório" },
+      // "Plataforma" sozinho não dizia de quê; a bio já a chama de plataforma de dados.
+      toponym: { name: "Plataforma de Dados", note: "Observatório da Indústria do Acre" },
       rank: "capital",
       line: "Onde empresários e gestores do Acre consultam esses dados.",
       kicker: "Full-stack no Observatório · em produção",
@@ -321,7 +323,7 @@ export const pt: Content = {
     {
       slug: "vizu-eleicoes",
       title: "Vizu Eleições",
-      toponym: { name: "Vizu", note: "projeto pessoal" },
+      toponym: { name: "Vizu Eleições", note: "projeto pessoal" },
       rank: "cidade",
       line: "As eleições no Acre, do estado inteiro até a seção eleitoral.",
       tag: "projeto pessoal",

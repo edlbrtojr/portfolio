@@ -5,7 +5,8 @@
   inset: var(--frame);
   z-index: 40;
   pointer-events: none;
-  border: 3px double rgb(237 235 230 / 0.22);
+  /* Fio simples: a linha dupla era o traço de atlas impresso que deixava o site com cara de revista. */
+  border: 1px solid rgb(237 235 230 / 0.16);
 }
 /* Os tracinhos a cada 40 px saíram: enfeite que não orientava ninguém. */
 @media (max-width: 767.98px) {
@@ -187,7 +188,9 @@ html[data-nome-visivel] .canto-hora .canto-sep {
   align-items: center;
   min-height: 44px;
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
   color: var(--color-ink);
   transition: color 0.2s;
 }
@@ -209,9 +212,9 @@ html[data-nome-visivel] .canto-hora .canto-sep {
   align-items: center;
   min-height: 44px;
   padding-inline: 0.6rem;
-  font-size: 12px;
+  font: 500 12px/1 var(--font-mono);
   text-transform: uppercase;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.08em;
   color: var(--color-muted);
   transition: color 0.2s;
 }
@@ -271,14 +274,13 @@ html[data-nome-visivel] .canto-hora .canto-sep {
     min-height: 44px;
     padding: 0 1.25rem;
     border: 1px solid rgb(237 235 230 / 0.35);
-    outline: 1px solid rgb(237 235 230 / 0.12);
-    outline-offset: 3px;
+    border-radius: 999px;
     background: rgb(3 7 5 / 0.88);
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
-    font-size: 12px;
+    font: 500 12px/1 var(--font-mono);
     text-transform: uppercase;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.08em;
     white-space: nowrap;
     color: var(--color-ink);
   }
@@ -290,7 +292,7 @@ html[data-nome-visivel] .canto-hora .canto-sep {
   max-height: 86svh;
   padding: 1.25rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom));
   border: 0;
-  border-top: 3px double rgb(237 235 230 / 0.25);
+  border-top: 1px solid rgb(237 235 230 / 0.25);
   background: var(--color-surface);
   color: var(--color-ink);
 }
@@ -313,7 +315,7 @@ html[data-nome-visivel] .canto-hora .canto-sep {
   min-height: 44px;
   padding-inline: 0.75rem;
   margin-right: -0.75rem;
-  font-style: italic;
+  font-weight: 500;
   color: var(--color-pen);
 }
 .folha-nav {
@@ -329,7 +331,9 @@ html[data-nome-visivel] .canto-hora .canto-sep {
   align-items: center;
   min-height: 44px;
   font-family: var(--font-display);
+  font-weight: 700;
   font-size: 1.6rem;
+  letter-spacing: -0.025em;
 }
 .folha .contato-lista li {
   padding-block: 0.7rem;

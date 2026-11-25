@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { CSSProperties } from "react";
 import { content, homeHref, resumeHref, whatsappHref } from "@/content";
 import type { Locale } from "@/content/types";
@@ -5,7 +6,7 @@ import { ChartFrame } from "./chart/chart-frame";
 import { ContactCard } from "./chart/legend";
 import { Prose } from "./chart/prose";
 import { RiverType } from "./chart/river-type";
-import { Toponyms } from "./chart/toponyms";
+import { Projects } from "./chart/projects";
 import { RichText } from "./home/rich-text";
 import { SceneRoot } from "./scene/scene-root";
 
@@ -32,13 +33,17 @@ export function Home({ locale }: { locale: Locale }) {
 
         <section aria-labelledby="abertura-nome" className="abertura">
           <div className="col">
-            <h1 id="abertura-nome" className="abertura-nome entra">
+            {/* O retrato: o site é para me conhecer, e até aqui não tinha rosto. */}
+            <div className="abertura-retrato entra">
+              <Image src="/images/profile.jpg" alt={c.hero.portraitAlt} width={1091} height={1203} sizes="(min-width: 768px) 128px, 96px" priority />
+            </div>
+            <h1 id="abertura-nome" className="abertura-nome entra" style={{ "--i": 1 } as CSSProperties}>
               {c.hero.name}
             </h1>
-            <p className="abertura-linha entra" style={{ "--i": 1 } as CSSProperties}>
+            <p className="abertura-linha entra" style={{ "--i": 2 } as CSSProperties}>
               {c.hero.line}
             </p>
-            <p className="abertura-atalhos entra" style={{ "--i": 2 } as CSSProperties}>
+            <p className="abertura-atalhos entra" style={{ "--i": 3 } as CSSProperties}>
               <a href="#trabalho">{c.hero.cta.work} ↓</a>
               <a href={whatsappHref(locale)} target="_blank" rel="noopener noreferrer">
                 {c.hero.cta.contact} ↗
@@ -55,7 +60,7 @@ export function Home({ locale }: { locale: Locale }) {
           <h2 id="trabalho-titulo" className="col secao-titulo">
             {c.work.label}
           </h2>
-          <Toponyms locale={locale} projects={c.projects} archive={c.archive} more={c.work.more} />
+          <Projects locale={locale} projects={c.projects} archive={c.archive} work={c.work} ui={c.ui} />
         </section>
 
         <section id="agora" aria-labelledby="agora-titulo" className="secao">

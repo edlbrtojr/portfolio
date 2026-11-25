@@ -54,7 +54,7 @@ export function CasePage({ project, locale }: { project: Project; locale: Locale
             </p>
             {/* Sem a nota do topônimo ("produto próprio", "freelance"): o kicker logo acima já diz a relação. */}
             <h1 className="caso-titulo">
-              <span aria-hidden className="topo-nome">
+              <span aria-hidden className="nome-projeto">
                 {project.toponym.name}
               </span>
               <span className="sr-only">{project.title}</span>
@@ -144,7 +144,7 @@ export function CasePage({ project, locale }: { project: Project; locale: Locale
             </Link>
             <Link href={projectHref(locale, next.slug)} className="caso-rio-abaixo" data-lantern>
               <span className="caso-rio-rotulo">{c.ui.nextProject} →</span>
-              <span className="topo-nome">{next.toponym.name}</span>
+              <span className="nome-projeto">{next.toponym.name}</span>
             </Link>
           </nav>
         </article>

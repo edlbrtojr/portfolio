@@ -32,6 +32,7 @@ export const en: Content = {
     name: "Edilberto Lima Jr.",
     line: "Full-stack developer and data engineer in Rio Branco, in Brazil's Amazon.",
     cta: { work: "see the work", contact: "message me on WhatsApp" },
+    portraitAlt: "Edilberto smiling, in glasses and a light shirt, in front of a wall of tropical foliage.",
   },
   bio: [
     [
@@ -54,12 +55,12 @@ export const en: Content = {
       "Before programming, I taught English in public schools. The habit of explaining stuck: jargon here comes with a note.",
     ],
   ],
-  work: { label: "work", more: "more things I made" },
+  work: { label: "work", more: "more things I made", open: "view project" },
   projects: [
     {
       ...lakePt,
       title: "Observatory data lake",
-      toponym: { name: "Data lake", note: "Observatory" },
+      toponym: { name: "Data Lake", note: "Acre Industry Observatory" },
       line: "Brings public data on jobs, trade and companies into one place.",
       kicker: "Data engineering at the Observatory · in production",
       role: "Architecture and lead development",
@@ -97,7 +98,7 @@ export const en: Content = {
     {
       ...platformPt,
       title: "Observatory platform",
-      toponym: { name: "Platform", note: "Observatory" },
+      toponym: { name: "Data Platform", note: "Acre Industry Observatory" },
       line: "Where business owners and managers in Acre explore that data.",
       kicker: "Full-stack at the Observatory · in production",
       role: "Lead developer",
@@ -234,7 +235,7 @@ export const en: Content = {
     },
     {
       ...vizuPt,
-      toponym: { name: "Vizu", note: "personal project" },
+      toponym: { name: "Vizu Eleições", note: "personal project" },
       line: "Acre's elections, from the whole state down to a polling section.",
       tag: "personal project",
       kicker: "Personal project · public data",

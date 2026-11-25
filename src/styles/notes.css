@@ -34,9 +34,8 @@ button.nota-termo {
   display: none;
   position: relative;
   font-family: var(--font-body);
-  font-style: italic;
-  font-size: 16px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.55;
   color: var(--color-ink);
 }
 /* No case a nota mora dentro do <dd>, que já está na coluna: sem recuo dobrado. */

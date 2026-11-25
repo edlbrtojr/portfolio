@@ -23,8 +23,9 @@
   will-change: transform;
   transform: translate3d(0, 0, 0);
 }
+/* A única serifa do site: a assinatura no rio (ver root-document.tsx). */
 .rio-nome {
-  font-family: var(--font-display);
+  font-family: var(--font-river);
   font-style: italic;
   fill: #ece6d6;
 }
@@ -57,29 +58,60 @@
   }
 }
 
+/* ───────────── Nomes e títulos ───────────── */
+
+/*
+ * O nome de um projeto, em qualquer lugar (home, título do case, "próximo
+ * projeto"). Bricolage em peso 700 e corpo grande, apertada: é o que tem de
+ * ser lido primeiro. O tamanho vem de quem usa.
+ */
+.nome-projeto {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
 /* ───────────── Abertura ───────────── */
 
 .abertura {
   min-height: 100svh;
-  padding-top: 55svh;
+  padding-top: 38svh;
+}
+/* Retrato 4:5, pequeno: apresenta, não disputa com o nome no rio. */
+.abertura-retrato {
+  width: 8rem;
+  aspect-ratio: 4 / 5;
+  margin-bottom: 1.6rem;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid rgb(237 235 230 / 0.25);
+  box-shadow: 0 18px 50px rgb(0 0 0 / 0.55);
+}
+.abertura-retrato img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 12%;
 }
 .abertura-nome {
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 3.5rem;
-  line-height: 1;
-  letter-spacing: -0.005em;
+  font-weight: 700;
+  font-size: 3.6rem;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
 }
 .abertura-linha {
   margin-top: 0.9rem;
-  font-size: 1.5rem;
-  line-height: 1.3;
+  font-size: 1.35rem;
+  line-height: 1.35;
   color: var(--color-muted);
   text-wrap: balance;
 }
 /* Os dois caminhos de quem chega: ver o trabalho, falar comigo. */
 .abertura-atalhos {
-  margin-top: 2.2rem;
+  margin-top: 1.8rem;
   display: flex;
   flex-wrap: wrap;
   gap: 0 1.75rem;
@@ -88,8 +120,8 @@
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  font-style: italic;
-  font-size: 1.15rem;
+  font-weight: 500;
+  font-size: 1.05rem;
   color: var(--color-pen);
   text-decoration: underline;
   text-decoration-thickness: 1px;
@@ -101,21 +133,25 @@
 }
 @media (max-width: 767.98px) {
   .abertura {
-    padding-top: 40svh;
+    padding-top: 22svh;
+  }
+  .abertura-retrato {
+    width: 6rem;
+    margin-bottom: 1.2rem;
   }
   .abertura-nome {
-    font-size: 2.125rem;
+    font-size: 2.2rem;
   }
   .abertura-linha {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
   }
 }
 
 /* ───────────── Bio ───────────── */
 
 .bio-p {
-  font-size: clamp(1.125rem, 0.95rem + 0.85vw, 1.75rem);
-  line-height: 1.45;
+  font-size: clamp(1.1rem, 0.95rem + 0.7vw, 1.55rem);
+  line-height: 1.5;
   color: rgb(237 235 230 / 0.93);
   text-wrap: pretty;
 }
@@ -128,311 +164,283 @@
 .bio .nota-linha + .nota-linha {
   margin-top: 0.9em;
 }
-/* Capitular de 4 linhas no "Oi" de abertura. */
-.bio .nota-linha:first-child .bio-p::first-letter {
-  float: left;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 5.3em;
-  line-height: 0.82;
-  margin: 0.04em 0.1em 0 -0.04em;
-  color: var(--color-pen);
+/* A primeira frase ("Oi, eu sou o Edilberto…") é a que apresenta: mais clara e maior que o resto. */
+.bio .nota-linha:first-child .bio-p {
+  font-size: clamp(1.3rem, 1.05rem + 1.1vw, 2rem);
+  line-height: 1.32;
+  letter-spacing: -0.012em;
+  color: var(--color-ink);
 }
 
 /*
  * Seções. O vão entre elas era de 28svh (~250 px de mata sem nada) e a
  * página dava 7,3 telas: o rio virava papel de parede e quem contrata rolava
- * demais. Com 13svh o respiro continua (é o rio passando) e a carta cabe em
- * pouco mais de 5 telas.
+ * demais. Com 13svh o respiro continua (é o rio passando).
  */
 .secao {
   padding-top: 13svh;
 }
 .secao-titulo {
-  font-size: 0.8rem;
-  font-weight: 400;
+  font: 500 12px/1 var(--font-mono);
   text-transform: uppercase;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.1em;
   color: var(--color-muted);
 }
 
-/* ───────────── Toponímia ───────────── */
+/* ───────────── Trabalho ───────────── */
 
 /*
- * Composição livre, como nomes numa carta: cada topônimo na sua faixa, com
- * lugar fixo, e quem precisa atravessa o rio. As medidas em cqw são da
- * largura inteira da carta (.topos-carta), então as margens batem com as
- * frações do rio (river-curve.ts) em qualquer largura.
+ * As medidas em cqw são da largura inteira da carta (.projetos-carta), então
+ * batem com as frações do rio (river-curve.ts) em qualquer largura.
  */
-.topos-carta {
+.projetos-carta {
   container-type: inline-size;
 }
-.topos {
-  margin-top: 6svh;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+.projetos {
+  margin-top: 7svh;
 }
-.topo {
-  scroll-margin-top: 20svh;
+.projeto,
+.menor {
+  scroll-margin-top: 16svh;
 }
-.topo-capital + .topo-capital {
-  margin-top: 11svh;
+.projeto {
+  position: relative;
 }
-.topo-capital-0 {
-  margin-left: 7cqw;
+.projeto + .projeto {
+  margin-top: 13svh;
 }
-.topo-capital-1 {
-  margin-left: 25cqw;
+/* De quem é (ou que tipo de trabalho foi) e quando. */
+.projeto-de,
+.menor-de {
+  font: 12px/1.4 var(--font-mono);
+  letter-spacing: 0.02em;
+  color: var(--color-water);
 }
-.topo-capital-2 {
-  align-self: flex-end;
-  margin-right: 7cqw;
-  text-align: right;
+.projeto-nome {
+  margin-top: 0.7rem;
+  font-size: clamp(2.5rem, 5cqw, 5.2rem);
+  text-shadow: 0 2px 24px rgb(0 0 0 / 0.75);
 }
-.topo-capital-2 .topo-linha-nome {
-  justify-content: flex-end;
+.projeto-nome a {
+  transition: color 0.3s;
 }
-.topo-capital-2 .topo-legenda {
-  margin-left: auto;
+.projeto-nome a:hover,
+.projeto-nome a:focus-visible,
+.projeto:has(.barco:hover) .projeto-nome a {
+  color: #f6dc9c;
 }
-.topo-link {
-  display: inline-block;
-  color: var(--color-ink);
-}
-.topo-linha-nome {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.7rem;
-}
-.topo-nome {
-  font-family: var(--font-display);
-  font-weight: 400;
-  text-transform: uppercase;
-  text-shadow: 0 2px 24px rgb(0 0 0 / 0.9);
-  transition:
-    color 0.35s,
-    text-shadow 0.35s;
-}
-.topo-capital .topo-nome {
-  font-size: 6.5cqw;
-  line-height: 0.9;
-  letter-spacing: 0.3em;
-  margin-right: -0.3em;
-  white-space: nowrap;
-}
-.topo-nota {
-  margin-top: 0.15em;
-  font-family: var(--font-body);
-  font-style: italic;
-  font-size: 1.05rem;
-  color: var(--color-pen);
-  white-space: nowrap;
-  text-transform: none;
-}
-.topo-capital .topo-nota {
+.projeto-linha {
+  margin-top: 1.1rem;
+  max-width: 30rem;
   font-size: 1.2rem;
-}
-.topo-legenda {
-  display: block;
-  max-width: 26rem;
-  margin-top: 1rem;
-  font-style: italic;
-  font-size: 17px;
-  line-height: 1.4;
-  color: var(--color-muted);
-  text-shadow: 0 1px 14px rgb(0 0 0 / 0.95);
+  line-height: 1.45;
+  color: rgb(237 235 230 / 0.9);
   text-wrap: pretty;
 }
-.topo-cota {
-  display: block;
-  margin-top: 0.4rem;
-  font: 11px/1 var(--font-mono);
-  color: var(--color-faint);
-  letter-spacing: 0.04em;
+/* Papel e stack: rótulo pequeno à esquerda, texto em mono. */
+.projeto-ficha {
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 0.55rem;
+  max-width: 32rem;
 }
+.projeto-ficha div {
+  display: grid;
+  grid-template-columns: 3.6rem minmax(0, 1fr);
+  column-gap: 0.75rem;
+  align-items: baseline;
+}
+.projeto-ficha dt {
+  font: 11px/1.6 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-faint);
+}
+.projeto-ficha dd {
+  font: 13px/1.6 var(--font-mono);
+  color: var(--color-muted);
+}
+.projeto-links {
+  margin-top: 1.1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.6rem;
+}
+.projeto-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 500;
+  font-size: 1rem;
+  color: var(--color-pen);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 6px;
+  transition: color 0.2s;
+}
+.projeto-links a:hover {
+  color: #f6d58a;
+}
+
 /*
- * A captura do projeto, como foto presa na carta. No fluxo (celular e
- * tablet) ela vem embaixo da legenda; a partir de 1100 px vai para a margem
- * oposta ao nome (ver abaixo). Um pouco escurecida em repouso para não
- * disputar com o topônimo; acende e aproxima 3% quando o link recebe o mouse
- * ou o foco.
+ * A tela do projeto. No fluxo (celular e tablet) vem embaixo do texto, na
+ * mesma coluna. Na carta inteira vira barco: ver o bloco de 1100 px abaixo.
+ * Um pouco escurecida em repouso para não gritar no meio da noite; acende e
+ * aproxima 3% quando o mouse chega nela ou no nome do projeto.
  */
-.topo-foto {
-  position: relative;
+.barco {
   display: block;
+  margin: 1.6rem 0 0 var(--col-x);
+  width: min(36rem, calc(var(--col-end) - var(--col-x)));
+}
+.barco-deriva,
+.barco-tela {
+  display: block;
+}
+.barco-tela {
+  position: relative;
   overflow: hidden;
   aspect-ratio: 16 / 10;
-  width: 30cqw;
-  margin-top: 1.2rem;
-  border: 1px solid rgb(237 235 230 / 0.3);
+  border-radius: 6px;
+  border: 1px solid rgb(237 235 230 / 0.28);
   background: var(--color-surface);
-  box-shadow: 0 24px 60px rgb(0 0 0 / 0.6);
+  box-shadow:
+    0 30px 70px rgb(0 0 0 / 0.6),
+    0 0 110px -30px rgb(143 166 178 / 0.5);
 }
-.topo-foto img {
+.barco-tela img {
   object-fit: cover;
   object-position: left top;
-  filter: brightness(0.86) saturate(0.92);
+  filter: brightness(0.9) saturate(0.95);
   transition:
     transform 0.7s var(--ease-out-expo),
     filter 0.4s;
 }
-.topo-link:hover .topo-foto img,
-.topo-link:focus-visible .topo-foto img {
+.barco:hover .barco-tela img,
+.projeto:has(.projeto-nome a:hover, .projeto-nome a:focus-visible) .barco-tela img {
   transform: scale(1.03);
   filter: none;
 }
-.topo-capital-1 .topo-foto {
-  width: 20cqw;
-}
-.topo-capital-2 .topo-foto {
-  width: 22cqw;
-  margin-left: auto;
+@media (max-width: 767.98px) {
+  .barco {
+    width: calc(100% - var(--col-x) - var(--gutter-r));
+  }
 }
 /*
- * Carta inteira (com a coluna de notas): a foto sai do fluxo e ocupa a
- * margem livre de cada faixa. O rio fica entre 46 e 72cqw (river-curve.ts),
- * então foto na direita começa em 74cqw e foto na esquerda termina antes de
- * 44cqw. Para isso o <li> passa a ter a largura da carta e o recuo vira
- * padding: as posições em cqw contam da borda esquerda.
+ * Carta inteira: a tela sai do fluxo e boia no rio. --rio-x é o centro da
+ * água na altura do bloco e --rio-giro o lado para onde ela corre ali (os
+ * dois medidos por Raft, da mesma curva do shader). A tela começa 9cqw antes
+ * do centro da água e se estende para a margem direita, que nesta seção não
+ * tem texto. Os limites: nunca antes de 45cqw (a coluna de texto acaba em
+ * 44) nem depois de 57cqw (57 + 36 = 93cqw, a moldura).
  */
 @media (min-width: 1100px) {
-  .topo-capital {
-    position: relative;
-    align-self: stretch;
+  .projeto {
+    display: flex;
+    align-items: center;
+    min-height: calc(36cqw * 0.625 + 2rem);
   }
-  .topo-capital .topo-foto {
+  .barco {
     position: absolute;
-    top: 0.5cqw;
+    top: 50%;
+    left: clamp(45cqw, calc(var(--rio-x, 59cqw) - 9cqw), 57cqw);
+    width: 36cqw;
     margin: 0;
-    width: 20cqw;
+    transform: translateY(-50%) rotate(var(--rio-giro, 0deg));
+    transition: transform 0.8s var(--ease-out-expo);
   }
-  .topo-capital-0 {
-    margin-left: 0;
-    padding-left: 7cqw;
+  /* Com o mouse na tela ou no nome, o barco apruma para a captura ser lida reta. */
+  .barco:hover,
+  .projeto:has(.projeto-nome a:hover, .projeto-nome a:focus-visible) .barco {
+    transform: translateY(-50%) rotate(0deg);
   }
-  .topo-capital-0 .topo-foto {
-    left: 74cqw;
-  }
-  /* A Plataforma começa mais à direita para a foto caber antes do nome. */
-  .topo-capital-1 {
-    margin-left: 0;
-    padding-left: 30cqw;
-  }
-  .topo-capital-1 .topo-foto {
-    left: 7cqw;
-  }
-  .topo-capital-1 .topo-legenda {
-    max-width: 15cqw;
-  }
-  .topo-capital-2 {
-    margin-right: 0;
-    padding-right: 7cqw;
-  }
-  .topo-capital-2 .topo-foto {
-    left: 18cqw;
-    width: 24cqw;
-  }
-}
-.topo-link:hover .topo-nome,
-.topo-link:focus-visible .topo-nome {
-  color: #f7e9c4;
-  text-shadow:
-    0 0 18px rgb(233 185 73 / 0.55),
-    0 0 3px rgb(233 185 73 / 0.5),
-    0 2px 24px rgb(0 0 0 / 0.9);
-}
-.topo-link:focus-visible {
-  outline-offset: 10px;
-}
-/* O espaçamento abre quando a capital entra na tela, como letreiro de mapa. */
-@supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .topo-capital .topo-nome {
-      animation: abrir-espaco linear both;
-      animation-timeline: view();
-      animation-range: entry 5% cover 42%;
+    /* Balanço de água parada: 5 px e menos de meio grau, cada barco no seu tempo. */
+    .barco-tela {
+      animation: boiar 7s ease-in-out infinite;
+    }
+    .projeto:nth-child(2) .barco-tela {
+      animation-duration: 8.5s;
+      animation-delay: -3s;
+    }
+    .projeto:nth-child(3) .barco-tela {
+      animation-duration: 7.7s;
+      animation-delay: -5s;
+    }
+    /* O barco desce um pouco mais devagar que a margem: dá profundidade entre a tela e a mata. */
+    @supports (animation-timeline: view()) {
+      .barco-deriva {
+        animation: derivar linear both;
+        animation-timeline: view();
+      }
     }
   }
 }
-@keyframes abrir-espaco {
+@keyframes boiar {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(0.4deg);
+  }
+}
+@keyframes derivar {
   from {
-    letter-spacing: 0.02em;
-    margin-right: -0.02em;
+    transform: translateY(7%);
+  }
+  to {
+    transform: translateY(-7%);
   }
 }
 
 /*
- * Cidades e povoados na mesma faixa (ver Toponyms): cidades descendo na
- * diagonal da margem esquerda até atravessar o rio, povoados na margem
- * direita, ao longo de um igarapé. A coluna da direita começa em 74cqw, a
- * mesma das notas.
+ * Projetos menores (uma linha cada) à esquerda e o resto na margem direita,
+ * na mesma coluna das notas.
  */
-.topos-baixo {
-  margin-top: 13svh;
+.menores-faixa {
+  margin-top: 14svh;
 }
-/*
- * As cidades se espalham pela altura dos povoados (space-between): a lista
- * da direita é a mais alta, e com as cidades amontoadas no topo sobrava
- * meia tela de mata vazia à esquerda, antes de "agora".
- */
 @media (min-width: 1100px) {
-  .topos-baixo {
+  .menores-faixa {
     display: grid;
     grid-template-columns: 74cqw minmax(0, 22cqw);
-    align-items: stretch;
+    align-items: start;
   }
-  .topos-cidades {
-    justify-content: space-between;
+  /* A .col mede em % do pai, que aqui é a célula de 74cqw: sem isto a lista começava 25 px antes da coluna de texto. */
+  .menores {
+    margin-left: 7cqw;
+    width: min(36rem, 37cqw);
   }
-  .povoados {
-    align-self: start;
-  }
 }
-.topos-cidades {
-  margin-top: 0;
+.menor a {
+  display: block;
+  padding: 1.3rem 0 1.4rem;
+  border-top: 1px solid var(--color-line-strong);
 }
-.topo-cidade + .topo-cidade {
-  margin-top: 6svh;
-}
-.topo-cidade-0 {
-  margin-left: 7cqw;
-}
-/* A Biblioteca é o nome longo: começa antes do rio e o atravessa inteira. */
-.topo-cidade-1 {
-  margin-left: 19cqw;
-}
-.topo-cidade-2 {
-  margin-left: 42cqw;
-}
-.topo-cidade .topo-nome {
-  font-size: 2.6cqw;
+.menor-nome {
+  display: block;
+  margin-top: 0.45rem;
+  font-size: 1.9rem;
   line-height: 1.05;
-  letter-spacing: 0.12em;
-  margin-right: -0.12em;
-  white-space: nowrap;
+  letter-spacing: -0.025em;
+  transition: color 0.3s;
 }
-/*
- * Cidade é escrita menor e numa linha só: legenda e ano correm juntos, como
- * a anotação de uma vila no mapa. As capitais têm legenda e cota em linhas
- * próprias; repetir a mesma unidade em seis lugares lia como molde.
- */
-.topo-cidade .topo-legenda {
-  display: inline;
-  margin-top: 0;
-  font-size: 15.5px;
+.menor a:hover .menor-nome,
+.menor a:focus-visible .menor-nome {
+  color: #f6dc9c;
 }
-.topo-cidade .topo-cota {
-  display: inline;
-  margin-left: 0.6rem;
-}
-.topo-cidade .topo-linha-nome {
-  margin-bottom: 0.5rem;
+.menor-linha {
+  display: block;
+  margin-top: 0.45rem;
+  font-size: 1.02rem;
+  line-height: 1.45;
+  color: var(--color-muted);
+  text-wrap: pretty;
 }
 
-/* Povoados ao longo de um igarapé. */
 .povoados {
-  margin-top: 12svh;
+  margin-top: 10svh;
   margin-left: var(--col-x);
   width: min(36rem, calc(var(--col-end) - var(--col-x)));
 }
@@ -444,46 +452,24 @@
   }
 }
 .povoados-legenda {
-  font-style: italic;
-  font-size: 1rem;
+  font: 12px/1.4 var(--font-mono);
+  letter-spacing: 0.02em;
   color: var(--color-water);
 }
 .povoados ul {
-  position: relative;
-  margin-top: 0.9rem;
-  padding-left: 1.5rem;
-}
-/* O igarapé: tracejado em azul-cinza, com uma leve curva. */
-.povoados ul::before {
-  content: "";
-  position: absolute;
-  left: 0.3rem;
-  top: 0.4rem;
-  bottom: 0.4rem;
-  width: 12px;
-  border-left: 1.5px dashed rgb(143 166 178 / 0.55);
-  border-radius: 40% 0 0 60% / 50% 0 0 50%;
+  margin-top: 0.7rem;
 }
 .povoado {
-  position: relative;
   display: grid;
   grid-template-columns: 1fr auto;
   column-gap: 1rem;
-  padding: 0.4rem 0;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--color-line);
   font-size: 13px;
   line-height: 1.45;
 }
-.povoado-ponto {
-  position: absolute;
-  left: calc(-1.5rem + 0.3rem - 2.5px);
-  top: 0.85rem;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--color-ink);
-  box-shadow: 0 0 0 3px var(--color-bg);
-}
 .povoado-titulo {
+  font-weight: 500;
   font-size: 14.5px;
   color: var(--color-ink);
 }
@@ -493,83 +479,32 @@
 }
 .povoado-texto {
   grid-column: 1 / -1;
-  font-style: italic;
   color: var(--color-muted);
 }
 a.povoado:hover .povoado-titulo {
   color: var(--color-pen);
 }
-
 @media (max-width: 767.98px) {
-  /* Largura total atravessando a lombada, dentro dos gutters (16 px à esquerda, moldura e régua à direita). */
-  .topos {
-    padding: 0 var(--gutter-r) 0 16px;
+  .projeto + .projeto {
+    margin-top: 10svh;
   }
-  .topo-capital,
-  .topo-cidade {
-    align-self: stretch;
-    margin-left: 0;
-    margin-right: 0;
-    text-align: left;
+  .menores-faixa {
+    margin-top: 10svh;
   }
-  .topo-capital + .topo-capital {
-    margin-top: 9svh;
-  }
-  .topos-baixo {
-    margin-top: 9svh;
-  }
-  .topo-cidade + .topo-cidade {
-    margin-top: 5svh;
-  }
-  .topo-capital-2 .topo-linha-nome {
-    justify-content: flex-start;
-  }
-  /* cqw aqui é da largura inteira (W), não da faixa entre os gutters: 9,7cqw a 390 px dá os ~38 px em que PLATAFORMA cabe numa linha. */
-  .topo-capital .topo-nome {
-    font-size: min(9.7cqw, 4.6rem);
-    letter-spacing: 0.08em;
-    margin-right: -0.08em;
-  }
-  .topo-cidade .topo-nome {
-    font-size: 6.2cqw;
-    letter-spacing: 0.06em;
-    white-space: normal;
-  }
-  .topo-linha-nome {
-    flex-wrap: wrap;
-    gap: 0 0.6rem;
-  }
-  /* A legenda do topônimo fica na coluna de texto, à direita da lombada. */
-  .topo-legenda,
-  .topo-cota,
-  .topo-capital-2 .topo-legenda {
-    margin-left: calc(var(--col-x) - 16px);
-  }
-  /* A foto ocupa a coluna de texto, da lombada até o gutter direito. */
-  .topo-capital .topo-foto {
-    width: auto;
-    margin-left: calc(var(--col-x) - 16px);
-  }
-  .topo-cidade .topo-legenda {
-    display: block;
-  }
-  .topo-cidade .topo-cota {
-    display: block;
-    margin-top: 0.4rem;
+  .menor-nome {
+    font-size: 1.6rem;
   }
   .povoados {
     width: calc(100% - var(--col-x) - var(--gutter-r));
   }
 }
 
-/* ───────────── Agora: entrada de diário ───────────── */
+/* ───────────── Agora ───────────── */
 
-/* Sem rotação de "papel torto": num bloco girado o getBoundingClientRect
-   devolve a caixa alinhada aos eixos, ~13 px fora da origem local, e a linha
-   de chamada das notas riscava "dashboards e automações" como um tachado. */
 .diario {
-  margin-top: 2.5rem;
+  margin-top: 2rem;
 }
+/* Mês em que o texto foi escrito: diz se o "agora" ainda vale. */
 .diario-cabecalho {
   padding-bottom: 0.9rem;
   margin-bottom: 1.5rem;
@@ -578,14 +513,13 @@ a.povoado:hover .povoado-titulo {
   color: var(--color-muted);
 }
 .diario-p {
-  font-style: italic;
   font-size: clamp(1.1rem, 0.95rem + 0.5vw, 1.375rem);
   line-height: 1.55;
   color: rgb(237 235 230 / 0.92);
   text-wrap: pretty;
 }
 
-/* ───────────── Antes: marcos de quilômetro ───────────── */
+/* ───────────── Antes: a trajetória ───────────── */
 
 .marcos {
   margin-top: 2rem;
@@ -599,18 +533,20 @@ a.povoado:hover .povoado-titulo {
 }
 .marco-ano {
   grid-row: span 2;
-  padding-top: 0.6rem;
+  padding-top: 0.55rem;
   font: 12px/1 var(--font-mono);
   color: var(--color-water);
 }
 .marco-titulo {
   font-family: var(--font-display);
-  font-size: 1.75rem;
+  font-weight: 600;
+  font-size: 1.6rem;
   line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 .marco-texto {
-  margin-top: 0.3rem;
-  font-size: 1.05rem;
+  margin-top: 0.35rem;
+  font-size: 1.02rem;
   line-height: 1.5;
   color: var(--color-muted);
   text-wrap: pretty;
@@ -624,7 +560,7 @@ a.povoado:hover .povoado-titulo {
     padding: 0 0 0.4rem;
   }
   .marco-titulo {
-    font-size: 1.6rem;
+    font-size: 1.45rem;
   }
 }
 
@@ -644,16 +580,17 @@ a.povoado:hover .povoado-titulo {
   margin-top: 2.2rem;
   width: min(44rem, calc(var(--col-end) - var(--col-x)));
   font-family: var(--font-display);
-  font-style: italic;
-  font-size: clamp(2.4rem, 1.1rem + 3.7vw, 4.8rem);
-  line-height: 1.02;
+  font-weight: 700;
+  font-size: clamp(2.2rem, 1rem + 3.4vw, 4.4rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
   text-wrap: balance;
   text-shadow: 0 2px 30px rgb(0 0 0 / 0.85);
 }
 .convite-link {
   color: var(--color-pen);
   text-decoration: underline;
-  text-decoration-thickness: 2px;
+  text-decoration-thickness: 3px;
   text-underline-offset: 0.12em;
   transition:
     color 0.25s,
@@ -674,24 +611,21 @@ a.povoado:hover .povoado-titulo {
   align-items: end;
   gap: 2.5rem;
 }
-/*
- * O cartucho tem a mesma linha dupla da moldura da carta, com um respiro de
- * noite dentro: é o canto da carta onde ficam os endereços, não mais uma
- * caixa de lista.
- */
+/* O cartão dos endereços: fundo de noite para o texto não depender da mata, que aqui já está clara. */
 .cartucho {
   grid-column: 2;
   grid-row: 1;
   width: 22rem;
   padding: 1.1rem 1.4rem 1.2rem;
-  border: 3px double rgb(237 235 230 / 0.4);
+  border: 1px solid rgb(237 235 230 / 0.3);
+  border-radius: 8px;
   background: rgb(3 7 5 / 0.88);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
 .contato-lista li {
-  padding: 0.4rem 0;
-  font-size: 15px;
+  padding: 0.45rem 0;
+  font-size: 14.5px;
   line-height: 1.4;
   color: var(--color-muted);
 }
@@ -699,6 +633,7 @@ a.povoado:hover .povoado-titulo {
   border-top: 1px solid var(--color-line);
 }
 .contato-link {
+  font-weight: 500;
   color: var(--color-ink);
   text-decoration: underline;
   text-decoration-color: var(--color-line-strong);
@@ -715,8 +650,7 @@ a.povoado:hover .povoado-titulo {
   grid-column: 1;
   grid-row: 1;
   max-width: 26rem;
-  font-style: italic;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.5;
   /* Na foz já é manhã e a mata atrás está clara: o cinza apagado (--color-faint)
      que servia à noite caía para ~2:1. Tinta mais clara e um halo escuro. */

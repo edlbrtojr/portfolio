@@ -15,9 +15,11 @@ export type Inline = string | { text: string; href?: string; term?: string };
 export type Rich = Inline[];
 
 /**
- * Nome do projeto na carta, como topônimo. `note` é a anotação em itálico ao
- * lado ("do Observatório", "meu"). A hierarquia vem de `rank`, nunca de peso:
- * a Instrument Serif só tem 400.
+ * Nome do projeto como aparece na home e no título do case. `note` diz de
+ * quem é ou que tipo de trabalho foi ("Observatório da Indústria do Acre",
+ * "produto próprio", "freelance") e vai numa linha pequena acima do nome:
+ * "Data Lake" e "Plataforma de Dados" sozinhos são substantivos comuns; é o
+ * dono que os torna um projeto de verdade para quem lê.
  */
 export type Toponym = { name: string; note?: string };
 
@@ -27,7 +29,7 @@ export type Project = {
   title: string;
   toponym: Toponym;
   rank: "capital" | "cidade";
-  /** Uma linha para a carta: o que é, em palavras comuns. Vira a legenda do topônimo. */
+  /** Uma linha para a home: o que é, em palavras comuns. Vai logo abaixo do nome. */
   line: string;
   /** Rótulo discreto (freelance, projeto pessoal); vazio no trabalho principal. */
   tag?: string;
@@ -101,10 +103,11 @@ export type Content = {
    * procura (ver o trabalho, falar comigo). Substitui a barra de escala e o
    * "role para descer o rio", que não levavam a lugar nenhum.
    */
-  hero: { name: string; line: string; cta: { work: string; contact: string } };
+  hero: { name: string; line: string; cta: { work: string; contact: string }; /** Descrição do retrato da abertura. */ portraitAlt: string };
   /** Bio em primeira pessoa, sem rótulo de seção. */
   bio: Rich[];
-  work: { label: string; more: string };
+  /** `open`: o link de cada projeto principal para o case. */
+  work: { label: string; more: string; open: string };
   projects: Project[];
   archive: ArchiveItem[];
   /**
