@@ -1,0 +1,49 @@
+/* A página e a coluna de texto. Importado antes dos outros (ver globals.css). */
+
+/* <main> começa em y = 0 do documento: coordenada do SVG é coordenada da página. */
+.carta {
+  position: relative;
+  z-index: 10;
+  overflow: clip;
+  outline: none;
+}
+.carta > section,
+.carta > article {
+  position: relative;
+}
+
+/* Coluna de texto: da margem esquerda até 0,44 de W, nunca sobre a água. */
+.col {
+  margin-left: var(--col-x);
+  width: min(36rem, calc(var(--col-end) - var(--col-x)));
+}
+/* Embaixo, o botão fixo de menu (44 px + 12 px de folga + respiro) não cobre a última linha. */
+@media (max-width: 767.98px) {
+  .col {
+    width: calc(100% - var(--col-x) - var(--gutter-r));
+  }
+  .carta {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom));
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.entra {
+  animation: rise 0.9s var(--ease-out-expo) both;
+  animation-delay: calc(var(--i, 0) * 90ms + 500ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .diagram-pulse {
+    display: none;
+  }
+}

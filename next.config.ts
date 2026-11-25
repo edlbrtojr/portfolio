@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      ...removed.map((slug) => ({ source: `/projects/${slug}`, destination: "/#projetos", permanent: true })),
+      ...removed.map((slug) => ({ source: `/projects/${slug}`, destination: "/#trabalho", permanent: true })),
       { source: "/projects/process-library", destination: "/projetos/biblioteca-de-processos", permanent: true },
       { source: "/projects/:slug", destination: "/projetos/:slug", permanent: true },
     ];

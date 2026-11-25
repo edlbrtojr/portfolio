@@ -2,73 +2,123 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import type { ShapeKey } from "./shapes";
-import { sceneState, setStage } from "./store";
+import { chartGeometry } from "../chart/geometry";
+import { aimLantern, sceneState, wakeScene } from "./store";
 
-// three.js só no cliente e fora do bundle inicial: o texto da página aparece
-// antes de a cena baixar.
+// three.js só no cliente e fora do bundle inicial: o texto da página (e o h1,
+// que é o LCP) aparece antes de a cena baixar.
 const SceneCanvas = dynamic(() => import("./scene-canvas"), { ssr: false });
 
-type Config = { count: number; reducedMotion: boolean; font: string } | null;
+type Dpr = number | [number, number];
+type Config = { fireflies: number; dpr: Dpr; reducedMotion: boolean; coarse: boolean } | null;
 
 /**
- * Quantas partículas a máquina aguenta. Os cortes vêm do custo de fill:
- * 14 mil pontos a 60 fps foi folgado em notebook com GPU integrada; em
- * celular intermediário (4 núcleos) 6 mil manteve 60 fps.
+ * Qualidade por aparelho. Celular (ponteiro grosso) ou até 4 núcleos: dpr 1,
+ * um Worley por pixel em vez de três, sem igarapés nem névoa, e animação a
+ * 30 fps (ver Pacer). No notebook com GPU integrada o shader completo
+ * a dpr 1,5 segurou 60 fps; acima disso o custo de preenchimento cresce com o
+ * quadrado e o ganho visual numa mata noturna é nulo.
  */
-function particleBudget() {
+function tierFor() {
   const coarse = window.matchMedia("(pointer: coarse)").matches;
   const cores = navigator.hardwareConcurrency || 4;
-  if (coarse || window.innerWidth < 768) return cores <= 4 ? 4500 : 6000;
-  return cores <= 4 ? 9000 : 14000;
+  return coarse || cores <= 4 ? "coarse" : "full";
 }
 
-export function SceneRoot({ name }: { name: string }) {
+export function SceneRoot({ dim = false }: { dim?: boolean }) {
   const [config, setConfig] = useState<Config>(null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    // O script do <head> já testou o WebGL antes da primeira pintura.
+    sceneState.dim = dim;
+    wakeScene();
+  }, [dim]);
+
+  useEffect(() => {
+    // O script do <head> já testou o WebGL (e o ?webgl=off) antes da pintura.
     if (document.documentElement.dataset.webgl !== "on") return;
+    const geo = chartGeometry();
+    const tier = tierFor();
+    sceneState.tier = tier;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let cancelled = false;
-    // O nome é amostrado de um canvas 2D: a fonte precisa estar carregada,
-    // senão as partículas desenham a fonte de fallback.
-    const font = getComputedStyle(document.documentElement).getPropertyValue("--nf-display").trim() || "sans-serif";
-    document.fonts.ready.then(() => {
-      if (!cancelled) setConfig({ count: particleBudget(), reducedMotion: reduced.matches, font });
+    const make = () => ({
+      // 80 no desktop, 40 no celular: o bastante para a mata parecer viva sem virar ruído.
+      fireflies: geo.mode === "spine" ? 40 : 80,
+      dpr: (tier === "coarse" ? 1 : [1, 1.5]) as Dpr,
+      reducedMotion: reduced.matches,
+      coarse: tier === "coarse",
     });
+    // Fora do corpo do efeito: setState síncrono aqui renderizaria em cascata.
+    const first = window.setTimeout(() => setConfig(make()), 0);
     const onChange = () => setConfig((c) => (c ? { ...c, reducedMotion: reduced.matches } : c));
     reduced.addEventListener("change", onChange);
     return () => {
-      cancelled = true;
+      window.clearTimeout(first);
       reduced.removeEventListener("change", onChange);
     };
   }, []);
 
-  // Ponteiro global: o canvas fica atrás do conteúdo (pointer-events: none),
-  // então os eventos do R3F não chegam — lemos direto da janela.
   useEffect(() => {
+    chartGeometry();
+    const fine = window.matchMedia("(pointer: fine)");
+    const syncFine = () => (sceneState.fine = fine.matches);
+    syncFine();
+    fine.addEventListener("change", syncFine);
+
+    // O canvas fica atrás do conteúdo (pointer-events: none): os eventos vêm
+    // da janela. A lanterna segue o mouse; sobre um topônimo ou nota
+    // ([data-lantern]) ela pousa no elemento e chama os vaga-lumes.
     const move = (e: PointerEvent) => {
       if (e.pointerType === "touch") return;
-      sceneState.pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
-      sceneState.pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      sceneState.pointer.x = e.clientX;
+      sceneState.pointer.y = e.clientY;
       sceneState.pointer.active = true;
+      // Com movimento reduzido a cena só desenha quando pedem: a lanterna anda.
+      if (sceneState.fine) wakeScene(600);
+    };
+    const over = (e: PointerEvent) => {
+      if (e.pointerType === "touch") return;
+      const el = (e.target as Element | null)?.closest?.("[data-lantern]");
+      if (el) aimLantern(el, true);
+    };
+    const out = (e: PointerEvent) => {
+      const el = (e.target as Element | null)?.closest?.("[data-lantern]");
+      const to = (e.relatedTarget as Element | null)?.closest?.("[data-lantern]");
+      if (el && el !== to && !el.contains(document.activeElement)) aimLantern(null);
     };
     const leave = () => {
       sceneState.pointer.active = false;
     };
-    const scroll = () => {
-      sceneState.travel = window.scrollY / window.innerHeight;
+    // Teclado: a luz vai para o centro do que recebeu foco dentro do conteúdo.
+    const focusIn = (e: FocusEvent) => {
+      const t = e.target as Element | null;
+      if (!t || !t.closest("#conteudo")) return;
+      aimLantern(t, Boolean(t.closest("[data-lantern]")));
     };
-    scroll();
+    const focusOut = (e: FocusEvent) => {
+      if (!e.relatedTarget) aimLantern(null);
+    };
+    // Altura do documento: a foz alarga nas últimas 1,5 unidade.
+    const ro = new ResizeObserver(() => {
+      sceneState.docH = document.documentElement.scrollHeight;
+    });
+    ro.observe(document.body);
+
     window.addEventListener("pointermove", move, { passive: true });
-    window.addEventListener("scroll", scroll, { passive: true });
-    document.addEventListener("pointerleave", leave);
+    document.addEventListener("pointerover", over, { passive: true });
+    document.addEventListener("pointerout", out, { passive: true });
+    document.documentElement.addEventListener("pointerleave", leave);
+    document.addEventListener("focusin", focusIn);
+    document.addEventListener("focusout", focusOut);
     return () => {
+      fine.removeEventListener("change", syncFine);
+      ro.disconnect();
       window.removeEventListener("pointermove", move);
-      window.removeEventListener("scroll", scroll);
-      document.removeEventListener("pointerleave", leave);
+      document.removeEventListener("pointerover", over);
+      document.removeEventListener("pointerout", out);
+      document.documentElement.removeEventListener("pointerleave", leave);
+      document.removeEventListener("focusin", focusIn);
+      document.removeEventListener("focusout", focusOut);
     };
   }, []);
 
@@ -79,47 +129,8 @@ export function SceneRoot({ name }: { name: string }) {
   return (
     <div aria-hidden className="scene-layer">
       {config && !failed && (
-        <SceneCanvas count={config.count} reducedMotion={config.reducedMotion} font={config.font} name={name} onFail={() => setFailed(true)} />
+        <SceneCanvas fireflies={config.fireflies} dpr={config.dpr} reducedMotion={config.reducedMotion} coarse={config.coarse} onFail={() => setFailed(true)} />
       )}
     </div>
   );
-}
-
-/**
- * Avisa a cena qual etapa vale: a do último elemento com `data-stage` (em
- * ordem do documento) cujo topo já passou do meio da tela. A versão anterior,
- * com IntersectionObserver numa linha fina, só reagia a elementos cruzando a
- * linha: num salto (âncora, recarregar no meio da página) ou num vão entre
- * blocos, nada cruzava e o nome em vaga-lumes ficava preso atrás do texto.
- * Só troca quando o elemento muda, para não desfazer a forma escolhida
- * passando o mouse numa linha da lista de trabalhos.
- */
-export function StageObserver() {
-  useEffect(() => {
-    const els = Array.from(document.querySelectorAll<HTMLElement>("[data-stage]"));
-    let raf = 0;
-    let last: HTMLElement | null = null;
-    const update = () => {
-      raf = 0;
-      const mid = window.innerHeight / 2;
-      let current: HTMLElement | null = els[0] ?? null;
-      for (const el of els) if (el.getBoundingClientRect().top <= mid) current = el;
-      if (current && current !== last) {
-        last = current;
-        setStage(current.dataset.stage as ShapeKey, current.hasAttribute("data-dim"));
-      }
-    };
-    const schedule = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-    };
-  }, []);
-  return null;
 }

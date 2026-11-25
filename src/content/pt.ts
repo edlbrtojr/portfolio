@@ -30,14 +30,17 @@ export const pt: Content = {
     switchLang: "EN",
     switchLangHref: "/en",
     skip: "Pular para o conteúdo",
-    menuOpen: "Abrir menu",
-    menuClose: "Fechar menu",
+    menuOpen: "menu e contato",
+    menuClose: "fechar",
     mainLabel: "Principal",
+  },
+  chart: {
+    colophon: "Desenhei e programei este site em Rio Branco, com Next.js e three.js.",
   },
   hero: {
     name: "Edilberto Lima Jr.",
     line: "Desenvolvedor full-stack e engenheiro de dados em Rio Branco, no Acre.",
-    scrollHint: "Role e sobrevoe o rio",
+    cta: { work: "ver o trabalho", contact: "falar no WhatsApp" },
   },
   bio: [
     [
@@ -57,9 +60,10 @@ export const pt: Content = {
       ", um sistema para clínicas que eu programo, vendo e atendo.",
     ],
     [
-      "Antes de programar, dei aula de inglês na rede estadual. Ficou a mania de explicar as coisas: passe o mouse nas ",
-      { text: "palavras sublinhadas", term: "Assim mesmo. Termo técnico aqui vem com legenda." },
-      ".",
+      // A frase ensina a ler a página e tem de ser verdade: todo termo com
+      // nota leva número (link não leva), na home e nos cases. Se tirar as
+      // notas, tire a frase.
+      "Antes de programar, dei aula de inglês na rede estadual. Ficou a mania de explicar: termo técnico, aqui, vem com nota.",
     ],
   ],
   work: { label: "trabalho", more: "mais coisas que fiz" },
@@ -67,8 +71,11 @@ export const pt: Content = {
     {
       slug: "observatorio-data-lake",
       title: "Data lake do Observatório",
+      toponym: { name: "Data lake", note: "do Observatório" },
+      rank: "capital",
       line: "Junta dados públicos de emprego, comércio e empresas num lugar só.",
-      kicker: "Engenharia de dados · em produção",
+      // A relação ("no Observatório") mora no kicker; o case não repete a nota do topônimo.
+      kicker: "Engenharia de dados no Observatório · em produção",
       year: "2025–2026",
       role: "Arquitetura e desenvolvimento principal",
       summary:
@@ -83,7 +90,6 @@ export const pt: Content = {
           height: 1080,
         },
       ],
-      stage: "lake",
       details: {
         overview:
           "O Observatório da Indústria do Acre publica análises sobre emprego, comércio exterior e empresas do estado, e tudo isso depende de dado público. O lake faz a parte pesada: baixa a fonte, guarda o original, limpa, confere e publica no Azure Data Explorer. É de lá que a plataforma, os boletins e os relatórios consultam, em KQL.",
@@ -115,8 +121,10 @@ export const pt: Content = {
     {
       slug: "observatorio-plataforma",
       title: "Plataforma do Observatório",
+      toponym: { name: "Plataforma", note: "do Observatório" },
+      rank: "capital",
       line: "Onde empresários e gestores do Acre consultam esses dados.",
-      kicker: "Full-stack · em produção",
+      kicker: "Full-stack no Observatório · em produção",
       year: "2025–2026",
       role: "Desenvolvedor principal",
       summary:
@@ -139,7 +147,6 @@ export const pt: Content = {
           frame: "2 / 1",
         },
       ],
-      stage: "dashboards",
       details: {
         overview:
           "A plataforma tem um portal público, uma área logada com dashboards, relatórios e apresentações, e um painel de administração. Todo número de dashboard vem do lake, consultado na hora no Azure Data Explorer. Há dashboards de emprego formal, contratações, comércio exterior, empresas, acidentes de trabalho e finanças municipais, entre outros.",
@@ -170,6 +177,9 @@ export const pt: Content = {
     {
       slug: "milix",
       title: "Milix",
+      // "meu", sozinho, não dizia o que o Milix é; "produto próprio" diz.
+      toponym: { name: "Milix", note: "produto próprio" },
+      rank: "capital",
       line: "Meu sistema para clínicas, com atendimento por IA no WhatsApp.",
       tag: "produto próprio",
       kicker: "SaaS próprio · com clientes pagantes",
@@ -193,7 +203,6 @@ export const pt: Content = {
           height: 800,
         },
       ],
-      stage: "phone",
       details: {
         overview:
           "O Milix cobre o caminho do paciente, da primeira mensagem no WhatsApp ao fechamento do caixa. Cada clínica é um cliente isolado e pode ter várias filiais. A primeira versão, o Smilix, rodava em Supabase, Stripe e Docker numa VPS. Reescrevi a base numa arquitetura mais fácil de testar e de evoluir.",
@@ -228,6 +237,8 @@ export const pt: Content = {
     {
       slug: "distribuidora-flow",
       title: "Distribuidora Flow",
+      toponym: { name: "Distribuidora Flow", note: "freelance" },
+      rank: "cidade",
       line: "Pedidos pelo WhatsApp, caixa e entregas de uma distribuidora de bebidas.",
       tag: "freelance",
       kicker: "Freelance · em produção",
@@ -239,7 +250,6 @@ export const pt: Content = {
       links: [],
       shots: [],
       diagram: "order-flow",
-      stage: "tree",
       details: {
         overview:
           "Sistema para uma distribuidora de bebidas: frente de caixa, estoque e atendimento pelo WhatsApp. O chatbot conversa com o cliente, monta o pedido e avisa cada etapa pela API oficial do WhatsApp. No painel, os pedidos andam num quadro Kanban em tempo real, e o entregador recebe a rota pelo Google Maps.",
@@ -271,6 +281,8 @@ export const pt: Content = {
     {
       slug: "biblioteca-de-processos",
       title: "Biblioteca de Processos",
+      toponym: { name: "Biblioteca de Processos", note: "freelance" },
+      rank: "cidade",
       line: "Árvores de decisão para o suporte de um provedor de internet.",
       tag: "freelance",
       kicker: "Freelance · em produção",
@@ -282,7 +294,6 @@ export const pt: Content = {
       links: [],
       shots: [],
       diagram: "decision-tree",
-      stage: "tree",
       details: {
         overview:
           "O suporte de um provedor de internet precisava que todo atendente resolvesse o mesmo problema do mesmo jeito. A Biblioteca guarda os processos como árvores de decisão: o atendente responde às perguntas e chega à solução. Gestores editam os fluxos num editor visual e escrevem artigos num editor de texto rico. Cada setor vê o que é dele.",
@@ -310,6 +321,8 @@ export const pt: Content = {
     {
       slug: "vizu-eleicoes",
       title: "Vizu Eleições",
+      toponym: { name: "Vizu", note: "projeto pessoal" },
+      rank: "cidade",
       line: "As eleições no Acre, do estado inteiro até a seção eleitoral.",
       tag: "projeto pessoal",
       kicker: "Projeto pessoal · dados públicos",
@@ -327,8 +340,6 @@ export const pt: Content = {
           height: 900,
         },
       ],
-      // A hélice fica para a trajetória; mapa e ranking lembram painéis.
-      stage: "dashboards",
       details: {
         overview:
           "Um pipeline em Python prepara os resultados do TSE, importa no Convex e mostra em mapas, rankings e comparações, do estado inteiro até uma seção, com exportação em CSV.",
@@ -346,13 +357,14 @@ export const pt: Content = {
             choice: "Os totais são conferidos automaticamente entre o Python e o banco, e o mapa usa a malha municipal do IBGE 2025 no MapLibre.",
           },
         ],
-        results: ["660 locais de votação, 22 municípios e 341 candidatos, consultáveis até a seção."],
+        // Sem contagem de locais, municípios e candidatos: é inventário, não resultado.
+        results: ["Consultável do estado inteiro até a seção eleitoral, em todos os municípios do Acre."],
       },
     },
   ],
   archive: [
     { title: "Smilix", year: "2025", description: "A primeira versão do Milix, só para dentistas." },
-    { title: "Dados fiscais de 21 prefeituras", year: "2026", description: "Os portais de transparência de 21 municípios do Acre numa base só." },
+    { title: "Dados fiscais das prefeituras do Acre", year: "2026", description: "Os portais de transparência dos municípios do Acre numa base só." },
     { title: "Apresentações de dados", year: "2026", description: "Apresentações do Observatório em HTML, como o Panorama das Exportações do Acre." },
     { title: "Skills para agentes de IA", year: "2026", description: "Ensina o Claude Code e o Codex a trabalhar do jeito da equipe." },
     { title: "Busca Diários", year: "2024", description: "Procura termos dentro dos diários oficiais do Acre.", href: "https://github.com/edlbrtojr/BuscaDiarios" },
@@ -367,10 +379,19 @@ export const pt: Content = {
         "No Observatório, sigo colocando bases novas no lake e painéis novos na plataforma. No Milix, cuido das clínicas que já usam o sistema e do que elas pedem.",
       ],
       [
-        "Também pego projetos para empresas: sistemas sob medida, atendimento com IA no WhatsApp, ",
+        // As notas aqui explicam o serviço a quem vai contratar, não a quem programa.
+        "Também pego projetos para empresas: sistemas sob medida, ",
+        {
+          text: "atendimento com IA no WhatsApp",
+          term: "Um assistente que responde o cliente no WhatsApp a qualquer hora, marca horário ou anota pedido, e chama uma pessoa quando precisa.",
+        },
+        ", ",
         { text: "dashboards", term: "Painéis com os números do negócio, atualizados sozinhos, no lugar da planilha que alguém monta toda semana." },
-        " e automações. Se a sua empresa roda em planilha e WhatsApp, ",
-        { text: "me chama", href: "whatsapp" },
+        " e ",
+        {
+          text: "automações",
+          term: "Tarefa repetida que o computador passa a fazer sozinho: gerar o relatório, mandar o aviso, levar o dado de um sistema para outro.",
+        },
         ".",
       ],
     ],
@@ -378,7 +399,6 @@ export const pt: Content = {
   },
   past: {
     label: "antes",
-    hint: "passe o mouse ou toque nos anos",
     steps: [
       { year: "2016", title: "Letras", text: "Licenciatura em língua inglesa na Universidade Federal do Acre." },
       { year: "2021", title: "Sala de aula", text: "Professor de inglês na rede estadual, enquanto cursava Sistemas de Informação na Estácio. No mesmo ano, um estágio de help desk na Uninorte." },
@@ -390,39 +410,64 @@ export const pt: Content = {
   },
   contact: {
     label: "contato",
-    body: [
-      [
-        "O jeito mais rápido de falar comigo é pelo ",
-        { text: "WhatsApp", href: "whatsapp" },
-        ". Também respondo no ",
-        { text: "edlbrtojr@gmail.com", href: "email" },
-        ". O currículo está em ",
-        { text: "português", href: "resume:pt" },
-        " e em ",
-        { text: "inglês", href: "resume:en" },
-        ", e o resto, no ",
-        { text: "LinkedIn", href: "https://www.linkedin.com/in/edilbertolimajr/" },
-        " e no ",
-        { text: "GitHub", href: "https://github.com/edlbrtojr" },
-        ".",
-      ],
+    invite: ["Se a sua empresa roda em planilha e WhatsApp, ", { text: "me chama", href: "whatsapp" }, "."],
+    // Cada canal diz para que serve: quem chega sabe qual escolher.
+    channels: [
+      [{ text: "WhatsApp", href: "whatsapp" }, ", o jeito mais rápido de falar comigo"],
+      [{ text: "edlbrtojr@gmail.com", href: "email" }, ", clique para copiar"],
+      [{ text: "Currículo em PDF", href: "resume:pt" }, " (também em ", { text: "inglês", href: "resume:en" }, ")"],
+      [{ text: "LinkedIn", href: "https://www.linkedin.com/in/edilbertolimajr/" }, ", experiência e formação"],
+      [{ text: "GitHub", href: "https://github.com/edlbrtojr" }, ", código aberto"],
     ],
     copied: "copiado",
   },
+  // Definições curtas, em português de conversa, sem jargão novo dentro da
+  // explicação. O termo tem de estar escrito igual no texto do case.
+  glossary: [
+    { term: "pipeline", note: "Uma sequência automática de passos que leva o dado da fonte até onde ele é usado: baixar, limpar, conferir, publicar." },
+    { term: "Azure Data Explorer", note: "Banco de dados da Microsoft feito para consultar muito dado depressa. É onde fica o que já está pronto para usar." },
+    { term: "KQL", note: "A linguagem de consulta do Azure Data Explorer. Parece SQL, mas foi feita para volumes grandes." },
+    { term: "Databricks", note: "Plataforma na nuvem que processa muito dado em paralelo, dividindo o trabalho entre várias máquinas." },
+    { term: "bronze, silver e gold", note: "Três estágios do dado: bronze é o original como chegou, silver é o limpo e conferido, gold é o pronto para gráfico e relatório." },
+    { term: "idempotentes", note: "Rodar de novo não muda nada: a segunda execução dá o mesmo resultado da primeira, sem duplicar." },
+    { term: "SHA-256", note: "Uma impressão digital do arquivo. Se um único byte mudar, a impressão muda." },
+    { term: "cluster", note: "O conjunto de máquinas na nuvem que responde às consultas. Enquanto está ligado, cobra." },
+    { term: "Microsoft Entra ID", note: "O login corporativo da Microsoft: a pessoa entra com a mesma conta do trabalho." },
+    { term: "trilha de auditoria", note: "O registro de quem acessou ou mudou o quê, e quando." },
+    { term: "CI/CD", note: "Testes e publicação automáticos a cada mudança no código, antes de ela chegar a quem usa." },
+    { term: "homologação", note: "Uma cópia do sistema onde a mudança é conferida antes de ir para o ar." },
+    { term: "ponto de entrada", note: "Uma porta só, por onde toda chamada passa. Com uma porta, a conferência não tem como ser esquecida em algum canto." },
+    { term: "teste estrutural", note: "Um teste que olha o formato do código, não o resultado: falha se alguém abrir um caminho fora da regra." },
+    { term: "webhooks", note: "Avisos que um sistema manda sozinho para outro quando algo acontece, como um pagamento confirmado." },
+    { term: "embeddings", note: "Texto transformado em números que guardam o sentido. Assim o sistema acha o procedimento mesmo escrito de outro jeito." },
+    { term: "gateway próprio de LLM", note: "Uma camada minha entre o sistema e os modelos de IA: dá para trocar de fornecedor e controlar o custo sem mexer no resto." },
+    { term: "ADR", note: "Um texto curto que registra uma decisão de arquitetura: o que foi escolhido, por quê e o que ficou de fora." },
+    { term: "Kanban", note: "Um quadro em colunas, como novo, em preparo e saiu para entrega, em que cada pedido anda de uma coluna para a outra." },
+    { term: "Zod", note: "Uma biblioteca que confere se um dado tem o formato esperado antes de ele ser usado." },
+    { term: "guardrails contra alucinação", note: "Travas que barram a resposta da IA quando ela cita algo que não existe nos dados." },
+    { term: "máquina de estados", note: "Um mapa de todas as etapas possíveis e de como se passa de uma para outra. O pedido nunca fica numa etapa que não existe." },
+    { term: "Supabase Realtime", note: "Um recurso que avisa todas as telas abertas assim que um dado muda, sem precisar recarregar." },
+    { term: "árvores de decisão", note: "Perguntas encadeadas: cada resposta leva à próxima pergunta, até chegar à solução." },
+    { term: "JWT", note: "Um crachá digital assinado, conferido a cada pedido, que diz quem é a pessoa e o que ela pode ver." },
+    { term: "determinística", note: "Mesma entrada, mesma saída, sempre." },
+    { term: "ponto de retomada", note: "Uma marca de até onde a importação chegou. Se cair, ela recomeça dali, e não do zero." },
+  ],
   ui: {
     visitSite: "Abrir o site",
     stack: "Stack",
     role: "Papel",
-    back: "Voltar ao início",
+    // "voltar à carta" e "rio abaixo" pediam que o visitante decifrasse a
+    // metáfora para saber aonde o link leva. A metáfora fica na forma. O link
+    // leva ao topônimo do projeto, dentro de "trabalho": o rótulo diz isso
+    // ("todos os projetos" prometia uma lista que não existe).
+    back: "voltar ao trabalho",
     overview: "Contexto",
     decisions: "Decisões",
     problem: "Problema",
     choice: "O que fiz",
     results: "Onde está hoje",
-    nextProject: "Próximo projeto",
-    footer: "Feito à beira do rio Acre, com Next.js e three.js.",
-    localTime: "em Rio Branco",
-    notFoundTitle: "Esse dado não chegou ao gold.",
+    nextProject: "próximo projeto",
+    notFoundTitle: "Aqui o mapa acaba.",
     notFoundBody: "A página que você procurou não existe ou mudou de endereço.",
     notFoundCta: "Voltar ao início",
   },

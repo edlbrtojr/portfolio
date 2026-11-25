@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { Locale } from "@/content/types";
 
 /** Hora de agora em Rio Branco (UTC−5): diz a quem escreve se eu estou acordado. */
-export function LocalTime({ locale, label }: { locale: Locale; label: string }) {
+export function LocalTime({ locale }: { locale: Locale }) {
   const [time, setTime] = useState<string | null>(null);
   useEffect(() => {
     const fmt = new Intl.DateTimeFormat(locale === "pt" ? "pt-BR" : "en-US", { hour: "2-digit", minute: "2-digit", timeZone: "America/Rio_Branco" });
@@ -17,9 +17,5 @@ export function LocalTime({ locale, label }: { locale: Locale; label: string }) 
       window.clearInterval(id);
     };
   }, [locale]);
-  return (
-    <span>
-      <span className="font-mono text-ink">{time ?? "--:--"}</span> {label}
-    </span>
-  );
+  return <time className="font-mono">{time ?? "--:--"}</time>;
 }

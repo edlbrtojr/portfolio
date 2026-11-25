@@ -1,0 +1,337 @@
+/* ───────────── Moldura ───────────── */
+
+.moldura {
+  position: fixed;
+  inset: var(--frame);
+  z-index: 40;
+  pointer-events: none;
+  border: 3px double rgb(237 235 230 / 0.22);
+}
+/* Os tracinhos a cada 40 px saíram: enfeite que não orientava ninguém. */
+@media (max-width: 767.98px) {
+  .moldura {
+    border-block: 0;
+  }
+}
+
+/*
+ * Régua de leitura na borda direita: a água sobe com o scroll e passa pelas
+ * marcas de cada seção (trabalho, agora, antes, contato), então mostra onde
+ * você está e quanto falta. Antes era só um fio de 1 a 2 px sem trilho nem
+ * marca: não lia como régua nem como progresso. Marcas sem número nem
+ * rótulo (regra do dono: nada de texto que não oriente); quem quer o nome
+ * da seção tem a navegação no canto.
+ */
+.regua {
+  position: fixed;
+  z-index: 41;
+  pointer-events: none;
+  top: calc(var(--frame) + 64px);
+  bottom: calc(var(--frame) + 24px);
+  right: calc(var(--frame) + 10px);
+  width: 9px;
+}
+/* O trilho: onde a água ainda vai chegar. */
+.regua::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 1px;
+  background: rgb(237 235 230 / 0.16);
+}
+.regua-agua {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -0.5px;
+  width: 2px;
+  background: var(--color-water);
+  opacity: 0.75;
+  transform-origin: bottom;
+  transform: scaleY(0);
+}
+@supports (animation-timeline: scroll()) {
+  .regua-agua {
+    animation: encher linear both;
+    animation-timeline: scroll(root);
+  }
+}
+@keyframes encher {
+  from {
+    transform: scaleY(0.004);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+/* Marca de seção: um tracinho que sai do trilho para dentro da carta. */
+.regua-marca {
+  position: absolute;
+  right: 0;
+  width: 9px;
+  height: 1px;
+  background: rgb(237 235 230 / 0.5);
+}
+/*
+ * Faixa do topo: a noite engrossa atrás dos cantos e some em degradê. Antes
+ * cada canto tinha a própria caixa preta, que recortava a carta. Dentro da
+ * moldura, por cima do conteúdo e por baixo dos cantos. Nas páginas de case
+ * ela vira duas sombras (ver .faixa-cantos).
+ */
+.faixa-topo {
+  position: fixed;
+  z-index: 39;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* Cheia da borda da janela até o fim da linha dos cantos (~61 px), depois some em ~56 px. */
+  height: 117px;
+  pointer-events: none;
+  background: linear-gradient(rgb(3 7 5 / 0.96), rgb(3 7 5 / 0.93) 52%, rgb(3 7 5 / 0));
+}
+/*
+ * No case a faixa encolhe para duas sombras só atrás dos cantos. A faixa
+ * inteira sujava as capturas claras (o Milix é creme e roxo) com um degradê
+ * preto de 96 px enquanto rolavam; sem faixa nenhuma, o texto do case
+ * passava por baixo da navegação e as letras se embolavam. Sombra só onde
+ * há letra.
+ */
+.faixa-topo.faixa-cantos {
+  height: 96px;
+  background:
+    radial-gradient(closest-side, rgb(3 7 5 / 0.92), rgb(3 7 5 / 0.7) 55%, rgb(3 7 5 / 0)) left 0 top -6px / 360px 104px no-repeat,
+    radial-gradient(closest-side, rgb(3 7 5 / 0.92), rgb(3 7 5 / 0.7) 55%, rgb(3 7 5 / 0)) right 0 top -6px / 640px 104px no-repeat;
+}
+.faixa-base {
+  display: none;
+}
+@media (max-width: 767.98px) {
+  .faixa-topo {
+    height: 96px;
+    background: linear-gradient(rgb(3 7 5 / 0.96), rgb(3 7 5 / 0.93) 58%, rgb(3 7 5 / 0));
+  }
+  .faixa-base {
+    display: block;
+    position: fixed;
+    z-index: 39;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: calc(88px + env(safe-area-inset-bottom));
+    pointer-events: none;
+    background: linear-gradient(rgb(3 7 5 / 0), rgb(3 7 5 / 0.88) 55%, rgb(3 7 5 / 0.96));
+  }
+}
+/* Cantos: quem é e navegação. */
+.canto {
+  position: fixed;
+  z-index: 42;
+  top: calc(var(--frame) + 3px);
+}
+/*
+ * No case, além das sombras atrás dos cantos (.faixa-cantos), cada letra
+ * leva o próprio halo escuro: legível quando uma captura clara passa por
+ * baixo, sem escurecer a captura inteira.
+ */
+.canto-sobre-foto,
+.canto-sobre-foto a,
+.canto-sobre-foto time {
+  text-shadow:
+    0 0 2px rgb(3 7 5 / 0.95),
+    0 0 8px rgb(3 7 5 / 0.9),
+    0 0 18px rgb(3 7 5 / 0.8);
+}
+/*
+ * A marca some enquanto o h1 da abertura está na tela ou o nome ainda está
+ * escrito no rio (ver ChartFrame e RiverType), e a hora desliza para o canto
+ * em vez de ficar boiando onde a marca estava. No celular o nome vertical
+ * mora no mesmo canto: as duas tipografias se sobrepunham.
+ */
+.canto-quem .canto-marca {
+  max-width: 14rem;
+  overflow: hidden;
+  transition:
+    opacity 0.4s,
+    max-width 0.5s var(--ease-out-expo),
+    visibility 0s;
+}
+.canto-quem .canto-marca[data-oculta],
+html[data-nome-visivel] .canto-quem .canto-marca {
+  max-width: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s,
+    max-width 0.5s var(--ease-out-expo),
+    visibility 0s 0.5s;
+}
+.canto-marca[data-oculta] + .canto-hora .canto-sep,
+html[data-nome-visivel] .canto-hora .canto-sep {
+  display: none;
+}
+.canto-quem {
+  left: calc(var(--frame) + 3px);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 44px;
+  padding-inline: 1rem;
+  font-size: 13px;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+.canto-quem a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: var(--color-ink);
+  transition: color 0.2s;
+}
+.canto-quem a:hover {
+  color: var(--color-pen);
+}
+.canto-hora time {
+  font-size: 12px;
+  color: var(--color-ink);
+}
+.canto-nav {
+  right: calc(var(--frame) + 18px);
+  display: flex;
+  align-items: center;
+  padding-inline: 0.4rem;
+}
+.canto-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: 0.6rem;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--color-muted);
+  transition: color 0.2s;
+}
+.canto-nav a + a::before {
+  content: "·";
+  margin-right: 1.2rem;
+  margin-left: -0.6rem;
+  color: var(--color-faint);
+}
+.canto-nav a:hover {
+  color: var(--color-pen);
+}
+
+.pular {
+  position: fixed;
+  z-index: 60;
+  left: calc(var(--frame) + 12px);
+  top: calc(var(--frame) + 10px);
+  padding: 0.6rem 1rem;
+  background: var(--color-pen);
+  color: var(--color-bg);
+  transform: translateY(-300%);
+}
+.pular:focus {
+  transform: none;
+}
+
+/* Botão e folha de menu e contato (celular). */
+.menu-botao {
+  display: none;
+}
+@media (max-width: 767.98px) {
+  .canto-quem {
+    padding-inline: 0.7rem;
+    font-size: 12px;
+  }
+  .canto-quem a {
+    font-size: 1rem;
+  }
+  .canto-nav {
+    display: none;
+  }
+  .regua {
+    top: calc(var(--frame) + 56px);
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    right: calc(var(--frame) + 6px);
+  }
+  .menu-botao {
+    position: fixed;
+    z-index: 45;
+    left: 50%;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 44px;
+    padding: 0 1.25rem;
+    border: 1px solid rgb(237 235 230 / 0.35);
+    outline: 1px solid rgb(237 235 230 / 0.12);
+    outline-offset: 3px;
+    background: rgb(3 7 5 / 0.88);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    white-space: nowrap;
+    color: var(--color-ink);
+  }
+}
+.folha {
+  margin: auto 0 0;
+  width: 100%;
+  max-width: none;
+  max-height: 86svh;
+  padding: 1.25rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom));
+  border: 0;
+  border-top: 3px double rgb(237 235 230 / 0.25);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+.folha[open] {
+  animation: subir 0.4s var(--ease-out-expo);
+}
+.folha::backdrop {
+  background: rgb(0 0 0 / 0.62);
+}
+@keyframes subir {
+  from {
+    transform: translateY(100%);
+  }
+}
+.folha-topo {
+  display: flex;
+  justify-content: flex-end;
+}
+.folha-fechar {
+  min-height: 44px;
+  padding-inline: 0.75rem;
+  margin-right: -0.75rem;
+  font-style: italic;
+  color: var(--color-pen);
+}
+.folha-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.25rem;
+  margin: 0.5rem 0 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-line);
+}
+.folha-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+}
+.folha .contato-lista li {
+  padding-block: 0.7rem;
+  font-size: 1.05rem;
+}

@@ -1,9 +1,27 @@
 @import "tailwindcss";
+/*
+ * Dividido por assunto (o arquivo único passou de 1.400 linhas e misturava
+ * tudo). Aqui ficam os tokens, a base, a cena e o fallback; o resto mora em:
+ * - styles/base.css: a página e a coluna de texto. Vem primeiro porque as
+ *   classes dos outros arquivos sobrescrevem a largura da .col (convite,
+ *   decisões) e, com a mesma especificidade, vale a que vem depois;
+ * - styles/frame.css: moldura, cantos, régua e a folha do celular;
+ * - styles/chart.css: a home (nome no rio, abertura, bio, toponímia, diário,
+ *   marcos e a foz);
+ * - styles/notes.css: as notas de professor (margem e rodapé);
+ * - styles/case.css: a folha de detalhe do projeto e o 404.
+ * Caminhos relativos a este arquivo (src/app → src/styles).
+ */
+@import "../styles/base.css";
+@import "../styles/frame.css";
+@import "../styles/chart.css";
+@import "../styles/notes.css";
+@import "../styles/case.css";
 
 /*
- * Paleta: noite (quase preto com um fio de verde) e as três camadas do
- * medallion — bronze, prata, ouro — como acentos. O site é só escuro de
- * propósito: as partículas usam blending aditivo, que some num fundo claro.
+ * A carta: noite fechada sobre a mata, tinta creme, água azul-cinza e um
+ * dourado de caneta para tudo que é anotação. Só escuro, de propósito: a
+ * cena soma luz (vaga-lumes, lanterna) e isso some num fundo claro.
  */
 @theme {
   /* Verde-noite: o tom mais escuro da mata na cena (river.tsx), para a
@@ -16,23 +34,47 @@
   --color-ink: #edebe6;
   --color-muted: #a3a29b;
   --color-faint: #6f6f69;
-  --color-bronze: #c8834a;
-  --color-silver: #b8c4cc;
   --color-gold: #e9b949;
   --color-teal: #5cb8a8;
+  /* Convenção hidrográfica: o que é água vem em azul-cinza. */
+  --color-water: #8fa6b2;
+  /* Caneta do professor: notas, chamadas, foco e o que se pode clicar. */
+  --color-pen: #dcb25c;
 
   /* --nf-* vêm do next/font (root-document.tsx). */
-  --font-sans: var(--nf-body), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--nf-display), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--nf-body), Georgia, "Times New Roman", serif;
+  --font-display: var(--nf-display), Georgia, serif;
   --font-mono: var(--nf-code), ui-monospace, monospace;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/*
+ * Geometria da carta. As frações batem com src/components/scene/river-curve.ts:
+ * a coluna de texto termina em 0,44 de W (COLUMN_END), as notas começam em
+ * 0,74 (NOTES_START) e, na lombada, o texto começa em 0,24 (SPINE_TEXT_START).
+ * Mudou lá, muda aqui.
+ */
 :root {
   color-scheme: dark;
-  --gutter: clamp(1rem, 4vw, 3rem);
-  --wrap: 78rem;
+  --chart-unit: 100svh; /* refeito pelo JS com a altura medida na carga */
+  --frame: 14px;
+  --col-x: 7%;
+  --col-end: 44%;
+  --notes-x: 74%;
+  --notes-w: 22%;
+}
+@media (max-width: 767.98px) {
+  :root {
+    --frame: 8px;
+    --col-x: 24%;
+    /*
+     * No celular a coluna desconta, à direita, a moldura (8 px + 3 px da linha
+     * dupla), a régua (2 px a 14 px da borda) e o gutter de 12 px: 28 px. Com
+     * 16 px o fim das linhas encostava na régua.
+     */
+    --gutter-r: 28px;
+  }
 }
 
 html {
@@ -56,7 +98,8 @@ html {
 }
 
 body {
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
+  font-optical-sizing: auto;
   background: var(--color-bg);
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
@@ -64,15 +107,17 @@ body {
 }
 
 ::selection {
-  background: var(--color-gold);
+  background: var(--color-pen);
   color: var(--color-bg);
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-gold);
+  outline: 2px solid var(--color-pen);
   outline-offset: 3px;
-  border-radius: 4px;
+  border-radius: 2px;
 }
+
+/* ───────────── Cena e fallback ───────────── */
 
 /* Camada da cena: fixa, atrás de tudo, sem capturar cliques. */
 .scene-layer {
@@ -83,85 +128,21 @@ body {
 }
 
 /*
- * Sem WebGL (ou contexto perdido): a mesma floresta vista de cima, parada.
- * Mata verde-escura e uma faixa mais clara na diagonal, à direita, lembrando o rio.
+ * Sem WebGL (ou com ?webgl=off): fundo sólido com hachura de baixo contraste,
+ * como mata em carta impressa, e o rio desenhado em SVG (.rio-agua).
  */
 html:not([data-webgl="on"]) .scene-layer {
   background:
-    linear-gradient(100deg, transparent 62%, rgb(60 90 100 / 0.12) 66%, transparent 70%),
-    radial-gradient(70% 60% at 70% 50%, #0a1a12, #030705 75%);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9'%3E%3Cpath d='M0 9L9 0' stroke='%23d8e4d0' stroke-opacity='.05'/%3E%3C/svg%3E"),
+    radial-gradient(80% 70% at 60% 40%, #08130d, #030705 80%);
+}
+/* Mesmo azul de céu noturno da água do shader, para as duas versões contarem a mesma carta. */
+.rio-agua {
+  fill: #17242c;
+  stroke: #2f2c22;
+  stroke-width: 2;
+}
+html[data-webgl="on"] .rio-agua {
+  display: none;
 }
 
-/*
- * O nome do hero existe em HTML (acessível e indexável). Com a cena ativa,
- * quem desenha o nome são as partículas; o HTML fica só para leitores de tela.
- * Sem JS o atributo nem existe, então o nome aparece normalmente.
- */
-html[data-webgl="on"] .hero-name {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-.wrap {
-  width: 100%;
-  max-width: var(--wrap);
-  margin-inline: auto;
-  padding-inline: var(--gutter);
-}
-
-/* Rótulo técnico das seções (ex.: "02 · silver"). */
-.eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--color-muted);
-}
-
-/* Painel de leitura sobre a cena: vidro escuro, legível sobre as partículas. */
-.panel {
-  background: rgb(11 20 16 / 0.72);
-  border: 1px solid var(--color-line);
-  border-radius: 1rem;
-  backdrop-filter: blur(14px) saturate(1.1);
-  -webkit-backdrop-filter: blur(14px) saturate(1.1);
-}
-
-/* Link com sublinhado que se desenha no hover. */
-.link-draw {
-  background-image: linear-gradient(currentColor, currentColor);
-  background-size: 0% 1px;
-  background-position: 0 100%;
-  background-repeat: no-repeat;
-  transition: background-size 0.35s var(--ease-out-expo);
-}
-.link-draw:hover,
-.link-draw:focus-visible {
-  background-size: 100% 1px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .diagram-pulse {
-    display: none;
-  }
-}
-
-/* Entrada única do hero no carregamento. */
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-.enter {
-  animation: rise 0.9s var(--ease-out-expo) both;
-  animation-delay: calc(var(--i, 0) * 90ms + 400ms);
-}

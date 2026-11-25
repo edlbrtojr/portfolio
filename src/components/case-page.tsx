@@ -1,121 +1,152 @@
+import Image from "next/image";
 import Link from "next/link";
 import { allProjects, content, homeHref, projectHref, resumeHref } from "@/content";
 import type { Locale, Project } from "@/content/types";
-import { BrowserFrame } from "./browser-frame";
+import { annotate } from "@/lib/annotate";
+import { ChartFrame } from "./chart/chart-frame";
+import { MarginNote } from "./chart/margin-note";
 import { Diagram } from "./diagrams";
-import { SceneRoot, StageObserver } from "./scene/scene-root";
-import { SiteHeader } from "./site-header";
-import { Arrow, ButtonLink, Chips } from "./ui";
+import { numberNotes, RichText } from "./home/rich-text";
+import { SceneRoot } from "./scene/scene-root";
 
+/**
+ * O case como folha de detalhe da carta: mesma moldura, o projeto como
+ * topônimo, o texto na coluna esquerda e os problemas anotados na margem, do
+ * outro lado do rio. A cena recua (dim) para as capturas mandarem.
+ */
 export function CasePage({ project, locale }: { project: Project; locale: Locale }) {
   const c = content[locale];
   const list = allProjects(locale);
   const next = list[(list.findIndex((p) => p.slug === project.slug) + 1) % list.length];
   const site = project.links[0];
+  const home = homeHref(locale);
+  const other: Locale = locale === "pt" ? "en" : "pt";
+  const copy = { locale, copied: c.contact.copied };
+  // Jargão do contexto e das decisões com nota de professor, numerado na
+  // página inteira (1, 2, 3… do contexto até a última decisão).
+  const texts = [project.details.overview, ...project.details.decisions.map((d) => d.choice)];
+  const rich = annotate(texts, c.glossary);
+  const [overview, ...choices] = numberNotes(rich, "nota-caso").map((n, i) => ({ ...n, parts: rich[i] }));
 
   return (
     <>
-      <SceneRoot name="EDILBERTO" />
-      <StageObserver />
-      <SiteHeader nav={c.nav} home={homeHref(locale)} resume={resumeHref(locale)} />
-      {/* A página inteira é uma etapa só, com a cena recuada atrás do texto. */}
-      <main id="conteudo" data-stage={project.stage} data-dim className="relative z-10 pb-24 pt-28">
-        <article className="wrap">
-          <Link href={`${homeHref(locale)}#projetos`} className="group inline-flex min-h-11 items-center gap-2 text-sm text-muted hover:text-ink">
-            <Arrow className="rotate-180 group-hover:-translate-x-0.5 group-hover:translate-x-0" /> {c.ui.back}
-          </Link>
+      <SceneRoot dim />
+      <ChartFrame
+        locale={locale}
+        nav={c.nav}
+        channels={c.contact.channels}
+        copied={c.contact.copied}
+        home={home}
+        resume={resumeHref(locale)}
+        switchHref={projectHref(other, project.slug)}
+        photos
+      />
+      <main id="conteudo" tabIndex={-1} className="carta caso">
+        <article>
+          <p className="col caso-volta">
+            {/* Volta ao topônimo exato na carta, não ao topo da home. */}
+            <Link href={`${home}#${project.slug}`}>← {c.ui.back}</Link>
+          </p>
 
-          <header className="mt-8 grid gap-10 lg:grid-cols-12">
-            <div className="lg:col-span-8">
-              <p className="eyebrow">{project.kicker}</p>
-              <h1 className="mt-4 text-balance font-display text-4xl font-bold leading-[1.02] tracking-tight sm:text-6xl">{project.title}</h1>
-              <p className="mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted">{project.summary}</p>
-            </div>
-            <dl className="grid content-start gap-5 text-sm lg:col-span-4">
-              <div className="border-t border-line-strong pt-3">
-                <dt className="eyebrow">{c.ui.role}</dt>
-                <dd className="mt-1.5 text-ink">
-                  {project.role} · {project.year}
-                </dd>
+          <header className="caso-cabeca">
+            <p className="col caso-kicker">
+              {project.kicker} <span aria-hidden>·</span> <span className="font-mono">{project.year}</span>
+            </p>
+            {/* Sem a nota do topônimo ("produto próprio", "freelance"): o kicker logo acima já diz a relação. */}
+            <h1 className="caso-titulo">
+              <span aria-hidden className="topo-nome">
+                {project.toponym.name}
+              </span>
+              <span className="sr-only">{project.title}</span>
+            </h1>
+            <p className="col caso-resumo">{project.summary}</p>
+            <dl className="col caso-ficha">
+              <div>
+                <dt>{c.ui.role}</dt>
+                <dd>{project.role}</dd>
               </div>
-              <div className="border-t border-line-strong pt-3">
-                <dt className="eyebrow">{c.ui.stack}</dt>
-                <dd className="mt-2">
-                  <Chips items={project.stack} />
-                </dd>
+              <div>
+                <dt>{c.ui.stack}</dt>
+                <dd>{project.stack.join(", ")}.</dd>
               </div>
-              {site && (
-                <div className="pt-1">
-                  <ButtonLink href={site.href} target="_blank" rel="noopener noreferrer" variant="secondary">
-                    {c.ui.visitSite} ↗
-                  </ButtonLink>
-                </div>
-              )}
             </dl>
+            {site && (
+              <p className="col caso-site">
+                <a href={site.href} target="_blank" rel="noopener noreferrer">
+                  {c.ui.visitSite} ↗
+                </a>
+              </p>
+            )}
           </header>
 
-          <div className="mt-14 grid gap-5">
+          <div className="caso-capturas">
             {project.shots.length > 0
               ? project.shots.map((s, n) => (
-                  <BrowserFrame key={s.src} shot={s} url={n === 0 ? site?.label : undefined} aspect={s.frame ?? `${s.width} / ${s.height}`} priority={n === 0} sizes="(min-width: 1280px) 1200px, 100vw" />
+                  <figure key={s.src} className="caso-captura" style={{ aspectRatio: s.frame ?? `${s.width} / ${s.height}` }}>
+                    <Image src={s.src} alt={s.alt} fill sizes="(min-width: 1100px) 85vw, 100vw" priority={n === 0} />
+                  </figure>
                 ))
               : project.diagram && (
-                  <div className="panel aspect-[16/7] p-6 sm:p-10">
+                  <div className="caso-diagrama">
                     <Diagram kind={project.diagram} title={project.title} locale={locale} />
                   </div>
                 )}
           </div>
 
-          <section aria-labelledby="overview" className="mt-20 grid gap-6 lg:grid-cols-12">
-            <h2 id="overview" className="font-display text-2xl font-bold tracking-tight lg:col-span-4">
+          <section aria-labelledby="contexto" className="caso-secao">
+            <h2 id="contexto" className="col secao-titulo">
               {c.ui.overview}
             </h2>
-            <p className="text-pretty text-lg leading-relaxed text-muted lg:col-span-8">{project.details.overview}</p>
+            <div className="nota-linha">
+              <p className="col caso-texto">
+                <RichText parts={overview.parts} {...copy} notes={overview.map} />
+              </p>
+              {overview.list.map((note) => (
+                <MarginNote key={note.id} {...note} />
+              ))}
+            </div>
           </section>
 
-          <section aria-labelledby="decisions" className="mt-20">
-            <h2 id="decisions" className="font-display text-2xl font-bold tracking-tight">
+          <section aria-labelledby="decisoes" className="caso-secao">
+            <h2 id="decisoes" className="col secao-titulo">
               {c.ui.decisions}
             </h2>
-            {/* Cabeçalho só no desktop; no celular o peso da fonte já separa problema e decisão. */}
-            <div aria-hidden className="mt-8 hidden grid-cols-12 gap-6 lg:grid">
-              <span className="eyebrow col-span-5">{c.ui.problem}</span>
-              <span className="eyebrow col-span-7">{c.ui.choice}</span>
-            </div>
-            <dl className="mt-6 border-t border-line-strong lg:mt-3">
-              {project.details.decisions.map((d) => (
-                <div key={d.problem} className="grid gap-2 border-b border-line py-6 lg:grid-cols-12 lg:gap-6">
-                  <dt className="text-pretty font-display text-lg font-semibold leading-snug text-ink lg:col-span-5">{d.problem}</dt>
-                  <dd className="text-pretty leading-relaxed text-muted lg:col-span-7">{d.choice}</dd>
+            <dl className="decisoes">
+              {project.details.decisions.map((d, i) => (
+                <div key={d.problem} className="decisao">
+                  <dt className="col">{d.problem}</dt>
+                  {/* A nota mora dentro do <dd> (HTML válido); quem a posiciona na margem é a .decisao. */}
+                  <dd className="col">
+                    <RichText parts={choices[i].parts} {...copy} notes={choices[i].map} />
+                    {choices[i].list.map((note) => (
+                      <MarginNote key={note.id} {...note} />
+                    ))}
+                  </dd>
                 </div>
               ))}
             </dl>
           </section>
 
-          <section aria-labelledby="results" className="panel mt-16 p-6 sm:p-8">
-            <h2 id="results" className="font-display text-xl font-bold">
+          <section aria-labelledby="hoje" className="caso-secao">
+            <h2 id="hoje" className="col secao-titulo">
               {c.ui.results}
             </h2>
-            <ul className="mt-4 space-y-3">
+            <ul className="col caso-hoje">
               {project.details.results.map((it) => (
-                <li key={it} className="flex gap-3 text-pretty leading-relaxed text-muted">
-                  <span aria-hidden className="mt-2.5 size-1.5 shrink-0 rounded-full bg-gold" />
-                  {it}
-                </li>
+                <li key={it}>{it}</li>
               ))}
             </ul>
           </section>
 
-          <Link
-            href={projectHref(locale, next.slug)}
-            className="group mt-20 flex flex-col gap-2 border-t border-line-strong pt-8 sm:flex-row sm:items-end sm:justify-between"
-          >
-            <span>
-              <span className="eyebrow">{c.ui.nextProject}</span>
-              <span className="mt-2 block font-display text-3xl font-bold tracking-tight transition-colors group-hover:text-gold sm:text-4xl">{next.title}</span>
-            </span>
-            <Arrow className="size-6 text-gold" />
-          </Link>
+          <nav aria-label={c.ui.nextProject} className="caso-rio">
+            <Link href={`${home}#${project.slug}`} className="caso-rio-volta">
+              ← {c.ui.back}
+            </Link>
+            <Link href={projectHref(locale, next.slug)} className="caso-rio-abaixo" data-lantern>
+              <span className="caso-rio-rotulo">{c.ui.nextProject} →</span>
+              <span className="topo-nome">{next.toponym.name}</span>
+            </Link>
+          </nav>
         </article>
       </main>
     </>

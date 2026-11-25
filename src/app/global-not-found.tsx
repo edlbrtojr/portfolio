@@ -8,25 +8,26 @@ import { en } from "@/content/en";
 export const metadata: Metadata = { metadataBase: new URL(SITE_URL), title: "404 · Edilberto Lima Jr." };
 
 // Sem rota não dá para saber o idioma; mostra os dois, português primeiro.
+// Sem cena WebGL e sem desenho: quem cai aqui só precisa saber o que houve e
+// ter o caminho de volta.
 export default function GlobalNotFound() {
   return (
     <RootDocument locale="pt">
-      <main className="grid min-h-[100svh] place-items-center px-6">
-        <div className="max-w-xl">
-          <p className="eyebrow">404</p>
-          <h1 className="mt-4 font-display text-4xl font-bold tracking-tight sm:text-5xl">{pt.ui.notFoundTitle}</h1>
-          <p className="mt-4 text-lg text-muted">{pt.ui.notFoundBody}</p>
-          <p className="mt-2 text-muted" lang="en">
-            {en.ui.notFoundBody}
+      <div aria-hidden className="moldura" />
+      <main className="fim-do-mapa">
+        <div className="col fim-texto">
+          <p className="font-mono fim-cota">404</p>
+          <h1 className="fim-titulo">{pt.ui.notFoundTitle}</h1>
+          <p className="fim-corpo">{pt.ui.notFoundBody}</p>
+          <p className="fim-corpo" lang="en">
+            <span className="italic">{en.ui.notFoundTitle}</span> {en.ui.notFoundBody}
           </p>
-          <div className="mt-8 flex gap-3">
-            <Link href="/" className="inline-flex min-h-12 items-center rounded-full bg-gold px-6 font-medium text-bg">
-              {pt.ui.notFoundCta}
+          <p className="fim-links">
+            <Link href="/">← {pt.ui.notFoundCta}</Link>
+            <Link href="/en" lang="en">
+              ← {en.ui.notFoundCta}
             </Link>
-            <Link href="/en" lang="en" className="inline-flex min-h-12 items-center rounded-full border border-line-strong px-6">
-              {en.ui.notFoundCta}
-            </Link>
-          </div>
+          </p>
         </div>
       </main>
     </RootDocument>

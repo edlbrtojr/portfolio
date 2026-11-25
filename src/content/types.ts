@@ -1,5 +1,3 @@
-import type { ShapeKey } from "@/components/scene/shapes";
-
 export type Locale = "pt" | "en";
 
 /** `frame`: proporção do recorte (a partir do topo) quando a captura tem sobra embaixo. */
@@ -8,21 +6,30 @@ export type ExternalLink = { label: string; href: string };
 
 /**
  * Trecho de texto corrido. Strings simples são texto; objetos viram link ou
- * termo explicado. `href` aceita URL, caminho interno ou um destino especial:
+ * termo com nota. `href` aceita URL, caminho interno ou um destino especial:
  * "whatsapp", "email" (copia o endereço), "resume:pt" e "resume:en".
- * `term` é a explicação em português simples que aparece ao passar o mouse:
- * resquício do professor de inglês, que explica antes de usar jargão.
+ * `term` é a nota de margem em português simples: resquício do professor,
+ * que explica antes de usar jargão.
  */
 export type Inline = string | { text: string; href?: string; term?: string };
 export type Rich = Inline[];
+
+/**
+ * Nome do projeto na carta, como topônimo. `note` é a anotação em itálico ao
+ * lado ("do Observatório", "meu"). A hierarquia vem de `rank`, nunca de peso:
+ * a Instrument Serif só tem 400.
+ */
+export type Toponym = { name: string; note?: string };
 
 /** Projeto com página própria de case. */
 export type Project = {
   slug: string;
   title: string;
-  /** Uma linha para a lista da home: o que é, em palavras comuns. */
+  toponym: Toponym;
+  rank: "capital" | "cidade";
+  /** Uma linha para a carta: o que é, em palavras comuns. Vira a legenda do topônimo. */
   line: string;
-  /** Rótulo discreto na lista (freelance, projeto pessoal); vazio no trabalho principal. */
+  /** Rótulo discreto (freelance, projeto pessoal); vazio no trabalho principal. */
   tag?: string;
   /** Linha curta acima do título na página do case. */
   kicker: string;
@@ -39,7 +46,6 @@ export type Project = {
   shots: Shot[];
   /** Quando não há tela que possa ser mostrada, um diagrama desenhado no código. */
   diagram?: "order-flow" | "decision-tree";
-  stage: ShapeKey;
   details: {
     overview: string;
     /**
@@ -55,9 +61,23 @@ export type Decision = { problem: string; choice: string };
 
 export type ArchiveItem = { title: string; year: string; description: string; href?: string };
 
-/** Etapa da trajetória, explorada passando o mouse (ou tocando) no ano. */
 export type Step = { year: string; title: string; text: string };
 
+/**
+ * Notas de professor das páginas de case. `term` é o trecho exato como
+ * aparece no texto (contexto e decisões); a primeira ocorrência na página
+ * ganha número e nota na margem. A ordem é a prioridade: com no máximo duas
+ * notas por parágrafo, os primeiros da lista ganham.
+ */
+export type Glossary = { term: string; note: string }[];
+
+/**
+ * Regra do dono (2026-11-25): texto sem propósito é lixo. Todo campo abaixo
+ * tem de ajudar o visitante a entender quem é o Edilberto, achar o trabalho
+ * ou falar com ele. Coordenadas, escala da carta, estação do rio, símbolos
+ * cartográficos e a lista de fontes do colofão saíram por não fazerem nada
+ * disso. Antes de acrescentar campo, responda qual das três coisas ele faz.
+ */
 export type Content = {
   locale: Locale;
   meta: { title: string; description: string };
@@ -69,21 +89,34 @@ export type Content = {
     switchLang: string;
     switchLangHref: string;
     skip: string;
+    /** Botão fixo do celular: abre navegação e contato. */
     menuOpen: string;
     menuClose: string;
     mainLabel: string;
   };
-  /** Abertura: o nome é desenhado pelos vaga-lumes; `line` diz o que eu faço e onde. */
-  hero: { name: string; line: string; scrollHint: string };
+  /** Rodapé: diz que o site é trabalho meu, e com o quê. */
+  chart: { colophon: string };
+  /**
+   * Abertura: o nome, o que eu faço e onde, e os dois caminhos que quem chega
+   * procura (ver o trabalho, falar comigo). Substitui a barra de escala e o
+   * "role para descer o rio", que não levavam a lugar nenhum.
+   */
+  hero: { name: string; line: string; cta: { work: string; contact: string } };
   /** Bio em primeira pessoa, sem rótulo de seção. */
   bio: Rich[];
   work: { label: string; more: string };
   projects: Project[];
   archive: ArchiveItem[];
-  /** Parágrafo no estilo /now, assinado com lugar e data. */
+  /**
+   * Entrada de diário. `signature` é o mês em que o texto foi escrito: mostrar
+   * a data de hoje calculada no navegador fingiria um texto sempre recém-escrito.
+   */
   now: { label: string; body: Rich[]; signature: string };
-  past: { label: string; hint: string; steps: Step[]; tools: string };
-  contact: { label: string; body: Rich[]; copied: string };
+  past: { label: string; steps: Step[]; tools: string };
+  /** `channels`: um canal por item, cada um dizendo o que é e para que serve. */
+  contact: { label: string; invite: Rich; channels: Rich[]; copied: string };
+  /** O jargão das páginas de case, explicado na margem (ver Glossary). */
+  glossary: Glossary;
   ui: {
     visitSite: string;
     stack: string;
@@ -95,8 +128,6 @@ export type Content = {
     choice: string;
     results: string;
     nextProject: string;
-    footer: string;
-    localTime: string;
     notFoundTitle: string;
     notFoundBody: string;
     notFoundCta: string;

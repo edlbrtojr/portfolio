@@ -2,7 +2,7 @@ import type { Content, Project } from "./types";
 import { pt } from "./pt";
 
 // Mesmas regras e fatos de pt.ts (ver o comentário do topo de lá). Imagens,
-// stacks e etapas da cena vêm de lá para não divergirem.
+// stacks e a hierarquia na carta (rank) vêm de lá para não divergirem.
 const [lakePt, platformPt, milixPt, flowPt, libraryPt, vizuPt] = pt.projects;
 const shotAlt = (p: Project, ...alts: string[]) => p.shots.map((s, i) => ({ ...s, alt: alts[i] ?? s.alt }));
 
@@ -21,14 +21,17 @@ export const en: Content = {
     switchLang: "PT",
     switchLangHref: "/",
     skip: "Skip to content",
-    menuOpen: "Open menu",
-    menuClose: "Close menu",
+    menuOpen: "menu and contact",
+    menuClose: "close",
     mainLabel: "Main",
+  },
+  chart: {
+    colophon: "I designed and built this site in Rio Branco, with Next.js and three.js.",
   },
   hero: {
     name: "Edilberto Lima Jr.",
     line: "Full-stack developer and data engineer in Rio Branco, in Brazil's Amazon.",
-    scrollHint: "Scroll to fly over the river",
+    cta: { work: "see the work", contact: "message me on WhatsApp" },
   },
   bio: [
     [
@@ -48,9 +51,7 @@ export const en: Content = {
       ", clinic management software that I code, sell and support.",
     ],
     [
-      "Before programming, I taught English in public schools. The habit of explaining stuck: hover over the ",
-      { text: "underlined words", term: "Exactly like this. Jargon here comes with a caption." },
-      ".",
+      "Before programming, I taught English in public schools. The habit of explaining stuck: jargon here comes with a note.",
     ],
   ],
   work: { label: "work", more: "more things I made" },
@@ -58,8 +59,9 @@ export const en: Content = {
     {
       ...lakePt,
       title: "Observatory data lake",
+      toponym: { name: "Data lake", note: "Observatory" },
       line: "Brings public data on jobs, trade and companies into one place.",
-      kicker: "Data engineering · in production",
+      kicker: "Data engineering at the Observatory · in production",
       role: "Architecture and lead development",
       summary:
         "The Acre Industry Observatory's data foundation, on Azure. It takes in public data on jobs, foreign trade and companies, cleans it, checks it and gets it ready for dashboards and reports. I led the architecture and development, together with the Observatory team.",
@@ -95,8 +97,9 @@ export const en: Content = {
     {
       ...platformPt,
       title: "Observatory platform",
+      toponym: { name: "Platform", note: "Observatory" },
       line: "Where business owners and managers in Acre explore that data.",
-      kicker: "Full-stack · in production",
+      kicker: "Full-stack at the Observatory · in production",
       role: "Lead developer",
       summary:
         "The site where business owners and managers explore the Observatory's data. Dashboards on Acre's jobs, wages, exports and companies, reports and AI summaries, without downloading a spreadsheet. I'm the lead developer, working with the Observatory team.",
@@ -134,6 +137,7 @@ export const en: Content = {
     },
     {
       ...milixPt,
+      toponym: { name: "Milix", note: "my own product" },
       line: "My clinic management software, with AI customer service on WhatsApp.",
       tag: "my own product",
       kicker: "My own SaaS · paying customers",
@@ -201,6 +205,7 @@ export const en: Content = {
     {
       ...libraryPt,
       title: "Process Library",
+      toponym: { name: "Process Library", note: "freelance" },
       line: "Decision trees for an internet provider's support team.",
       kicker: "Freelance · in production",
       role: "Full-stack developer",
@@ -229,6 +234,7 @@ export const en: Content = {
     },
     {
       ...vizuPt,
+      toponym: { name: "Vizu", note: "personal project" },
       line: "Acre's elections, from the whole state down to a polling section.",
       tag: "personal project",
       kicker: "Personal project · public data",
@@ -250,13 +256,13 @@ export const en: Content = {
             choice: "Totals are checked automatically between Python and the database, and the map uses IBGE's 2025 municipal boundaries in MapLibre.",
           },
         ],
-        results: ["660 polling places, 22 municipalities and 341 candidates, searchable down to the section."],
+        results: ["Searchable from the whole state down to the polling section, in every municipality in Acre."],
       },
     },
   ],
   archive: [
     { ...pt.archive[0], description: "The first version of Milix, for dentists only." },
-    { ...pt.archive[1], title: "Fiscal data from 21 municipalities", description: "The transparency portals of 21 Acre municipalities in one dataset." },
+    { ...pt.archive[1], title: "Fiscal data from Acre's municipalities", description: "The transparency portals of Acre's municipalities in one dataset." },
     { ...pt.archive[2], title: "Data presentations", description: "The Observatory's HTML decks, like the Acre Exports Overview." },
     { ...pt.archive[3], title: "AI agent skills", description: "Teaches Claude Code and Codex to work the team's way." },
     { ...pt.archive[4], title: "Gazette Search", description: "Searches for terms inside Acre's official gazettes." },
@@ -269,10 +275,15 @@ export const en: Content = {
     body: [
       ["At the Observatory, I keep adding new sources to the lake and new dashboards to the platform. At Milix, I look after the clinics already using it and what they ask for."],
       [
-        "I also take on projects for businesses: custom systems, AI customer service on WhatsApp, ",
+        "I also take on projects for businesses: custom systems, ",
+        {
+          text: "AI customer service on WhatsApp",
+          term: "An assistant that answers customers on WhatsApp at any hour, books appointments or takes orders, and calls in a person when needed.",
+        },
+        ", ",
         { text: "dashboards", term: "Screens with the business numbers, updating on their own, instead of the spreadsheet someone rebuilds every week." },
-        " and automations. If your business runs on spreadsheets and WhatsApp, ",
-        { text: "get in touch", href: "whatsapp" },
+        " and ",
+        { text: "automations", term: "Repetitive work the computer takes over: building the report, sending the reminder, moving data from one system to another." },
         ".",
       ],
     ],
@@ -280,7 +291,6 @@ export const en: Content = {
   },
   past: {
     label: "before",
-    hint: "hover or tap the years",
     steps: [
       { year: "2016", title: "Languages", text: "A teaching degree in English at the Federal University of Acre." },
       { year: "2021", title: "Classroom", text: "English teacher in Acre's public schools while studying Information Systems. The same year, a help desk internship at Uninorte." },
@@ -292,39 +302,57 @@ export const en: Content = {
   },
   contact: {
     label: "contact",
-    body: [
-      [
-        "The fastest way to reach me is ",
-        { text: "WhatsApp", href: "whatsapp" },
-        ". I also answer at ",
-        { text: "edlbrtojr@gmail.com", href: "email" },
-        ". My resume is in ",
-        { text: "English", href: "resume:en" },
-        " and ",
-        { text: "Portuguese", href: "resume:pt" },
-        ", and the rest is on ",
-        { text: "LinkedIn", href: "https://www.linkedin.com/in/edilbertolimajr/" },
-        " and ",
-        { text: "GitHub", href: "https://github.com/edlbrtojr" },
-        ".",
-      ],
+    invite: ["If your business runs on spreadsheets and WhatsApp, ", { text: "message me", href: "whatsapp" }, "."],
+    channels: [
+      [{ text: "WhatsApp", href: "whatsapp" }, ", the fastest way to reach me"],
+      [{ text: "edlbrtojr@gmail.com", href: "email" }, ", click to copy"],
+      [{ text: "Resume as PDF", href: "resume:en" }, " (also in ", { text: "Portuguese", href: "resume:pt" }, ")"],
+      [{ text: "LinkedIn", href: "https://www.linkedin.com/in/edilbertolimajr/" }, ", experience and education"],
+      [{ text: "GitHub", href: "https://github.com/edlbrtojr" }, ", open source code"],
     ],
     copied: "copied",
   },
+  glossary: [
+    { term: "pipeline", note: "An automatic sequence of steps that takes data from the source to where it's used: download, clean, check, publish." },
+    { term: "Azure Data Explorer", note: "Microsoft's database built to query a lot of data fast. It's where the ready-to-use data lives." },
+    { term: "KQL", note: "Azure Data Explorer's query language. It looks like SQL, but it was made for large volumes." },
+    { term: "Databricks", note: "A cloud platform that processes large amounts of data in parallel, splitting the work across many machines." },
+    { term: "bronze, silver and gold", note: "Three stages of data: bronze is the original as it arrived, silver is cleaned and checked, gold is ready for charts and reports." },
+    { term: "idempotent", note: "Running it again changes nothing: the second run gives the same result as the first, with no duplicates." },
+    { term: "SHA-256", note: "A file's fingerprint. If a single byte changes, the fingerprint changes." },
+    { term: "cluster", note: "The group of cloud machines that answers the queries. While it's on, it bills." },
+    { term: "Microsoft Entra ID", note: "Microsoft's work sign-in: people log in with the same account they use at work." },
+    { term: "audit trail", note: "The record of who accessed or changed what, and when." },
+    { term: "CI/CD", note: "Automatic tests and deployment on every code change, before it reaches the people using it." },
+    { term: "staging", note: "A copy of the system where a change gets checked before it goes live." },
+    { term: "entry point", note: "A single door every call goes through. With one door, the checks can't be forgotten in some corner." },
+    { term: "structural test", note: "A test that looks at the shape of the code, not the result: it fails if someone opens a path outside the rule." },
+    { term: "webhooks", note: "Messages one system sends another on its own when something happens, like a confirmed payment." },
+    { term: "embeddings", note: "Text turned into numbers that keep its meaning, so the system finds a procedure even when it's spelled another way." },
+    { term: "LLM gateway", note: "A layer of mine between the system and the AI models: I can switch providers and control cost without touching the rest." },
+    { term: "ADR", note: "A short document recording an architecture decision: what was chosen, why, and what was left out." },
+    { term: "Kanban", note: "A board in columns, like new, preparing and out for delivery, where each order moves from one column to the next." },
+    { term: "Zod", note: "A library that checks whether data has the expected shape before it's used." },
+    { term: "anti-hallucination guardrails", note: "Checks that block the AI's answer when it mentions something that isn't in the data." },
+    { term: "state machine", note: "A map of every possible step and how to get from one to the next. An order can never sit in a step that doesn't exist." },
+    { term: "Supabase Realtime", note: "A feature that tells every open screen the moment a piece of data changes, with no reload." },
+    { term: "decision trees", note: "Chained questions: each answer leads to the next question, until you reach the fix." },
+    { term: "JWT", note: "A signed digital badge, checked on every request, that says who the person is and what they can see." },
+    { term: "Deterministic", note: "Same input, same output, every time." },
+    { term: "resume points", note: "A mark of how far the import got. If it fails, it restarts from there instead of from zero." },
+  ],
   ui: {
     visitSite: "Open the site",
     stack: "Stack",
     role: "Role",
-    back: "Back to start",
+    back: "back to the work",
     overview: "Context",
     decisions: "Decisions",
     problem: "Problem",
     choice: "What I did",
     results: "Where it stands",
-    nextProject: "Next project",
-    footer: "Made on the banks of the Acre River, with Next.js and three.js.",
-    localTime: "in Rio Branco",
-    notFoundTitle: "This data never made it to gold.",
+    nextProject: "next project",
+    notFoundTitle: "This is where the map ends.",
     notFoundBody: "The page you're looking for doesn't exist or has moved.",
     notFoundCta: "Back to start",
   },

@@ -1,0 +1,172 @@
+/* ───────────── Notas de professor ───────────── */
+
+.nota-termo {
+  cursor: help;
+  text-decoration: underline dotted;
+  text-decoration-color: rgb(220 178 92 / 0.75);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+  transition: color 0.25s;
+}
+.nota-termo:hover,
+.nota-termo:focus-visible,
+.nota-termo[aria-expanded="true"] {
+  color: var(--color-pen);
+}
+.nota-num {
+  margin-left: 0.12em;
+  font-family: var(--font-mono);
+  font-size: 0.5em;
+  font-style: normal;
+  color: var(--color-pen);
+  text-decoration: none;
+}
+button.nota-termo {
+  display: inline;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  /* Área de toque maior sem empurrar as linhas vizinhas. */
+  padding: 10px 2px;
+  margin: -10px -2px;
+}
+.nota-margem {
+  display: none;
+  position: relative;
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-ink);
+}
+/* No case a nota mora dentro do <dd>, que já está na coluna: sem recuo dobrado. */
+.decisao dd .nota-margem[data-aberta] {
+  margin-left: 0;
+  width: auto;
+}
+.nota-margem .nota-num {
+  margin: 0 0.35em 0 0;
+  font-size: 0.7em;
+}
+.nota-tinta,
+.nota-chamada {
+  display: none;
+}
+/* Rodapé de livro (abaixo de 1100 px): abre logo depois do parágrafo, com traço dourado. */
+.nota-margem[data-aberta],
+.nota-solta {
+  display: block;
+  margin: 0.8rem 0 0 var(--col-x);
+  width: min(36rem, calc(var(--col-end) - var(--col-x)));
+  padding-left: 1.4rem;
+  color: var(--color-muted);
+}
+.nota-margem[data-aberta]::before,
+.nota-solta::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.78em;
+  width: 0.9rem;
+  height: 1px;
+  background: var(--color-pen);
+}
+.nota-margem[data-aberta] {
+  animation: rise 0.4s var(--ease-out-expo);
+}
+@media (max-width: 767.98px) {
+  .nota-margem[data-aberta],
+  .nota-solta {
+    width: calc(100% - var(--col-x) - var(--gutter-r));
+  }
+}
+
+@media (min-width: 1100px) {
+  /* Na margem: sempre visível, em lápis. */
+  .nota-margem,
+  .nota-solta,
+  .nota-margem[data-aberta] {
+    display: block;
+    position: absolute;
+    top: var(--nota-top, 0.4em);
+    left: var(--notes-x);
+    width: var(--notes-w);
+    max-width: 19rem;
+    margin: 0;
+    padding: 0;
+    color: var(--color-ink);
+    animation: none;
+  }
+  .nota-margem::before,
+  .nota-solta::before {
+    display: none;
+  }
+  /*
+   * Lápis a 62%: ~6,5:1 sobre a margem escurecida. A 40% (versão anterior)
+   * dava ~3:1 em itálico de 15 px e mal se lia, e no desktop essa é a única
+   * forma visível da nota. A tinta (100%) continua sendo o destaque do hover.
+   */
+  .nota-lapis {
+    opacity: 0.62;
+    transition: opacity 0.3s;
+  }
+  /*
+   * A stack do dia a dia é informação, não repetição: legível de cara. Fica
+   * na altura do último marco (2025, "Dados"), que é de quando ela é: no
+   * topo da seção ela encostava nas notas de "agora".
+   */
+  .nota-solta {
+    top: auto;
+    bottom: 1.6rem;
+  }
+  .nota-solta .nota-lapis {
+    opacity: 0.78;
+  }
+  /* A tinta por cima do lápis, revelada em degraus de cima para baixo (linha a linha). */
+  .nota-tinta {
+    display: block;
+    position: absolute;
+    inset: 0;
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 0.55s steps(5, end);
+  }
+  .nota-margem[data-ativa] .nota-tinta {
+    clip-path: inset(0 0 -0.2em 0);
+  }
+  .nota-margem[data-ativa] .nota-lapis {
+    opacity: 0;
+  }
+  /*
+   * A linha de chamada passa por baixo das letras (z-index -1 dentro do
+   * contexto da .carta): quando ela corre pela entrelinha e cruza uma
+   * descendente, a letra fica por cima e o traço não risca a palavra.
+   */
+  .nota-chamada {
+    display: block;
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .nota-chamada path {
+    fill: none;
+    stroke: var(--color-pen);
+    stroke-width: 1.25;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 0.45s var(--ease-out-expo);
+  }
+  .nota-chamada[data-ativa] path {
+    stroke-dashoffset: 0;
+  }
+}
+@media (min-width: 1100px) and (prefers-reduced-motion: reduce) {
+  .nota-tinta {
+    transition: none;
+  }
+}
