@@ -1,0 +1,18 @@
+import { notFound } from "next/navigation";
+import { CasePage } from "@/components/case-page";
+import { caseMetadata, caseParams, findProject } from "@/lib/case-route";
+
+type Props = { params: Promise<{ slug: string }> };
+
+export const dynamicParams = false;
+export const generateStaticParams = () => caseParams("en");
+
+export async function generateMetadata({ params }: Props) {
+  return caseMetadata("en", (await params).slug);
+}
+
+export default async function Page({ params }: Props) {
+  const project = findProject("en", (await params).slug);
+  if (!project) notFound();
+  return <CasePage project={project} locale="en" />;
+}

@@ -22,6 +22,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# checagens locais de design
+.taste-skill
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
