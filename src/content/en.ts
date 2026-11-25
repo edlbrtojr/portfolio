@@ -1,7 +1,8 @@
 import type { Content } from "./types";
 import { pt } from "./pt";
 
-// Mesmos números de pt.ts. Imagens e stacks vêm de lá para não divergirem.
+// Mesmas regras e fatos de pt.ts (ver o comentário do topo de lá). Imagens e
+// stacks vêm de lá para não divergirem.
 const [lakePt, platformPt, milixPt] = pt.featured;
 const [flowPt, libraryPt, vizuPt] = pt.more.projects;
 
@@ -10,7 +11,7 @@ export const en: Content = {
   meta: {
     title: "Edilberto Lima Jr. · Full-stack & data engineering",
     description:
-      "Full-stack developer and data engineer in Brazil. A production data lake on Azure, a data platform with 14 dashboards and a clinic SaaS with paying customers.",
+      "Full-stack developer and data engineer in Brazil. I built the Acre Industry Observatory's data lake, develop the platform that serves it, and created Milix, a SaaS for clinics.",
   },
   nav: {
     work: "Work",
@@ -29,20 +30,20 @@ export const en: Content = {
     eyebrow: "Rio Branco, Brazil · open to roles and projects",
     name: "Edilberto Lima Jr.",
     role: "Full-stack developer and data engineer",
-    lead: "I take data from the raw source to the screen of whoever makes the call: I built the Acre Industry Observatory's data lake on my own, I develop the platform that serves it, and I founded a SaaS already used by 3 paying clinics.",
+    lead: "I take data the way the government publishes it and deliver it the way a business owner can read it. At the Acre Industry Observatory, I built the data lake on my own and develop the platform that puts those numbers on screen. On the side, I created Milix, a clinic management system that already has paying customers.",
     ctaPrimary: "See the work",
     ctaWhatsapp: "Message me on WhatsApp",
-    scrollHint: "Scroll to follow the data",
+    scrollHint: "Scroll and follow the data",
   },
   path: {
-    eyebrow: "00 · sources",
-    title: "Fifteen raw sources. One path to the screen.",
-    body: "I've spent 3+ years building end to end. I write the ingestion in PySpark, model the layers in Databricks, publish to Azure Data Explorer and build the Next.js app that puts it in front of managers and business owners. I run AI in production: agents, WhatsApp chatbots and agent-assisted development. Fluent English — I taught it for two years.",
+    eyebrow: "00 · the path",
+    title: "From raw file to screen, in one pair of hands.",
+    body: "On most teams, one person wrangles the data and another builds the screen. I do both. The chart is designed alongside the table that feeds it, and no number reaches the screen unless I know where it came from.",
     metrics: [
-      { value: "15", label: "public and institutional datasets integrated" },
-      { value: "30", label: "scheduled pipelines in Azure Data Factory" },
-      { value: "23.7M", label: "records in the largest dataset" },
-      { value: "3", label: "paying clinics on Milix" },
+      { value: "Collect", label: "Python and PySpark pulling from government agencies, APIs or internal systems" },
+      { value: "Model", label: "Bronze, silver and gold on Databricks, tested before it ships" },
+      { value: "Show", label: "Next.js, KQL and AI putting the number in front of whoever decides" },
+      { value: "Run", label: "Scheduled, no exposed keys, and the cloud bill kept in check" },
     ],
   },
   featured: [
@@ -52,48 +53,56 @@ export const en: Content = {
       kicker: "Data engineering · in production",
       role: "Architect and sole developer",
       summary:
-        "I designed and built the FIEAC System's data lake on Azure by myself. Fifteen public and institutional datasets flow through bronze, silver and gold and land in Azure Data Explorer, ready for dashboards and reports.",
+        "Every agency publishes data its own way: huge zipped files, official spreadsheets, paginated APIs. I designed and built the data lake that takes all of it into Azure, cleans it, checks the totals and hands it over ready for analysis. It's in production and runs on a schedule.",
       metrics: [
-        { value: "30", label: "ADF pipelines" },
-        { value: "15", label: "sources integrated" },
-        { value: "102", label: "test files" },
+        { value: "$0", label: "in cloud costs to test a pipeline" },
+        { value: "23.7M", label: "rows in the largest dataset" },
+        { value: "Zero", label: "shared keys between services" },
       ],
       shots: [{ ...lakePt.shots[0], alt: "Cover of the Acre Exports Overview 2021–2025 deck, with exports rising from US$48.8M to US$98.8M" }],
       details: {
         overview:
-          "The lake brings public and institutional datasets into bronze, silver and gold layers on Databricks with Unity Catalog and Delta Lake, orchestrated by Azure Data Factory. Curated data goes to Azure Data Explorer, which the Observatory platform, bulletins and reports query with KQL.",
-        challenges: [
-          "Large, heterogeneous sources: up to 23.7 million records in a single one",
-          "Reprocessing loads without duplicating data",
-          "Validating pipelines without paying for the cloud on every test",
-          "No secrets scattered across code or config",
-          "Keeping Azure Data Explorer costs under control",
-        ],
-        solutions: [
-          "Medallion architecture on Delta Lake and Unity Catalog, with separate dev and prod catalogs",
-          "A Python engine that runs the same locally and in the cloud, so every pipeline is validated on my machine first",
-          "Idempotent run control and a SHA-256 manifest of raw files",
-          "Managed Identity, Key Vault and RBAC on every service, no shared keys",
-          "30 pipelines on monthly and daily triggers, plus automation that shuts ADX down outside working hours",
+          "The Acre Industry Observatory publishes analysis on the state's jobs, foreign trade and companies, and all of it depends on public data. The lake does the heavy lifting: it downloads the source, keeps the original, cleans it, checks it and publishes it to Azure Data Explorer. The platform, the bulletins and the reports all query it from there, in KQL.",
+        decisions: [
+          {
+            problem: "Testing pipelines straight in the cloud costs money on every run.",
+            choice: "I wrote a Python engine that runs the same on my machine and on Databricks. Every pipeline passes local tests before it ships, at no cost.",
+          },
+          {
+            problem: "Every agency publishes in a different format.",
+            choice: "Every source follows the same staged template (bronze, silver and gold), with separate dev and prod catalogs. A new source reuses the template instead of inventing another one.",
+          },
+          {
+            problem: "Reprocessing a month must never duplicate a row.",
+            choice: "Loads are idempotent and every raw file gets a SHA-256 hash. Running it again gives the same result.",
+          },
+          {
+            problem: "An access key left in the code eventually leaks.",
+            choice: "Services authenticate with Managed Identity and RBAC, and whatever is left lives in Key Vault.",
+          },
+          {
+            problem: "Azure Data Explorer bills for every hour it's on.",
+            choice: "An automation shuts the cluster down outside working hours.",
+          },
         ],
         results: [
-          "In production, running on schedule",
-          "RAIS (1.3M employment records), CAGED (613K hires and layoffs), INSS (23.7M benefits) and Comex Stat (18M rows), among others",
-          "Feeds the platform dashboards, the monthly foreign trade bulletin and the Acre Exports Overview 2021–2025 report",
+          "In production, orchestrated by Azure Data Factory on daily and monthly triggers.",
+          "Processes Brazil's formal employment and hiring records, foreign trade, company registry, social security and census data, among other public sources.",
+          "Feeds the platform dashboards, the monthly foreign trade bulletin and the Acre Exports Overview 2021–2025 report.",
         ],
       },
     },
     {
       ...platformPt,
-      title: "Observatory data intelligence platform",
+      title: "Observatory data platform",
       kicker: "Full-stack · in production",
       role: "Lead developer",
       summary:
-        "The portal that delivers the lake to managers and business owners: 14 analytical dashboards querying ADX in KQL, AI from three providers, newsletter, CMS and a request hub, with corporate sign-in and per-user and per-group permissions.",
+        "This is where the lake meets the public. Business owners and managers pick a dashboard and cross-reference Acre's jobs, wages, exports and companies without downloading a spreadsheet. I'm the lead developer, from corporate sign-in to the AI module that summarizes the data.",
       metrics: [
-        { value: "14", label: "analytical dashboards" },
-        { value: "945", label: "test files" },
-        { value: "3", label: "environments with CI/CD" },
+        { value: "0", label: "copies of the lake in the app database" },
+        { value: "SSO", label: "with per-user, per-group, time-boxed access" },
+        { value: "3", label: "AI providers under one usage cap" },
       ],
       shots: [
         { ...platformPt.shots[0], alt: "Acre Industry Observatory home page, with a globe highlighting the state of Acre" },
@@ -101,37 +110,42 @@ export const en: Content = {
       ],
       details: {
         overview:
-          "I'm the lead developer of the Acre Industry Observatory platform. It has a public portal, a signed-in area with dashboards, reports and presentations, and a full admin panel. Every dashboard number comes from the data lake, queried in Azure Data Explorer.",
-        challenges: [
-          "Querying large volumes without pulling data into the app",
-          "Per-user and per-group access, with expiry and an audit trail",
-          "Multi-provider AI without exposing keys or blowing the budget",
-          "Keeping quality high across dozens of modules",
-        ],
-        solutions: [
-          "KQL queries with filters applied inside Azure Data Explorer",
-          "Microsoft Entra ID sign-in and permissions by user or group, resource and action, with validity windows and auditing",
-          "Vercel AI SDK with Anthropic, OpenAI and Google, keys in Key Vault and usage limits",
-          "CI/CD on GitHub Actions and Azure DevOps across dev, staging and production, tested with Vitest and Playwright",
+          "The platform has a public portal, a signed-in area with dashboards, reports and presentations, and an admin panel. Every dashboard number comes from the lake, queried live in Azure Data Explorer. There are dashboards for formal employment, hiring, foreign trade, companies, workplace accidents and municipal finances, among others.",
+        decisions: [
+          {
+            problem: "Copying the lake into the app database would double the cost and leave stale numbers on screen.",
+            choice: "Queries go in KQL straight to Azure Data Explorer, with filters applied there. The app only receives the result.",
+          },
+          {
+            problem: "Not every user can see everything, and some access has an end date.",
+            choice: "Microsoft Entra ID sign-in and permissions by user or group, resource and action, with validity windows and an audit trail.",
+          },
+          {
+            problem: "AI from several providers can leak keys or blow the budget.",
+            choice: "Vercel AI SDK with Anthropic, OpenAI and Google, keys in Key Vault and a usage cap.",
+          },
+          {
+            problem: "With dozens of modules, one change breaks another and nobody notices.",
+            choice: "Tests in Vitest and Playwright, and CI/CD on GitHub Actions and Azure DevOps with separate dev, staging and production.",
+          },
         ],
         results: [
-          "Live at observatorio.fieac.org.br",
-          "14 dashboards: employment, hiring, foreign trade, companies, workplace accidents, municipal finances and more",
-          "Newsletter, news CMS, signed-link presentations and a request hub",
+          "Live at observatorio.fieac.org.br.",
+          "Beyond dashboards: a newsletter, a news CMS, presentations shared by signed link and a request hub.",
         ],
       },
     },
     {
       ...milixPt,
       title: "Milix: clinic management",
-      kicker: "My own SaaS · 3 paying clinics",
+      kicker: "My own SaaS · paying customers",
       role: "Founder and sole developer",
       summary:
-        "A multi-tenant SaaS for clinics of any specialty: scheduling, records, finance, inventory, invoicing, CRM, a patient portal and an AI agent that answers on WhatsApp. I built it, sold it, onboarded the clinics and run support.",
+        "My product. Clinics use Milix for scheduling, patient records, finance, inventory and invoicing, and an AI agent answers patients on WhatsApp. It grew out of Smilix, the first version I built for dentists, and clinics now pay for it.",
       metrics: [
-        { value: "3", label: "paying clinics" },
-        { value: "155", label: "app screens" },
-        { value: "1.7K", label: "test files" },
+        { value: "1", label: "person behind the whole product" },
+        { value: "6", label: "specialties, from dental to aesthetics" },
+        { value: "14 days", label: "free trial, then automatic billing" },
       ],
       shots: [
         { ...milixPt.shots[0], alt: "Milix demo with sample data: today's schedule next to a WhatsApp chat where the patient confirms her slot" },
@@ -139,59 +153,72 @@ export const en: Content = {
       ],
       details: {
         overview:
-          "Milix serves dental, medical, physiotherapy, nutrition, psychology and aesthetics clinics. Each clinic is an isolated tenant and can have several branches. It covers the patient's whole journey, from the first WhatsApp message to the day's cash close. It grew out of Smilix, my first version, built for dentists.",
-        challenges: [
-          "Full data isolation between clinics and branches on every operation",
-          "Fine-grained role permissions combined with plan-based features",
-          "Recurring billing with plans, add-ons and trials",
-          "An AI agent that talks to patients on WhatsApp safely",
-          "Shipping fast, alone, without breaking production",
-        ],
-        solutions: [
-          "Every table carries the tenant, and every public call goes through a single entry point that checks identity, permission and plan, in that order",
-          "A structural test fails the build if anyone adds a public call outside that entry point",
-          "Asaas billing with webhooks: monthly and yearly plans, add-ons and a 14-day trial",
-          "Meta's official Cloud API, my own LLM gateway, audio transcription and semantic search with embeddings",
-          "About 1,700 test files and 26 architecture decision records",
+          "Milix covers the patient's whole journey, from the first WhatsApp message to the day's cash close. Each clinic is an isolated tenant and can have several branches. The first version, Smilix, ran on Supabase, Stripe and Docker on a VPS. I rebuilt it on an architecture that is easier to test and to grow.",
+        decisions: [
+          {
+            problem: "A clinic must never see another clinic's data, not even by mistake.",
+            choice: "Every table carries the clinic, and every public call goes through a single entry point that checks identity, permission and plan, in that order.",
+          },
+          {
+            problem: "When code grows fast, sooner or later someone takes a shortcut.",
+            choice: "A structural test fails the build if a public call shows up outside that entry point.",
+          },
+          {
+            problem: "Plans, add-ons and trials have to bill on their own.",
+            choice: "Recurring billing on Asaas, with monthly and yearly plans, add-ons, trials and webhooks.",
+          },
+          {
+            problem: "Patients send voice notes and spell procedures their own way.",
+            choice: "An agent on Meta's official Cloud API, with audio transcription, semantic search over embeddings and my own LLM gateway.",
+          },
+          {
+            problem: "Moving fast alone without breaking what's already live.",
+            choice: "Vitest and Playwright tests across the product, and every architecture decision written down as an ADR.",
+          },
         ],
         results: [
-          "3 paying clinics running it in production",
-          "The full product cycle: building, selling, onboarding with patient data import, and support",
-          "Migrated the first version (Supabase, Stripe, Docker on a VPS) to a sturdier, more testable architecture",
+          "Paying clinics using it every day.",
+          "The full product cycle: building, selling, onboarding with patient data import, and support.",
         ],
       },
     },
   ],
   more: {
     eyebrow: "04 · custom builds",
-    title: "Systems for businesses that outgrew the spreadsheet.",
-    body: "Freelance projects in production and a personal experiment with public data. Each one fixes a concrete problem for the people who use it every day.",
+    title: "Built to order, used every day.",
+    body: "Two systems I built as a freelancer that are still in production, plus a personal project on public election data.",
     projects: [
       {
         ...flowPt,
         kicker: "Freelance · in production",
         role: "Full-stack developer",
         summary:
-          "Point of sale, inventory and orders for a beverage distributor, with an AI chatbot taking real orders on WhatsApp, a real-time board and a routing app for drivers.",
+          "Point of sale, inventory and orders for a beverage distributor. A chatbot takes orders on WhatsApp, a board shows each one in real time and the driver gets the route on their phone.",
         details: {
           overview:
-            "A full-stack system for a beverage distributor: point of sale, inventory and WhatsApp service. A Kanban board tracks orders in real time, drivers get routes through Google Maps, and an AI chatbot takes customer orders on its own, notifying every step through the official WhatsApp API.",
-          challenges: [
-            "A chatbot handling real orders without inventing products or prices",
-            "Real-time order sync between WhatsApp, the board and drivers",
-            "Tracking returnable bottles with automatic reminders",
-            "Concurrent sessions and rate limits on the bot",
-          ],
-          solutions: [
-            "Zod validation, confidence thresholds and anti-hallucination guardrails",
-            "An XState state machine for conversation flows and order stages",
-            "Supabase Realtime everywhere and Redis sessions with TTL",
-            "Geocoding and delivery routing with the Google Maps API",
+            "A system for a beverage distributor: point of sale, inventory and WhatsApp customer service. The chatbot talks to the customer, builds the order and reports every step through the official WhatsApp API. On the board, orders move across a Kanban in real time, and drivers get their route from Google Maps.",
+          decisions: [
+            {
+              problem: "A chatbot that invents products or prices costs money.",
+              choice: "Every reply goes through Zod validation, a confidence threshold and anti-hallucination guardrails.",
+            },
+            {
+              problem: "Conversations and orders have many steps, and it's easy for one to get lost halfway.",
+              choice: "An XState state machine drives the conversation flow and the order stages.",
+            },
+            {
+              problem: "WhatsApp, the board and the driver need to see the same order at the same time.",
+              choice: "Supabase Realtime on every screen and bot sessions in Redis with expiry.",
+            },
+            {
+              problem: "Returnable bottles disappear when nobody tracks them.",
+              choice: "Returnables tracking with automatic reminders.",
+            },
           ],
           results: [
-            "Used daily at the distributor for sales, stock and orders",
-            "Real customer orders taken by the chatbot without human help",
-            "Every order tracked from the WhatsApp message to the doorstep",
+            "Used daily for sales, stock and orders.",
+            "Real customer orders come in through the chatbot without anyone typing.",
+            "Every order is tracked from the WhatsApp message to the doorstep.",
           ],
         },
       },
@@ -201,28 +228,28 @@ export const en: Content = {
         kicker: "Freelance · in production",
         role: "Full-stack developer",
         summary:
-          "A knowledge base for an internet provider: support agents follow interactive decision trees, and non-technical managers build the flows in a visual editor.",
-        metrics: [
-          { value: "22", label: "tables" },
-          { value: "23", label: "screens" },
-        ],
+          "A knowledge base for an internet provider. Support agents follow a decision tree step by step, and managers build and fix those flows in a visual editor, without calling a developer.",
         details: {
           overview:
-            "A knowledge base and process library for an internet provider's support team. Agents follow decision trees step by step; managers edit the flows in a React Flow editor and write articles in a rich-text editor. Access is role-based, with visibility by department.",
-          challenges: [
-            "A flow editor that non-technical managers can actually use",
-            "Content visibility by role and department",
-            "Keeping the old decision-tree format working next to the new one",
-          ],
-          solutions: [
-            "React Flow with custom nodes and automatic dagre layout",
-            "NextAuth with JWT and department permissions filtering all content",
-            "A step-by-step viewer that records the agent's path through the nodes",
+            "An internet provider's support team needed every agent to solve the same problem the same way. The Library stores processes as decision trees: the agent answers the questions and reaches the fix. Managers edit the flows in a visual editor and write articles in a rich-text editor. Each department sees its own content.",
+          decisions: [
+            {
+              problem: "Non-technical managers need to build flows on their own.",
+              choice: "A React Flow editor with custom nodes and automatic dagre layout. Managers drag and connect the steps.",
+            },
+            {
+              problem: "Each department may only see its own content.",
+              choice: "NextAuth with JWT and department permissions filtering all content.",
+            },
+            {
+              problem: "Knowing which processes actually help.",
+              choice: "The viewer records the agent's path through the nodes, and an access log shows what gets used the most.",
+            },
           ],
           results: [
-            "In production on the client's server, standardizing support across teams",
-            "Managers create and update processes without a developer",
-            "Access logs showing which processes get used the most",
+            "In production on the client's server.",
+            "Managers create and update processes without a developer.",
+            "Support follows the same standard across every department.",
           ],
         },
       },
@@ -231,29 +258,30 @@ export const en: Content = {
         kicker: "Personal project · public data",
         role: "Author",
         summary:
-          "Acre election results from public electoral court data: maps, rankings and candidate comparison from the whole state down to a single polling section, on a deterministic, replayable Python ETL.",
+          "Acre's election results, from the whole state down to a single polling section. Maps, rankings and candidate comparison on electoral court data, built on a Python ETL that always produces the same output.",
         metrics: [
-          { value: "258K", label: "vote rows" },
-          { value: "2,270", label: "polling sections" },
+          { value: "258K", label: "vote rows reconciled" },
+          { value: "2,270", label: "polling sections on the map" },
         ],
         shots: [{ ...vizuPt.shots[0], alt: "Municipal map of Acre colored by the leading candidate for governor, with a vote summary alongside" }],
         details: {
           overview:
-            "A Python pipeline prepares Acre's election results, which are loaded into Convex and shown as maps, rankings and comparisons, from the whole state down to a single section, with CSV export.",
-          challenges: [
-            "Organizing 258K+ vote rows across several territorial levels",
-            "Reprocessing without duplicates",
-            "Making sure totals match the official source",
+            "A Python pipeline prepares the electoral court's results, loads them into Convex and shows them as maps, rankings and comparisons, from the whole state down to a single section, with CSV export.",
+          decisions: [
+            {
+              problem: "Running the ETL twice must never give different results.",
+              choice: "Deterministic preparation with SHA-256 hashes: a second run produces exactly the same files.",
+            },
+            {
+              problem: "Long imports fail halfway.",
+              choice: "Batched imports with resume points that can be repeated without duplicates.",
+            },
+            {
+              problem: "A wrong total on an election map is worse than no map.",
+              choice: "Totals are checked automatically between Python and the database, and the map uses IBGE's 2025 municipal boundaries in MapLibre.",
+            },
           ],
-          solutions: [
-            "Deterministic preparation with SHA-256 hashes: a rerun produces the exact same files",
-            "Batched, resumable imports that can be repeated safely",
-            "Automatic total checks between Python and the database, and the 2025 IBGE boundaries in MapLibre",
-          ],
-          results: [
-            "258,052 vote rows, 2,270 sections, 660 polling places, 22 municipalities and 341 candidates",
-            "Querying and export down to the polling section",
-          ],
+          results: ["660 polling places, 22 municipalities and 341 candidates, searchable down to the section."],
         },
       },
     ],
@@ -261,25 +289,25 @@ export const en: Content = {
   archive: {
     title: "Archive",
     items: [
-      { ...pt.archive.items[0], description: "The first version of Milix, for dentists: Supabase with RLS, Stripe and a WhatsApp bot, running in Docker on a VPS." },
-      { ...pt.archive.items[1], title: "Fiscal data from 21 municipalities", description: "A pipeline unifying the transparency portals of 21 Acre municipalities: 2.09 million records across 16 tables." },
-      { ...pt.archive.items[2], title: "Observatory data presentations", description: "A kit for self-contained HTML decks with three.js and CI that validates every version. Acre Exports Overview and an East Manaus study." },
-      { ...pt.archive.items[3], title: "Agent skills catalog", description: "Modeling, ingestion and dashboard skills for Claude Code and Codex, hash-synced across repos, with 34 eval cases." },
-      { ...pt.archive.items[4], title: "Gazette Search", description: "Downloads Acre's official gazettes and court journals and searches terms inside the PDFs, with CLI and GUI." },
-      { ...pt.archive.items[5], title: "Service desk and document flow", description: "An inter-department request app and a signed document approval flow that replaced email and paper at the FIEAC System." },
+      { ...pt.archive.items[0], description: "The first version of Milix, for dentists only: Supabase with RLS, Stripe and a WhatsApp bot in Docker on a VPS." },
+      { ...pt.archive.items[1], title: "Fiscal data from 21 municipalities", description: "Brings the transparency portals of 21 Acre municipalities into one dataset of 2.09 million records." },
+      { ...pt.archive.items[2], title: "Observatory data presentations", description: "HTML decks that open in any browser, with three.js and CI that validates every version. One of them is the Acre Exports Overview." },
+      { ...pt.archive.items[3], title: "Agent skills catalog", description: "Teaches Claude Code and Codex to model, ingest and build dashboards the team's way, with eval cases for every skill." },
+      { ...pt.archive.items[4], title: "Gazette Search", description: "Downloads Acre's official gazettes and court journals and searches for terms inside the PDFs." },
+      { ...pt.archive.items[5], title: "Service desk and document flow", description: "An inter-department request app and a signed document approval flow that took the FIEAC System's internal requests off email and paper." },
       { ...pt.archive.items[6], title: "FIEAC System intranet", description: "The intranet rebuilt on modern SharePoint, with custom SharePoint Framework web parts." },
-      { ...pt.archive.items[7], title: "QR Code generator", description: "Custom QR codes for Instagram, WhatsApp, Pix and Wi-Fi, exported as PNG and SVG." },
+      { ...pt.archive.items[7], title: "QR Code generator", description: "Custom QR codes for Instagram, WhatsApp, Pix and Wi-Fi, as PNG or SVG." },
     ],
   },
   career: {
     eyebrow: "05 · career",
     title: "From English teacher to data engineer.",
-    body: "I taught English in Acre's public schools for over two years while studying Information Systems. The teaching stuck: I explain architecture to non-technical people and document for the next developer.",
+    body: "I taught English in Acre's public schools while studying Information Systems. I got into IT as a support intern and worked my way through automation into data engineering. The classroom left me with a habit of explaining: I can walk non-technical people through an architecture, and I write docs for whoever comes next.",
     positions: [
-      { ...pt.career.positions[0], title: "IT Analyst · data engineering and full-stack", company: "Acre Industry Observatory, FIEAC System", period: "Oct 2025 – now", summary: "Azure data lake, the data platform and the team's standard for AI coding agents." },
-      { ...pt.career.positions[1], title: "Founder and developer", period: "Aug 2025 – now", summary: "Multi-tenant clinic SaaS with recurring billing and a WhatsApp AI agent." },
-      { ...pt.career.positions[2], title: "Freelance full-stack developer", company: "Self-employed", period: "2025 – now", summary: "Custom systems in production for a distributor and an internet provider." },
-      { ...pt.career.positions[3], title: "IT Assistant", company: "UNITEC, FIEAC System", period: "Jan 2024 – Oct 2025", summary: "Power Apps, Power Automate, Python automation and the new SPFx intranet." },
+      { ...pt.career.positions[0], title: "IT Analyst · data engineering and full-stack", company: "Acre Industry Observatory, FIEAC System", period: "Oct 2025 – now", summary: "Built the Azure data lake, develop the data platform and set how the team uses AI coding agents." },
+      { ...pt.career.positions[1], title: "Founder and developer", period: "Aug 2025 – now", summary: "My clinic SaaS: product, sales, onboarding and support." },
+      { ...pt.career.positions[2], title: "Freelance full-stack developer", company: "Self-employed", period: "2025 – now", summary: "Systems in production for a beverage distributor and an internet provider." },
+      { ...pt.career.positions[3], title: "IT Assistant", company: "UNITEC, FIEAC System", period: "Jan 2024 – Oct 2025", summary: "Power Apps, Power Automate flows, Python automation and the new SPFx intranet." },
       { ...pt.career.positions[4], title: "IT Intern", company: "UNITEC, FIEAC System", period: "Sep 2023 – Dec 2023", summary: "Support, tickets and my first internal Power Platform apps." },
     ],
     earlier: "Before that: English teacher for the state of Acre (2021–2024) and help desk intern at Uninorte (2021).",
@@ -289,7 +317,7 @@ export const en: Content = {
       { degree: "B.Ed. in English Language", institution: "Federal University of Acre", period: "2016–2019" },
     ],
     certificationsTitle: "Courses",
-    certifications: "13 completed courses, including Data Analytics and Project Management (Industry Corporate University), advanced Python, Django, advanced SQL and Power BI (Alura).",
+    certifications: "Data Analytics and Project Management at the Industry Corporate University. Advanced Python, Django, advanced SQL and Power BI at Alura.",
     skillsTitle: "Tools",
     skills: [
       { group: "Data", items: pt.career.skills[0].items },
@@ -300,27 +328,27 @@ export const en: Content = {
   },
   services: {
     eyebrow: "06 · for your business",
-    title: "Stuck on a manual process? I'll turn it into a system.",
-    body: "I work with businesses of any size, from the first sketch to a running system, with the same care I put into the Observatory and Milix in production.",
+    title: "If your business runs on spreadsheets and WhatsApp, I know where to start.",
+    body: "I work with small and large companies, from the first sketch to a live system. You tell me how the work gets done today, I propose the smallest system that fixes it, and we grow from there.",
     items: [
-      { title: "Custom systems", description: "Sales, stock, scheduling, knowledge bases: your workflow, instead of bending the business to generic software." },
-      { title: "AI support on WhatsApp", description: "Chatbots and agents that take orders, book appointments and answer questions, with guardrails so they don't make things up." },
-      { title: "Dashboards and data", description: "Pipelines that bring your spreadsheets and systems together, and dashboards that show what matters." },
-      { title: "Process automation", description: "Repetitive work, from email to document approval, done automatically and logged." },
-      { title: "SaaS from scratch", description: "From MVP to a product that bills: multi-tenant, plans, recurring payments and invoicing." },
-      { title: "Integrations", description: "Payments, invoicing, WhatsApp, ERPs and APIs wired into the tools you already use." },
+      { title: "Custom systems", description: "Point of sale, stock, scheduling, knowledge bases. The software follows your process, not the other way around." },
+      { title: "AI support on WhatsApp", description: "An agent that takes orders, books appointments and answers questions, without making up prices or products." },
+      { title: "Data and dashboards", description: "Your spreadsheets and systems in one place, and a dashboard with the numbers you check every Monday." },
+      { title: "Automation", description: "Document approvals, reports, repetitive email. The manual work happens on its own, with a log of everything." },
+      { title: "SaaS from scratch", description: "From MVP to a product that bills: many companies on one system, plans, recurring payments and invoicing." },
+      { title: "Integrations", description: "Payments, invoicing, WhatsApp, ERPs and any API, wired into the tools you already use." },
     ],
     cta: "Tell me about your project",
   },
   contact: {
-    eyebrow: "07 · gold",
-    title: "The data made it. Your move.",
-    body: "Roles, freelance projects or just a chat about data: I reply fast on WhatsApp and email.",
+    eyebrow: "07 · contact",
+    title: "Got a role or a project? Let's talk.",
+    body: "I reply fast on WhatsApp and email. If it's a role, my resume is right below.",
     whatsapp: "WhatsApp",
     email: pt.contact.email,
     resume: "Resume (PDF)",
     resumeAlt: "Currículo em português",
-    note: "Rio Branco, Brazil · remote or on-site · UTC−5",
+    note: "Rio Branco, Brazil · remote or on-site, open to relocation · UTC−5",
   },
   ui: {
     viewCase: "Read the case",
@@ -328,10 +356,11 @@ export const en: Content = {
     stack: "Stack",
     role: "Role",
     back: "Back to start",
-    overview: "Overview",
-    challenges: "Challenges",
-    solutions: "How I solved it",
-    results: "Results",
+    overview: "Context",
+    decisions: "Decisions",
+    problem: "Problem",
+    choice: "What I did",
+    results: "Where it stands",
     nextProject: "Next project",
     footer: "Built by Edilberto Lima Jr. with Next.js and three.js.",
     notFoundTitle: "This data never made it to gold.",

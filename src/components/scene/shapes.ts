@@ -123,10 +123,13 @@ export function nameShape(n: number, text: string, font: string): Shape {
   return s;
 }
 
-/** 15 fontes de dados num anel, cada uma soltando um fluxo para o centro. */
+/** Fontes de dados num anel, cada uma soltando um fluxo para o centro. */
 export function sources(n: number): Shape {
   const r = rng(3);
   const s = make(n);
+  // Quantidade escolhida pelo desenho, não pelo lake: abaixo de ~12 o anel
+  // parece vazio; acima de ~18 os nós se encostam no celular. O texto ao lado
+  // não cita contagem, então não precisa acompanhar o número real de fontes.
   const N = 15;
   const R = 1.9;
   for (let i = 0; i < n; i++) {

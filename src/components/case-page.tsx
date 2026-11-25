@@ -12,11 +12,6 @@ export function CasePage({ project, locale }: { project: Project; locale: Locale
   const list = allProjects(locale);
   const next = list[(list.findIndex((p) => p.slug === project.slug) + 1) % list.length];
   const site = project.links[0];
-  const blocks = [
-    { title: c.ui.challenges, items: project.details.challenges },
-    { title: c.ui.solutions, items: project.details.solutions },
-    { title: c.ui.results, items: project.details.results },
-  ];
 
   return (
     <>
@@ -80,21 +75,38 @@ export function CasePage({ project, locale }: { project: Project; locale: Locale
             <p className="text-pretty text-lg leading-relaxed text-muted lg:col-span-8">{project.details.overview}</p>
           </section>
 
-          <div className="mt-16 grid gap-5 lg:grid-cols-3">
-            {blocks.map((b) => (
-              <section key={b.title} className="panel p-6">
-                <h2 className="font-display text-xl font-bold">{b.title}</h2>
-                <ul className="mt-4 space-y-3">
-                  {b.items.map((it) => (
-                    <li key={it} className="flex gap-3 text-pretty leading-relaxed text-muted">
-                      <span aria-hidden className="mt-2.5 size-1.5 shrink-0 rounded-full bg-gold" />
-                      {it}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ))}
-          </div>
+          <section aria-labelledby="decisions" className="mt-20">
+            <h2 id="decisions" className="font-display text-2xl font-bold tracking-tight">
+              {c.ui.decisions}
+            </h2>
+            {/* Cabeçalho só no desktop; no celular o peso da fonte já separa problema e decisão. */}
+            <div aria-hidden className="mt-8 hidden grid-cols-12 gap-6 lg:grid">
+              <span className="eyebrow col-span-5">{c.ui.problem}</span>
+              <span className="eyebrow col-span-7">{c.ui.choice}</span>
+            </div>
+            <dl className="mt-6 border-t border-line-strong lg:mt-3">
+              {project.details.decisions.map((d) => (
+                <div key={d.problem} className="grid gap-2 border-b border-line py-6 lg:grid-cols-12 lg:gap-6">
+                  <dt className="text-pretty font-display text-lg font-semibold leading-snug text-ink lg:col-span-5">{d.problem}</dt>
+                  <dd className="text-pretty leading-relaxed text-muted lg:col-span-7">{d.choice}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+
+          <section aria-labelledby="results" className="panel mt-16 p-6 sm:p-8">
+            <h2 id="results" className="font-display text-xl font-bold">
+              {c.ui.results}
+            </h2>
+            <ul className="mt-4 space-y-3">
+              {project.details.results.map((it) => (
+                <li key={it} className="flex gap-3 text-pretty leading-relaxed text-muted">
+                  <span aria-hidden className="mt-2.5 size-1.5 shrink-0 rounded-full bg-gold" />
+                  {it}
+                </li>
+              ))}
+            </ul>
+          </section>
 
           <Link
             href={projectHref(locale, next.slug)}

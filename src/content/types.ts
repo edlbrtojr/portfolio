@@ -23,8 +23,18 @@ export type Project = {
   /** Quando não há tela que possa ser mostrada, um diagrama desenhado no código. */
   diagram?: "order-flow" | "decision-tree";
   stage: ShapeKey;
-  details: { overview: string; challenges: string[]; solutions: string[]; results: string[] };
+  details: {
+    overview: string;
+    /**
+     * Problema e decisão em par. Listas separadas de "desafios" e "soluções"
+     * deixavam o leitor adivinhar qual resolvia qual, e liam como modelo pronto.
+     */
+    decisions: Decision[];
+    results: string[];
+  };
 };
+
+export type Decision = { problem: string; choice: string };
 
 export type ArchiveItem = { title: string; year: string; description: string; stack: string[]; href?: string };
 
@@ -90,8 +100,9 @@ export type Content = {
     role: string;
     back: string;
     overview: string;
-    challenges: string;
-    solutions: string;
+    decisions: string;
+    problem: string;
+    choice: string;
     results: string;
     nextProject: string;
     footer: string;

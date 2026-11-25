@@ -52,9 +52,13 @@ export function Metrics({ items, className }: { items: Metric[]; className?: str
       {items.map((m) => (
         // flex-col-reverse: o valor (dd) aparece em cima, mas o leitor de tela
         // lê "rótulo: valor" na ordem semântica.
-        <div key={m.label} className="flex flex-col-reverse border-t border-line-strong pt-3">
+        // justify-end: em coluna invertida o "início" é embaixo; sem isso o valor
+        // descia quando o rótulo tinha menos linhas que o vizinho.
+        <div key={m.label} className="flex flex-col-reverse justify-end border-t border-line-strong pt-3">
           <dt className="mt-1 text-sm leading-snug text-muted">{m.label}</dt>
-          <dd className="font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">{m.value}</dd>
+          {/* nowrap: "R$ 0" e "14 dias" quebravam no espaço. Em 390 px cada coluna
+              tem ~106 px; text-2xl é o maior tamanho em que "Nenhuma" ainda cabe. */}
+          <dd className="whitespace-nowrap font-display text-2xl font-bold tracking-tight text-ink sm:text-4xl">{m.value}</dd>
         </div>
       ))}
     </dl>

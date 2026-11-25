@@ -12,9 +12,9 @@ export function PathSection({ path }: { path: Content["path"] }) {
           <p className="mt-6 text-pretty text-lg leading-relaxed text-muted">{path.body}</p>
           <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-8">
             {path.metrics.map((m) => (
-              <div key={m.label} className="flex flex-col-reverse border-t border-line-strong pt-3">
+              <div key={m.label} className="flex flex-col-reverse justify-end border-t border-line-strong pt-3">
                 <dt className="mt-1 text-sm leading-snug text-muted">{m.label}</dt>
-                <dd className="font-display text-4xl font-bold tracking-tight sm:text-5xl">{m.value}</dd>
+                <dd className="whitespace-nowrap font-display text-4xl font-bold tracking-tight sm:text-5xl">{m.value}</dd>
               </div>
             ))}
           </dl>
