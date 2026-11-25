@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { projectHref } from "@/content";
 import type { ArchiveItem, Locale, Project } from "@/content/types";
@@ -19,18 +20,32 @@ type Props = { locale: Locale; projects: Project[]; archive: ArchiveItem[]; more
 export function Toponyms({ locale, projects, archive, more }: Props) {
   const capitals = projects.filter((p) => p.rank === "capital");
   const cities = projects.filter((p) => p.rank === "cidade");
-  const item = (p: Project, i: number) => (
-    <li key={p.slug} id={p.slug} className={`topo topo-${p.rank} topo-${p.rank}-${i}`}>
-      <Link href={projectHref(locale, p.slug)} className="topo-link" data-lantern>
-        <span className="topo-linha-nome">
-          <span className="topo-nome">{p.toponym.name}</span>
-          {p.toponym.note && <span className="topo-nota">{p.toponym.note}</span>}
-        </span>
-        <span className="topo-legenda">{p.line}</span>
-        <span className="topo-cota">{p.year}</span>
-      </Link>
-    </li>
-  );
+  const item = (p: Project, i: number) => {
+    // Só as capitais levam captura: é o trabalho que eu sustento hoje, e a
+    // home não mostrava uma única tela dele (quem não clicava no case saía
+    // sem ver nada do que eu faço). Cidades continuam só com o nome, para a
+    // hierarquia da carta não achatar.
+    const shot = p.rank === "capital" ? p.shots[0] : undefined;
+    return (
+      <li key={p.slug} id={p.slug} className={`topo topo-${p.rank} topo-${p.rank}-${i}`}>
+        <Link href={projectHref(locale, p.slug)} className="topo-link" data-lantern>
+          <span className="topo-linha-nome">
+            <span className="topo-nome">{p.toponym.name}</span>
+            {p.toponym.note && <span className="topo-nota">{p.toponym.note}</span>}
+          </span>
+          <span className="topo-legenda">{p.line}</span>
+          <span className="topo-cota">{p.year}</span>
+          {shot && (
+            // alt vazio: o link já diz o nome e o que o projeto é; a descrição
+            // completa da captura está no case.
+            <span className="topo-foto">
+              <Image src={shot.src} alt="" fill sizes="(min-width: 1100px) 22vw, (min-width: 768px) 30vw, 72vw" />
+            </span>
+          )}
+        </Link>
+      </li>
+    );
+  };
   return (
     <div className="topos-carta">
       <ol className="topos">{capitals.map(item)}</ol>

@@ -251,6 +251,89 @@
   color: var(--color-faint);
   letter-spacing: 0.04em;
 }
+/*
+ * A captura do projeto, como foto presa na carta. No fluxo (celular e
+ * tablet) ela vem embaixo da legenda; a partir de 1100 px vai para a margem
+ * oposta ao nome (ver abaixo). Um pouco escurecida em repouso para não
+ * disputar com o topônimo; acende e aproxima 3% quando o link recebe o mouse
+ * ou o foco.
+ */
+.topo-foto {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  width: 30cqw;
+  margin-top: 1.2rem;
+  border: 1px solid rgb(237 235 230 / 0.3);
+  background: var(--color-surface);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.6);
+}
+.topo-foto img {
+  object-fit: cover;
+  object-position: left top;
+  filter: brightness(0.86) saturate(0.92);
+  transition:
+    transform 0.7s var(--ease-out-expo),
+    filter 0.4s;
+}
+.topo-link:hover .topo-foto img,
+.topo-link:focus-visible .topo-foto img {
+  transform: scale(1.03);
+  filter: none;
+}
+.topo-capital-1 .topo-foto {
+  width: 20cqw;
+}
+.topo-capital-2 .topo-foto {
+  width: 22cqw;
+  margin-left: auto;
+}
+/*
+ * Carta inteira (com a coluna de notas): a foto sai do fluxo e ocupa a
+ * margem livre de cada faixa. O rio fica entre 46 e 72cqw (river-curve.ts),
+ * então foto na direita começa em 74cqw e foto na esquerda termina antes de
+ * 44cqw. Para isso o <li> passa a ter a largura da carta e o recuo vira
+ * padding: as posições em cqw contam da borda esquerda.
+ */
+@media (min-width: 1100px) {
+  .topo-capital {
+    position: relative;
+    align-self: stretch;
+  }
+  .topo-capital .topo-foto {
+    position: absolute;
+    top: 0.5cqw;
+    margin: 0;
+    width: 20cqw;
+  }
+  .topo-capital-0 {
+    margin-left: 0;
+    padding-left: 7cqw;
+  }
+  .topo-capital-0 .topo-foto {
+    left: 74cqw;
+  }
+  /* A Plataforma começa mais à direita para a foto caber antes do nome. */
+  .topo-capital-1 {
+    margin-left: 0;
+    padding-left: 30cqw;
+  }
+  .topo-capital-1 .topo-foto {
+    left: 7cqw;
+  }
+  .topo-capital-1 .topo-legenda {
+    max-width: 15cqw;
+  }
+  .topo-capital-2 {
+    margin-right: 0;
+    padding-right: 7cqw;
+  }
+  .topo-capital-2 .topo-foto {
+    left: 18cqw;
+    width: 24cqw;
+  }
+}
 .topo-link:hover .topo-nome,
 .topo-link:focus-visible .topo-nome {
   color: #f7e9c4;
@@ -462,6 +545,11 @@ a.povoado:hover .povoado-titulo {
   .topo-capital-2 .topo-legenda {
     margin-left: calc(var(--col-x) - 16px);
   }
+  /* A foto ocupa a coluna de texto, da lombada até o gutter direito. */
+  .topo-capital .topo-foto {
+    width: auto;
+    margin-left: calc(var(--col-x) - 16px);
+  }
   .topo-cidade .topo-legenda {
     display: block;
   }
@@ -630,7 +718,12 @@ a.povoado:hover .povoado-titulo {
   font-style: italic;
   font-size: 14px;
   line-height: 1.5;
-  color: var(--color-faint);
+  /* Na foz já é manhã e a mata atrás está clara: o cinza apagado (--color-faint)
+     que servia à noite caía para ~2:1. Tinta mais clara e um halo escuro. */
+  color: var(--color-muted);
+  text-shadow:
+    0 0 3px rgb(3 7 5 / 0.9),
+    0 1px 14px rgb(3 7 5 / 0.95);
 }
 @media (max-width: 767.98px) {
   .convite {

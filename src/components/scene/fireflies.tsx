@@ -3,6 +3,7 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
+import { dawnAt } from "./river-curve";
 import { sceneState } from "./store";
 
 // Vaga-lumes soltos sobre a mata. Quando um topônimo ou uma nota recebe o
@@ -140,7 +141,10 @@ export function Fireflies({ count, reducedMotion }: { count: number; reducedMoti
     const want = s.lantern.active && s.lantern.gather ? 1 : 0;
     u.uGather.value += (want - u.uGather.value) * (1 - Math.exp(-delta * (reducedMotion ? 60 : 3)));
 
-    const target = s.dim ? 0.35 : 1;
+    // Vaga-lume é bicho de noite: apagam conforme a manhã chega ao meio da
+    // janela (o mesmo dawnAt do shader do rio).
+    const day = s.dim || !s.docH ? 0 : dawnAt((window.scrollY + size.height / 2) / s.unit, s.docH / s.unit);
+    const target = (s.dim ? 0.35 : 1) * (1 - day);
     u.uOpacity.value += (target - u.uOpacity.value) * 0.06;
   });
 

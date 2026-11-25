@@ -64,6 +64,22 @@ export const SPINE_TEXT_START = 0.24;
 /** A foz: as últimas 1,5 unidade do documento (o contato). */
 export const MOUTH_UNITS = 1.5;
 
+/**
+ * O amanhecer: a carta começa em noite fechada e clareia rio abaixo, até o
+ * sol nascer na foz (o contato). Em unidades antes do fim do documento:
+ * começa 2,4 telas antes (em "agora", depois do trabalho, que se lê à noite)
+ * e está inteiro 0,4 tela antes do fim, quando o convite ocupa a tela. Se a
+ * ordem das seções mudar, confira que o trabalho continua na noite: os
+ * topônimos creme foram desenhados para fundo escuro.
+ */
+export const DAWN_FROM = 2.4;
+export const DAWN_TO = 0.4;
+
+/** 0 noite, 1 sol nascido, para y e a altura do documento em unidades. */
+export function dawnAt(y: number, docUnits: number) {
+  return Number.isFinite(docUnits) && docUnits > 0 ? smoothstep(docUnits - DAWN_FROM, docUnits - DAWN_TO, y) : 0;
+}
+
 /** Passo de amostragem do SVG: 0,02 unidade (~18 px a 900 px) já não mostra quina. */
 export const SAMPLE_STEP = 0.02;
 
@@ -154,6 +170,11 @@ export const RIVER_GLSL = /* glsl */ `
   float riverMouth(float y) {
     float docU = uDocH / uUnit;
     return smoothstep(docU - ${g(MOUTH_UNITS)}, docU, y);
+  }
+  // O mesmo dawnAt do JS (os vaga-lumes apagam por ele).
+  float riverDawn(float y) {
+    float docU = uDocH / uUnit;
+    return smoothstep(docU - ${g(DAWN_FROM)}, docU - ${g(DAWN_TO)}, y);
   }
   float riverX(float y) { return uAxis + uAmp * riverWave(y) * (1.0 - uStraight * riverMouth(y)); }
   // Em px (já multiplicada pela régua de halfRef).

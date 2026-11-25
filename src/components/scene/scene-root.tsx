@@ -14,8 +14,8 @@ type Config = { fireflies: number; dpr: Dpr; reducedMotion: boolean; coarse: boo
 
 /**
  * Qualidade por aparelho. Celular (ponteiro grosso) ou até 4 núcleos: dpr 1,
- * um Worley por pixel em vez de três, sem igarapés nem névoa, e animação a
- * 30 fps (ver Pacer). No notebook com GPU integrada o shader completo
+ * um Worley por pixel em vez de dois (sem árvores emergentes), sem névoa, e
+ * animação a 30 fps (ver Pacer). No notebook com GPU integrada o shader completo
  * a dpr 1,5 segurou 60 fps; acima disso o custo de preenchimento cresce com o
  * quadrado e o ganho visual numa mata noturna é nulo.
  */

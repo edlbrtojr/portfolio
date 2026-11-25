@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { COLUMN_END, NOTES_START, RIVER_GLSL, SPINE_TEXT_START, fitName, halfRef, riverHalf, riverX, safeHalfPx } from "./river-curve.ts";
+import { COLUMN_END, DAWN_FROM, DAWN_TO, NOTES_START, RIVER_GLSL, SPINE_TEXT_START, dawnAt, fitName, halfRef, riverHalf, riverX, safeHalfPx } from "./river-curve.ts";
 
 // O layout inteiro depende de a água nunca passar por baixo do texto: a
 // coluna termina em COLUMN_END, as notas começam em NOTES_START e, no
@@ -82,6 +82,24 @@ test("o nome cabe inteiro na água, do começo ao fim do trecho por onde desce",
     const min = mode === "chart" ? 0.17 * halfRef(mode, W, H) : 0.15 * W;
     assert.ok(fit.size >= min, `${W}×${H}: nome com ${fit.size.toFixed(0)} px`);
   }
+});
+
+// O trabalho se lê à noite (topônimos creme sobre mata escura) e o sol só
+// está inteiro na última tela, a do convite. Os vaga-lumes (JS) e a luz
+// (GLSL) usam a mesma janela: se uma constante mudar num lado só, eles
+// apagam fora de hora.
+test("a noite dura até as últimas telas e o shader amanhece na mesma janela", () => {
+  for (const docUnits of [5.7, 7.5, 12]) {
+    assert.equal(dawnAt(0, docUnits), 0);
+    assert.equal(dawnAt(docUnits - DAWN_FROM, docUnits), 0);
+    assert.ok(dawnAt(docUnits - 1, docUnits) > 0.5, "na última tela já é manhã");
+    assert.equal(dawnAt(docUnits - DAWN_TO, docUnits), 1);
+    assert.equal(dawnAt(docUnits, docUnits), 1);
+  }
+  // Sem altura do documento medida não há amanhecer (a abertura não pisca em manhã).
+  assert.equal(dawnAt(0.5, 0), 0);
+  assert.equal(dawnAt(0.5, Infinity), 0);
+  assert.ok(RIVER_GLSL.includes(`smoothstep(docU - ${DAWN_FROM}, docU - ${DAWN_TO}, y)`));
 });
 
 test("o shader usa as mesmas senoides do SVG", () => {
