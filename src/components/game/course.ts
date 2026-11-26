@@ -143,8 +143,10 @@ export function gameSizes(W: number, unit: number) {
   const compact = Math.min(W, unit) < 600;
   return {
     compact,
-    canoeLen: compact ? 44 : 54,
-    canoeWid: compact ? 15 : 18,
+    // Um pouco maior desde que a canoa virou ilustração (era 54 × 18 em
+    // vetor): abaixo disso o chapéu e o remo do remador viram borrão.
+    canoeLen: compact ? 50 : 62,
+    canoeWid: compact ? 16 : 20,
     /** Raio de coleta: generoso, o jogo é para entreter, não para punir. */
     grab: compact ? 22 : 28,
     chipW: compact ? 40 : 50,

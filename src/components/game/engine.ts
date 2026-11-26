@@ -75,6 +75,28 @@ export type Game = {
 type Carried = { ch: string; digit: string; level: number; stage: number; at: number; flip: number; wave: number; x: number; y: number };
 type Spark = { kind: "anel" | "perda"; x: number; y: number; at: number; text: string; dir: number };
 
+/**
+ * Os sprites do jogo (public/images/jogo), ilustrados e com fundo
+ * transparente (gerados no Codex em 2026-11-26). Medidas do arquivo, para o
+ * desenho casar com a física:
+ * - canoa: 160 × 288 px, casco centrado em x = 80, da popa (y ≈ 9) à proa
+ *   (y = 279), proa para baixo, remo atravessado no colo. É um quadro só: o
+ *   gerador não manteve casco e chapéu iguais entre duas poses de remada,
+ *   então a remada é sugerida pelas ondinhas na água (drawCanoe).
+ * - tronco: 256 × 96 px, deitado; vai por baixo da etiqueta do erro.
+ * Se um arquivo não carregar (rede, bloqueador), o jogo cai no desenho em
+ * vetor que existia antes: nunca fica sem canoa.
+ */
+const SPRITE = { canoeW: 160, canoeH: 288, hull: 270, logW: 256, logH: 96 } as const;
+
+function loadSprite(src: string) {
+  const img = new Image();
+  img.decoding = "async";
+  img.src = src;
+  return img;
+}
+const ready = (img: HTMLImageElement) => img.complete && img.naturalWidth > 0;
+
 /** Mancha de luz redonda, desenhada uma vez: `shadowBlur` por dado custava caro no celular. */
 function halo(color: string, size: number) {
   const c = document.createElement("canvas");
@@ -120,6 +142,8 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks, options: 
   const haloData = halo("rgb(255 158 84 / 0.5)", 64);
   const haloError = halo("rgb(255 80 80 / 0.4)", 96);
   const haloLamp = halo("rgb(255 226 160 / 0.85)", 48);
+  const canoeSprite = loadSprite("/images/jogo/canoa.png");
+  const logSprite = loadSprite("/images/jogo/tronco.png");
 
   let H = 0;
   let dpr = 1;
@@ -363,6 +387,26 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks, options: 
     ctx.fillStyle = "rgb(0 0 0 / 0.4)";
     ctx.fill();
     ctx.restore();
+    const stroke = Math.sin(now / 240);
+    if (ready(canoeSprite)) {
+      // A remada: uma ondinha abre na água de um lado, depois do outro, na
+      // altura do remo. O sprite é parado; sem isto a canoa parecia à deriva.
+      const beat = (now / 700) % 2;
+      const grow = beat % 1;
+      ctx.beginPath();
+      ctx.arc((beat < 1 ? -1 : 1) * (w / 2 + 5), L * 0.04, 3 + 8 * grow, 0, Math.PI * 2);
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = `rgb(237 235 230 / ${(0.55 * (1 - grow)).toFixed(3)})`;
+      ctx.stroke();
+      // A escala leva o casco do arquivo ao comprimento da física.
+      const k = L / SPRITE.hull;
+      ctx.drawImage(canoeSprite, (-SPRITE.canoeW / 2) * k, (-SPRITE.canoeH / 2) * k, SPRITE.canoeW * k, SPRITE.canoeH * k);
+      // A lamparina já está no desenho, na ponta da proa; o clarão por cima é o que a liga à luz na água.
+      ctx.drawImage(haloLamp, -12, L / 2 - 15, 24, 24);
+      ctx.restore();
+      return;
+    }
+    // Reserva em vetor, para quando os sprites não carregam.
     // Madeira escura com contorno quase preto: a primeira versão era cor de
     // mel e desaparecia na água dourada da foz.
     hull(1);
@@ -375,7 +419,6 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks, options: 
     ctx.fillStyle = "#5b3a1a";
     ctx.fill();
     // Remo: troca de lado a cada remada.
-    const stroke = Math.sin(now / 240);
     const sideways = (stroke > 0 ? 1 : -1) * (w / 2 + 3 + 7 * Math.abs(stroke));
     ctx.beginPath();
     ctx.moveTo(0, -L * 0.06);
@@ -467,8 +510,23 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks, options: 
         const w = sizes.chipW;
         const h = sizes.chipH;
         ctx.drawImage(haloError, it.px - w, sy - w, w * 2, w * 2);
+        ctx.font = fontChip;
+        let plateW: number = w;
+        let plateH: number = h;
+        // O erro boia num tronco: obstáculo de rio, que se entende sem ler a
+        // etiqueta. Com o tronco, a etiqueta encolhe para o tamanho do texto
+        // e deixa a madeira aparecer nas pontas e nas bordas. O tronco é 30%
+        // mais largo que a área que de fato bate: raspar a ponta dele não
+        // conta, e errar para o lado do jogador é melhor que o contrário.
+        if (ready(logSprite)) {
+          const lw = w * 1.3;
+          const lh = (lw * SPRITE.logH) / SPRITE.logW;
+          ctx.drawImage(logSprite, it.px - lw / 2, sy - lh / 2, lw, lh);
+          plateW = Math.min(w, ctx.measureText(it.text).width + 12);
+          plateH = h - 5;
+        }
         ctx.beginPath();
-        ctx.roundRect(it.px - w / 2, sy - h / 2, w, h, 4);
+        ctx.roundRect(it.px - plateW / 2, sy - plateH / 2, plateW, plateH, 4);
         ctx.fillStyle = "rgb(92 14 20 / 0.94)";
         ctx.fill();
         ctx.lineWidth = 1.5;
