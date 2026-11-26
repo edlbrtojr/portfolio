@@ -237,6 +237,54 @@ export const pt: Content = {
       },
     },
     {
+      // Só o que está escrito e medido no repositório em 2026-11-26. O produto
+      // ainda muda de forma (há duas linhas de trabalho, uma com painel em
+      // Next.js e Supabase): por isso a stack lista só o que as duas têm em
+      // comum e o texto não promete preço, cobertura nem data. Estratégia,
+      // concorrentes e a discussão jurídica da spec ficam fora daqui.
+      slug: "convokator",
+      title: "Convokator",
+      toponym: { name: "Convokator", note: "produto próprio" },
+      rank: "cidade",
+      line: "Avisa quem passou em concurso quando o nome sai no diário oficial.",
+      tag: "produto próprio",
+      kicker: "SaaS próprio · em desenvolvimento",
+      year: "2026",
+      role: "Fundador e desenvolvedor",
+      summary:
+        "Quem passa em concurso pode ser convocado meses depois, por um ato publicado só no diário oficial e com prazo curto para responder. O Convokator lê os diários todo dia e avisa quando o nome da pessoa aparece, com o trecho e o link da edição. Está em desenvolvimento, com o Acre como piloto.",
+      stack: ["Python", "httpx", "Aho-Corasick", "poppler", "pytest"],
+      links: [],
+      shots: [],
+      diagram: "gazette-watch",
+      details: {
+        overview:
+          "É a reescrita, como produto, do Busca Diários, um script que eu fiz para procurar termos nos diários oficiais do Acre. A pessoa cadastra o próprio nome e os diários que importam para ela. Todo dia o Convokator baixa as edições novas, extrai o texto página a página e procura o nome. O resumo diz o que achou e também o que foi lido, para que silêncio nunca queira dizer que a busca não rodou.",
+        decisions: [
+          {
+            problem: "Consultar o site de cada diário para cada pessoa não se sustenta: os sites são lentos e a maioria nem tem busca por nome.",
+            choice: "Cada edição é baixada uma vez, e todos os nomes monitorados são procurados no texto dela numa passada só. O custo cresce com o número de diários, não com o de pessoas.",
+          },
+          {
+            problem: "PDF de diário parte o nome: quebra de linha, hífen, célula de tabela com o texto da vizinha no meio.",
+            choice: "O nome partido ou colado ainda é achado, e vai marcado como possível em vez de ser descartado. Aviso a mais é só incômodo; convocação perdida é o erro que não pode acontecer.",
+          },
+          {
+            problem: "\"Não achei\" e \"não consegui ler o diário hoje\" são coisas diferentes.",
+            choice: "Cada coleta registra se a edição foi lida, se não houve edição ou se a leitura falhou.",
+          },
+          {
+            problem: "Como saber que nenhum nome está escapando?",
+            choice: "Uma medição roda sobre edições reais e confere se todos os nomes publicados nelas são achados. Ela é repetida a cada mudança na busca.",
+          },
+        ],
+        results: [
+          "Em desenvolvimento. Já baixa e lê as edições do Diário Oficial do Acre, do Diário da Justiça e do Ministério Público do estado, e acha os nomes nelas.",
+          "O resumo diário por e-mail e o painel de quem assina vêm a seguir.",
+        ],
+      },
+    },
+    {
       slug: "distribuidora-flow",
       title: "Distribuidora Flow",
       toponym: { name: "Distribuidora Flow", note: "freelance" },
@@ -363,22 +411,82 @@ export const pt: Content = {
         results: ["Consultável do estado inteiro até a seção eleitoral, em todos os municípios do Acre."],
       },
     },
+    {
+      // Saiu da lista "mais coisas que fiz" e ganhou página: está pronto, no
+      // ar e com o código aberto. As capturas são as do README do repositório.
+      slug: "gerador-de-qrcode",
+      title: "Gerador de QR Code",
+      toponym: { name: "Gerador de QR Code", note: "código aberto" },
+      rank: "cidade",
+      line: "QR codes de Pix, Wi-Fi e WhatsApp com a cara da marca, feitos no navegador.",
+      tag: "código aberto",
+      kicker: "Projeto pessoal · código aberto · no ar",
+      year: "2026",
+      role: "Autor",
+      summary:
+        "Gera QR codes de Pix, Wi-Fi, WhatsApp, Instagram, Google Maps ou qualquer link, com as cores e o logo da marca, prontos para imprimir. Roda inteiro no navegador: nada do que a pessoa digita vai para um servidor.",
+      stack: ["TypeScript", "Vite", "qr-code-styling", "node:test", "GitHub Actions", "GitHub Pages", "Docker"],
+      links: [{ label: "edlbrtojr.github.io/Gerador-De-QRCode", href: "https://edlbrtojr.github.io/Gerador-De-QRCode/" }],
+      shots: [
+        {
+          src: "/images/projects/capturas/qrcode-wifi.png",
+          alt: "Gerador de QR Code no tema escuro: atalhos de Link, Pix, WiFi, WhatsApp, Instagram e Google Maps, o formulário da rede WiFi e a prévia do QR azul com o símbolo de WiFi no centro",
+          width: 2560,
+          height: 1600,
+        },
+        {
+          src: "/images/projects/capturas/qrcode-estilo.png",
+          alt: "Aba de estilo no tema claro: seis paletas prontas, cores dos módulos e dos cantos, e um QR terracota com o logo do Instagram no centro",
+          width: 2560,
+          height: 1600,
+        },
+      ],
+      details: {
+        overview:
+          "Quem tem um comércio quer um QR de Pix no balcão ou de Wi-Fi na parede, sem fazer cadastro e sem entregar a chave Pix a um site desconhecido. Este é uma página só: a pessoa escolhe o que o QR vai abrir, preenche campos simples, acerta cores, formato e logo, e baixa em PNG ou SVG.",
+        decisions: [
+          {
+            problem: "Chave Pix e senha do Wi-Fi não deveriam passar pelo servidor de ninguém.",
+            choice: "Não existe servidor. O QR é montado e desenhado no navegador, e depois de carregada a página funciona até sem internet.",
+          },
+          {
+            problem: "Um QR de Pix montado errado simplesmente não paga.",
+            choice: "O conteúdo segue o BR Code campo a campo, e o cálculo do código de verificação é testado contra o exemplo do manual do Banco Central.",
+          },
+          {
+            problem: "Ninguém deveria precisar saber o formato técnico de um QR de Wi-Fi.",
+            choice: "Atalhos com campos simples montam o formato certo, inclusive quando o nome ou a senha da rede têm caracteres especiais.",
+          },
+          {
+            problem: "Logo grande e cor clara deixam o QR bonito e, às vezes, ilegível.",
+            choice: "A prévia se redesenha a cada ajuste, e as opções avançadas deixam subir a correção de erro antes de imprimir.",
+          },
+        ],
+        results: [
+          "No ar no GitHub Pages, publicado a cada mudança pelo GitHub Actions.",
+          "Código aberto, sob licença MIT.",
+          "Funciona no celular e segue o tema claro ou escuro do aparelho.",
+        ],
+      },
+    },
   ],
   archive: [
     { title: "Smilix", year: "2025", description: "A primeira versão do Milix, só para dentistas." },
     { title: "Dados fiscais das prefeituras do Acre", year: "2026", description: "Os portais de transparência dos municípios do Acre numa base só." },
     { title: "Apresentações de dados", year: "2026", description: "Apresentações do Observatório em HTML, como o Panorama das Exportações do Acre." },
     { title: "Skills para agentes de IA", year: "2026", description: "Ensina o Claude Code e o Codex a trabalhar do jeito da equipe." },
-    { title: "Busca Diários", year: "2024", description: "Procura termos dentro dos diários oficiais do Acre.", href: "https://github.com/edlbrtojr/BuscaDiarios" },
+    // O Gerador de QR Code saiu daqui: agora tem página (ver projects).
+    { title: "Busca Diários", year: "2024", description: "Procura termos dentro dos diários oficiais do Acre. Virou o Convokator.", href: "https://github.com/edlbrtojr/BuscaDiarios" },
     { title: "Service desk do Sistema FIEAC", year: "2024", description: "Tirou os pedidos internos do e-mail e do papel." },
     { title: "Intranet do Sistema FIEAC", year: "2024", description: "Refeita no SharePoint moderno, com web parts próprias." },
-    { title: "Gerador de QR Code", year: "2026", description: "QR codes para Instagram, WhatsApp, Pix e Wi-Fi." },
   ],
   now: {
     label: "agora",
     body: [
       [
-        "No Observatório, sigo colocando bases novas no lake e painéis novos na plataforma. No Milix, cuido das clínicas que já usam o sistema e do que elas pedem.",
+        "No Observatório, sigo colocando bases novas no lake e painéis novos na plataforma. No Milix, cuido das clínicas que já usam o sistema e do que elas pedem. E estou começando o ",
+        { text: "Convokator", href: "/projetos/convokator" },
+        ", que avisa quem passou em concurso quando o nome sai no diário oficial.",
       ],
       [
         // As notas aqui explicam o serviço a quem vai contratar, não a quem programa.
@@ -453,6 +561,8 @@ export const pt: Content = {
     { term: "JWT", note: "Um crachá digital assinado, conferido a cada pedido, que diz quem é a pessoa e o que ela pode ver." },
     { term: "determinística", note: "Mesma entrada, mesma saída, sempre." },
     { term: "ponto de retomada", note: "Uma marca de até onde a importação chegou. Se cair, ela recomeça dali, e não do zero." },
+    { term: "BR Code", note: "O formato do Pix copia e cola, definido pelo Banco Central. É o texto que o QR de Pix carrega." },
+    { term: "correção de erro", note: "Informação repetida dentro do QR. Quanto mais alta, mais o código aguenta sujeira, dobra ou um logo por cima e ainda é lido." },
   ],
   // Os "20 segundos" são medidos: o teste de game/course.test.mjs quebra se a
   // descida sair da faixa de 17 a 24 s. "bruto, limpo, pronto" são bronze,
@@ -461,13 +571,20 @@ export const pt: Content = {
     start: "ou desça o rio de canoa",
     startNote: "joguinho de 20 segundos",
     label: "Jogo: descer o rio de canoa",
-    hintMouse: "Mova o mouse ou use as setas ← →",
+    hintMouse: "Mova o mouse ou use as setas ← →. Espaço pausa.",
     hintTouch: "Arraste o dedo para os lados",
     rule: "Pegue os dados. Desvie dos erros.",
     stages: ["bruto", "limpo", "pronto"],
+    // As definições de bronze, silver e gold do glossário, encurtadas para caber no placar.
+    stageNotes: ["o dado como chegou da fonte", "conferido e sem sujeira", "virou gráfico"],
     aboard: "na canoa",
     quit: "sair",
+    sound: "som",
+    paused: "Pausado",
+    resume: "continuar",
+    spaceKey: "espaço",
     doneTitle: "{n} de {total} dados entregues.",
+    perfectTitle: "Todos os {total} dados entregues.",
     doneBody: "Você pegou dado bruto lá em cima e chegou aqui com um gráfico. É o que eu faço no trabalho.",
     emptyTitle: "A canoa chegou vazia.",
     emptyBody: "Dado bruto escapa fácil. Na segunda descida já se pega o jeito.",

@@ -47,7 +47,7 @@ export type Project = {
   links: ExternalLink[];
   shots: Shot[];
   /** Quando não há tela que possa ser mostrada, um diagrama desenhado no código. */
-  diagram?: "order-flow" | "decision-tree";
+  diagram?: "order-flow" | "decision-tree" | "gazette-watch";
   details: {
     overview: string;
     /**
@@ -125,8 +125,10 @@ export type Content = {
    * faz o que eu faço (recolhe dado bruto e chega com um gráfico) e a descida
    * termina no contato. `start` e `startNote` são o convite da abertura: o
    * que é e quanto tempo toma. `stages`: os três estágios do dado, em palavra
-   * comum. `doneTitle` troca `{n}` e `{total}` pelos números da descida;
-   * `empty*` é para quem chega sem nenhum dado.
+   * comum, e `stageNotes` o que cada um quer dizer (aparece no placar
+   * enquanto a canoa está nele: é onde o jogo explica o trabalho).
+   * `doneTitle` e `perfectTitle` (quem trouxe todos) trocam `{n}` e `{total}`
+   * pelos números da descida; `empty*` é para quem chega sem nenhum dado.
    */
   game: {
     start: string;
@@ -137,9 +139,17 @@ export type Content = {
     hintTouch: string;
     rule: string;
     stages: [string, string, string];
+    stageNotes: [string, string, string];
     aboard: string;
     quit: string;
+    /** Botão de som do placar (liga e desliga; começa desligado). */
+    sound: string;
+    paused: string;
+    resume: string;
+    /** Nome da tecla que pausa e continua, escrito no botão de continuar. */
+    spaceKey: string;
     doneTitle: string;
+    perfectTitle: string;
     doneBody: string;
     emptyTitle: string;
     emptyBody: string;

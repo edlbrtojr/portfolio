@@ -1,6 +1,7 @@
 import { chartGeometry } from "../chart/geometry";
 import { halfRef, riverHalf, riverX } from "../scene/river-curve";
 import { sceneState, wakeScene } from "../scene/store";
+import { createSound, type GameSound } from "./sound";
 import { buildCourse, CANOE_Y, COURSE_UNITS, cruise, gameRiver, gameSizes, keySpeed, makeChannel, mouseMap, placeCourse, seeded, STAGE_CLEAN, STAGE_GOLD, steer, touches } from "./course";
 
 // O motor do jogo da canoa. As regras são de course.ts; aqui ficam o tempo, o
@@ -50,9 +51,28 @@ export type GameHooks = {
   onFinish(result: GameResult): void;
   /** Saiu no meio (Esc, botão, janela redimensionada, cena perdida). */
   onQuit(): void;
+  /** Pausou ou voltou (espaço, botão, ou a janela perdeu o foco). */
+  onPause(paused: boolean): void;
 };
 
-type Carried = { ch: string; digit: string; level: number; stage: number; at: number; flip: number; x: number; y: number };
+export type GameOptions = {
+  /** Nomes dos três estágios, escritos nas linhas que cruzam o rio. */
+  stages: readonly [string, string, string];
+  /** Som ligado desde a largada (a escolha da última vez). */
+  sound: boolean;
+};
+
+export type Game = {
+  /** Sai com a cortina, como o Esc. */
+  quit(): void;
+  /** Desfaz tudo na hora, sem avisar: para quando o componente desmonta. */
+  stop(): void;
+  setPaused(paused: boolean): void;
+  /** Tem de ser chamado dentro de um clique ou tecla: é quando o navegador deixa o áudio começar. */
+  setSound(on: boolean): void;
+};
+
+type Carried = { ch: string; digit: string; level: number; stage: number; at: number; flip: number; wave: number; x: number; y: number };
 type Spark = { kind: "anel" | "perda"; x: number; y: number; at: number; text: string; dir: number };
 
 /** Mancha de luz redonda, desenhada uma vez: `shadowBlur` por dado custava caro no celular. */
@@ -72,11 +92,12 @@ function halo(color: string, size: number) {
 }
 
 /**
- * Começa uma descida no canvas dado (do tamanho da janela). Devolve `quit`
- * (sai com a cortina, como o Esc) e `stop` (desfaz tudo na hora, sem avisar:
- * para quando o componente desmonta). null se não der para começar.
+ * Começa uma descida no canvas dado (do tamanho da janela). null se não der
+ * para começar. O progresso (0 a 1) e a posição das duas linhas de etapa vão
+ * para o elemento pai do canvas como variáveis CSS (--jogo-p, --jogo-m1,
+ * --jogo-m2): a régua do placar é CSS puro e não re-renderiza a cada quadro.
  */
-export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit(): void; stop(): void } | null {
+export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks, options: GameOptions): Game | null {
   const ctx = canvas.getContext("2d");
   // Sem o canvas da cena montado (three.js ainda baixando) ninguém chamaria o
   // `tick`; com a câmera ocupada há uma viagem entre páginas em curso.
@@ -138,9 +159,37 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
   let anchor = W / 2;
   let aim = canoe.x;
   let glide = 0;
+  /**
+   * Quanto a carga ainda tem de recuar (positivo) ou avançar (negativo), px.
+   * O dado novo entra logo atrás da canoa e empurra os outros para trás; o
+   * erro derruba os da frente e a fila fecha o vão. Antes o dado novo ia para
+   * o fim da fila, que com trinta dados já está fora da tela: o jogador
+   * recolhia e não via nada mudar perto dele.
+   */
+  let slide = 0;
+  /** Dados recolhidos em sequência desde o último erro: sobe a nota do som. */
+  let streak = 0;
+  let paused = false;
+  let pausedAt = 0;
+  let sound: GameSound | null = null;
+  const hud = canvas.parentElement;
+
+  // A canoa percorre de CANOE_Y a (percurso - 1 + CANOE_Y) unidades; a régua
+  // do placar mostra essa fração, com uma marca em cada troca de estágio.
+  const from = CANOE_Y / COURSE_UNITS;
+  const span = (COURSE_UNITS - 1) / COURSE_UNITS;
+  hud?.style.setProperty("--jogo-m1", String((STAGE_CLEAN - from) / span));
+  hud?.style.setProperty("--jogo-m2", String((STAGE_GOLD - from) / span));
+  hud?.style.setProperty("--jogo-p", "0");
+
+  const buzz = (pattern: number | number[]) => {
+    // Só o Android vibra; onde não há, a chamada nem existe.
+    if ("vibrate" in navigator) navigator.vibrate(pattern);
+  };
 
   const lose = (n: number, now: number) => {
-    const out = carry.splice(Math.max(0, carry.length - n));
+    const out = carry.splice(0, n);
+    slide -= out.length * sizes.gap;
     out.forEach((c, i) => sparks.push({ kind: "perda", x: c.x, y: c.y, at: now, text: c.stage ? c.digit : c.ch, dir: i % 2 ? 1 : -1 }));
     if (out.length) hooks.onCount(carry.length);
   };
@@ -152,6 +201,10 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
       if (cam.y >= endY - 0.5) {
         phase = "chegando";
         phaseAt = now;
+        // A chegada: uma onda de brilho corre a carga, da canoa para trás.
+        carry.forEach((c, i) => (c.wave = now + 250 + i * 22));
+        sound?.arrive();
+        buzz([15, 70, 15]);
       }
     } else if (now - phaseAt > ARRIVE_MS) {
       finished = true;
@@ -193,24 +246,30 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
       it.done = true;
       if (it.kind === "dado") {
         // Barras vizinhas com alturas parecidas: no fim lê como gráfico, não como ruído.
-        const prev = carry[carry.length - 1]?.level ?? 0.5;
+        const prev = carry[0]?.level ?? 0.5;
         const level = Math.min(1, Math.max(0.12, prev + (rand() - 0.5) * 0.5));
-        carry.push({ ch: it.text, digit: String(Math.floor(rand() * 10)), level, stage: 0, at: now, flip: -1e9, x, y: cy });
+        carry.unshift({ ch: it.text, digit: String(Math.floor(rand() * 10)), level, stage: 0, at: now, flip: -1e9, wave: -1e9, x, y: cy });
+        slide += sizes.gap;
         sparks.push({ kind: "anel", x: it.px, y: it.py, at: now, text: "", dir: 0 });
         hooks.onCount(carry.length);
+        sound?.pick(streak++);
       } else {
         lose(ERROR_COST, now);
         bumpAt = now;
+        streak = 0;
+        sound?.hit();
+        buzz(40);
       }
     }
 
     // A carga segue a canoa pelo caminho que ela fez, um dado a cada `gap` px.
     if (!wake.length || cy - wake[wake.length - 1].y >= 2) wake.push({ x, y: cy });
     if (wake.length > 900) wake.splice(0, 300);
+    slide *= Math.exp(-dt * 14);
     let j = wake.length - 1;
     for (let i = 0; i < carry.length; i++) {
       const c = carry[i];
-      const wy = cy - sizes.canoeLen / 2 - 12 - i * sizes.gap;
+      const wy = cy - sizes.canoeLen / 2 - 12 - i * sizes.gap + slide;
       while (j > 0 && wake[j].y > wy) j--;
       c.x = wake[j].x;
       c.y = wy;
@@ -237,6 +296,50 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
     if (here !== stage) {
       stage = here;
       hooks.onStage(here);
+      sound?.stage();
+    }
+    hud?.style.setProperty("--jogo-p", Math.min(1, Math.max(0, (cy / docH - from) / span)).toFixed(4));
+  };
+
+  /**
+   * As duas linhas de etapa, presas ao rio na altura em que o dado muda de
+   * estágio. O jogador vê a troca chegando e entende por que a carga mudou de
+   * cara ao cruzar: sem elas a mudança parecia acontecer do nada.
+   */
+  const drawGates = () => {
+    const gates = [
+      { at: STAGE_CLEAN, color: SILVER, label: options.stages[1] },
+      { at: STAGE_GOLD, color: GOLD, label: options.stages[2] },
+    ];
+    for (const gate of gates) {
+      const wy = gate.at * docH;
+      const sy = wy - cam.y;
+      if (sy < -30 || sy > H + 30) continue;
+      const lane = channel(wy);
+      ctx.save();
+      ctx.strokeStyle = gate.color;
+      ctx.globalAlpha *= 0.85;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([3, 7]);
+      ctx.beginPath();
+      ctx.moveTo(lane.x - lane.half, sy);
+      ctx.lineTo(lane.x + lane.half, sy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // O nome do estágio numa etiqueta escura no meio da linha, como placa sobre o rio.
+      ctx.font = fontChip;
+      const text = gate.label.toUpperCase();
+      const w = ctx.measureText(text).width + 18;
+      ctx.globalAlpha = 1;
+      ctx.beginPath();
+      ctx.roundRect(lane.x - w / 2, sy - 11, w, 22, 11);
+      ctx.fillStyle = "rgb(3 7 5 / 0.92)";
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = gate.color;
+      ctx.fillText(text, lane.x, sy + 1);
+      ctx.restore();
     }
   };
 
@@ -305,6 +408,8 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
     const jolt = Math.max(0, 1 - (now - bumpAt) / 320);
     if (jolt > 0) ctx.translate(Math.sin(now / 17) * 6 * jolt, Math.cos(now / 23) * 4 * jolt);
 
+    drawGates();
+
     // A carga. Cada dado vai sobre uma conta escura: sem ela, o número prata
     // sumia na água clara da noite e a barra dourada, na água dourada da foz
     // (captura do primeiro teste no navegador). Primeiro o fundo de todas,
@@ -324,8 +429,10 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
     for (const c of carry) {
       const sy = c.y - cam.y;
       if (sy < -20) continue;
-      // Ao mudar de estágio o dado pisca em branco e assenta na cor nova.
-      const pop = Math.max(0, 1 - (now - c.flip) / 260);
+      // Ao mudar de estágio o dado pisca em branco e assenta na cor nova. Na
+      // chegada, a onda (`wave`) faz o mesmo brilho correr a carga inteira.
+      const sinceWave = now - c.wave;
+      const pop = Math.max(0, 1 - (now - c.flip) / 260, sinceWave >= 0 && sinceWave < 260 ? 1 - sinceWave / 260 : 0);
       const color = c.stage === 2 ? GOLD : c.stage === 1 ? SILVER : BRONZE;
       ctx.fillStyle = pop > 0.5 ? "#ffffff" : color;
       if (c.stage === 2) {
@@ -398,6 +505,38 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
       }
       ctx.globalAlpha = alpha;
     }
+
+    // Bater num erro tinge a tela de vermelho por um instante: o tranco
+    // sozinho passava despercebido quando a canoa estava longe do centro.
+    if (jolt > 0) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.fillStyle = `rgb(255 60 60 / ${(0.16 * jolt).toFixed(3)})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+  };
+
+  const setPaused = (on: boolean) => {
+    // Só a descida pausa: a troca de cenário e a chegada são curtas e não dependem do jogador.
+    if (on === paused || (on && phase !== "descendo")) return;
+    const now = performance.now();
+    paused = on;
+    if (on) {
+      pausedAt = now;
+      held = 0;
+    } else {
+      // O tempo parado não conta para a arrancada nem para o freio da descida.
+      phaseAt += now - pausedAt;
+      last = now;
+    }
+    hooks.onPause(on);
+  };
+
+  const setSound = (on: boolean) => {
+    if (on && !sound) sound = createSound();
+    else if (!on && sound) {
+      sound.close();
+      sound = null;
+    }
   };
 
   /** Desfaz o que o jogo mudou na cena e na página. Sem animação. */
@@ -425,6 +564,7 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
     if (phase === "fim") return;
     phase = "fim";
     unlisten();
+    setSound(false);
     restore();
     s.tick = null;
     s.curtain = 1;
@@ -442,6 +582,10 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
     if (phase === "saindo" || phase === "abrindo" || phase === "fim") return;
     // Antes de o rio trocar não há o que apagar: volta direto.
     if (phase === "fechando") return abort();
+    if (paused) {
+      paused = false;
+      hooks.onPause(false);
+    }
     phase = "saindo";
     phaseAt = now;
     hooks.onLeave();
@@ -481,14 +625,24 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
         if (t < OPEN_MS) return;
         phase = "fim";
         unlisten();
+        // O acorde da chegada ainda está soando quando a cortina sobe: o áudio fecha um pouco depois.
+        const ringing = sound;
+        sound = null;
+        if (ringing) window.setTimeout(ringing.close, 1200);
         s.tick = null;
         s.curtain = 1;
         wakeScene();
-        if (finished) hooks.onFinish({ delivered: carry.length, total, bars: carry.map((c) => c.level) });
+        // O gráfico do cartão segue a ordem da coleta: o primeiro dado recolhido é a primeira barra.
+        if (finished) hooks.onFinish({ delivered: carry.length, total, bars: carry.map((c) => c.level).reverse() });
         else hooks.onQuit();
         return;
       }
       if (phase === "fim") return;
+      if (paused) {
+        // Pausado: o rio para, mas a cena continua viva (a canoa boia, a água cintila).
+        draw(now, 1);
+        return;
+      }
       step(now, dt);
       if (phase === "descendo" || phase === "chegando") draw(now, phase === "descendo" ? Math.min(1, t / 500) : 1);
     } catch (err) {
@@ -499,6 +653,11 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
   };
 
   function onPointer(e: PointerEvent) {
+    // Pausado, um clique ou toque na tela continua (mexer o mouse, não).
+    if (paused) {
+      if (e.type === "pointerdown") setPaused(false);
+      else return;
+    }
     if (e.pointerType === "touch") {
       // O dedo manda 1 para 1: a canoa vai para baixo dele.
       aim = e.clientX;
@@ -522,9 +681,18 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
       if (down) leave(performance.now());
       return;
     }
+    const onButton = e.target instanceof HTMLButtonElement;
+    // Espaço ou P pausa e continua. Num botão com foco o espaço é do botão
+    // (o "continuar" da pausa já faz a mesma coisa; os dois juntos se anulariam).
+    if (e.key === "p" || e.key === "P" || (e.key === " " && !onButton)) {
+      e.preventDefault();
+      if (down && !e.repeat) setPaused(!paused);
+      return;
+    }
     const dir = e.key === "ArrowLeft" || e.key === "a" || e.key === "A" ? -1 : e.key === "ArrowRight" || e.key === "d" || e.key === "D" ? 1 : 0;
     if (dir) {
       e.preventDefault();
+      if (paused) return;
       if (down) {
         // Do mouse para o teclado: o alvo passa a ser onde a canoa está, não onde o mouse ficou.
         if (input !== "teclas") target = canoe.x;
@@ -535,13 +703,14 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
       } else if (held === dir) held = 0;
       return;
     }
-    // A página está escondida: seta para baixo, espaço e Page Down não podem
-    // rolá-la por baixo do jogo. O espaço continua valendo no botão de sair.
-    const scrolls = e.key === " " ? !(e.target instanceof HTMLButtonElement) : ["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"].includes(e.key);
-    if (down && scrolls) e.preventDefault();
+    // A página está escondida: seta para baixo e Page Down não podem rolá-la por baixo do jogo.
+    if (down && ["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"].includes(e.key)) e.preventDefault();
   }
   function onBlur() {
+    // A janela perdeu o foco (outra aba, outro programa, uma notificação): o
+    // rio não pode continuar descendo sozinho com o jogador olhando para outro lado.
     held = 0;
+    setPaused(true);
   }
   function block(e: Event) {
     e.preventDefault();
@@ -554,6 +723,7 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
   }
   function onVisible() {
     lastTick = performance.now();
+    if (document.hidden) setPaused(true);
   }
   // Se a cena parar de chamar o `tick` (contexto WebGL perdido), a página
   // ficaria escondida para sempre. Com a aba em segundo plano o rAF para de
@@ -574,6 +744,7 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
   root.dataset.jogo = "";
   s.tick = tick;
   wakeScene();
+  if (options.sound) setSound(true);
 
-  return { quit: () => leave(performance.now()), stop };
+  return { quit: () => leave(performance.now()), stop, setPaused, setSound };
 }

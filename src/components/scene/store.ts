@@ -17,8 +17,15 @@ export type GameScene = { river: RiverParams; docH: number; light: { x: number; 
  */
 export type Port = { y0: number; scroll: number; slot: number; guess?: boolean };
 
-/** Quantos braços o shader desenha (uniform de tamanho fixo). Hoje há seis projetos com página. */
-export const BRANCH_SLOTS = 6;
+/**
+ * Quantos braços o shader desenha (uniform de tamanho fixo). Tem de ser pelo
+ * menos o número de projetos com página: cada um ocupa a vaga da sua posição
+ * na home (measurePorts em scene-page.tsx), e uma vaga além do tamanho do
+ * vetor simplesmente não é desenhada. Hoje são oito projetos (eram seis até
+ * entrarem o Convokator e o Gerador de QR Code); o laço do shader pula as
+ * vagas livres, então vaga sobrando não custa nada.
+ */
+export const BRANCH_SLOTS = 8;
 
 // Estado compartilhado entre o DOM (scroll, ponteiro, foco) e o loop do
 // three.js. É um objeto mutável de propósito: o loop lê a cada quadro e nada

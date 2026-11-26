@@ -6,11 +6,17 @@ import type { Locale } from "@/content/types";
 // animação; sob reduced-motion eles são escondidos por `.diagram-pulse`
 // em globals.css.
 
-type Props = { kind: "order-flow" | "decision-tree"; title: string; locale: Locale };
+type Props = { kind: "order-flow" | "decision-tree" | "gazette-watch"; title: string; locale: Locale };
 
 const LABELS = {
-  pt: { bot: "bot IA", order: "pedido", board: "painel", delivery: "entrega", q: "modem com luz vermelha?", yes: "sim", no: "não", reboot: "reiniciar ONU", ticket: "abrir chamado", wifi: "testar Wi-Fi" },
-  en: { bot: "AI bot", order: "order", board: "board", delivery: "delivery", q: "red light on modem?", yes: "yes", no: "no", reboot: "reboot ONT", ticket: "open ticket", wifi: "test Wi-Fi" },
+  pt: {
+    bot: "bot IA", order: "pedido", board: "painel", delivery: "entrega", q: "modem com luz vermelha?", yes: "sim", no: "não", reboot: "reiniciar ONU", ticket: "abrir chamado", wifi: "testar Wi-Fi",
+    gazettes: "diários oficiais", pages: "texto por página", names: "nomes monitorados", search: "busca dos nomes", alert: "aviso", daily: "uma vez por dia", once: "todos numa passada", excerpt: "trecho + link do ato",
+  },
+  en: {
+    bot: "AI bot", order: "order", board: "board", delivery: "delivery", q: "red light on modem?", yes: "yes", no: "no", reboot: "reboot ONT", ticket: "open ticket", wifi: "test Wi-Fi",
+    gazettes: "official gazettes", pages: "text by page", names: "monitored names", search: "name search", alert: "alert", daily: "once a day", once: "all in one pass", excerpt: "excerpt + link to the notice",
+  },
 };
 
 const stroke = "rgb(237 235 230 / 0.22)";
@@ -63,6 +69,40 @@ export function Diagram({ kind, title, locale }: Props) {
         <Pulse path={p2} dur={2.8} delay={0.9} />
         <Pulse path={p3} dur={2.8} delay={1.8} />
         <Pulse path={p4} dur={2.8} delay={2.2} />
+      </svg>
+    );
+  }
+  if (kind === "gazette-watch") {
+    // Convokator: os diários viram texto uma vez por dia; os nomes entram por
+    // baixo e são todos procurados na mesma passada; o que casa vira aviso.
+    // É o desenho da decisão central do projeto (baixar uma vez, casar todos).
+    const g1 = "M146 110 L246 110";
+    const g2 = "M394 110 L474 110";
+    const g3 = "M606 110 L668 110";
+    const g4 = "M540 224 L540 132";
+    const sub = (x: number, y: number, label: string) => (
+      <text x={x} y={y} textAnchor="middle" fontSize={11} fill="var(--color-faint)" fontFamily="var(--font-mono)">
+        {label}
+      </text>
+    );
+    return (
+      <svg viewBox="0 0 760 300" role="img" aria-label={title} className="h-full w-full">
+        {[g1, g2, g3, g4].map((d) => (
+          <path key={d} d={d} fill="none" stroke={stroke} strokeWidth={1.5} />
+        ))}
+        <Node x={78} y={110} w={136} label={t.gazettes} tone="teal" />
+        <Node x={320} y={110} w={148} label={t.pages} />
+        <Node x={540} y={110} w={132} label={t.search} tone="gold" />
+        <Node x={706} y={110} w={76} label={t.alert} tone="teal" />
+        <Node x={540} y={246} w={160} label={t.names} />
+        {/* Acima do topo das caixas (y = 90): na altura da seta o rótulo encostava na caixa vizinha. */}
+        {sub(196, 80, t.daily)}
+        {sub(540, 70, t.once)}
+        {sub(672, 156, t.excerpt)}
+        <Pulse path={g1} dur={3} />
+        <Pulse path={g2} dur={3} delay={1} />
+        <Pulse path={g4} dur={3} delay={1.4} />
+        <Pulse path={g3} dur={3} delay={2} />
       </svg>
     );
   }

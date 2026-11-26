@@ -3,7 +3,7 @@ import { pt } from "./pt";
 
 // Mesmas regras e fatos de pt.ts (ver o comentário do topo de lá). Imagens,
 // stacks e a hierarquia na carta (rank) vêm de lá para não divergirem.
-const [lakePt, platformPt, milixPt, flowPt, libraryPt, vizuPt] = pt.projects;
+const [lakePt, platformPt, milixPt, convokatorPt, flowPt, libraryPt, vizuPt, qrPt] = pt.projects;
 const shotAlt = (p: Project, ...alts: string[]) => p.shots.map((s, i) => ({ ...s, alt: alts[i] ?? s.alt }));
 
 export const en: Content = {
@@ -175,6 +175,42 @@ export const en: Content = {
       },
     },
     {
+      ...convokatorPt,
+      toponym: { name: "Convokator", note: "my own product" },
+      line: "Alerts people who passed a public service exam when their name appears in the official gazette.",
+      tag: "my own product",
+      kicker: "My own SaaS · in development",
+      role: "Founder and developer",
+      summary:
+        "In Brazil, someone who passes a public service exam can be called up months later, by a notice published only in the official gazette and with a short deadline to respond. Convokator reads the gazettes every day and alerts the person when their name shows up, with the excerpt and a link to the edition. It's in development, with the state of Acre as the pilot.",
+      details: {
+        overview:
+          "It's the product rewrite of Gazette Search, a script I wrote to look for terms in Acre's official gazettes. People register their own name and the gazettes that matter to them. Every day Convokator downloads the new editions, extracts the text page by page and looks for the name. The summary says what it found and also what was read, so that silence never means the search didn't run.",
+        decisions: [
+          {
+            problem: "Querying each gazette's site for each person doesn't hold up: the sites are slow and most don't even search by name.",
+            choice: "Each edition is downloaded once, and every monitored name is searched in its text in a single pass. Cost grows with the number of gazettes, not the number of people.",
+          },
+          {
+            problem: "Gazette PDFs split names: line breaks, hyphens, table cells with the neighbor's text in the middle.",
+            choice: "A split or glued name is still found, and it's flagged as possible instead of being dropped. An extra alert is just a nuisance; a missed call-up is the one error that can't happen.",
+          },
+          {
+            problem: "\"Not found\" and \"couldn't read the gazette today\" are different things.",
+            choice: "Each collection records whether the edition was read, whether there was no edition, or whether reading failed.",
+          },
+          {
+            problem: "How do you know no name is slipping through?",
+            choice: "A measurement runs over real editions and checks that every name published in them is found. It runs again on every change to the search.",
+          },
+        ],
+        results: [
+          "In development. It already downloads and reads the editions of Acre's Official Gazette, the state Court Gazette and the state Prosecutor's Office gazette, and finds the names in them.",
+          "The daily summary by email and the subscriber dashboard come next.",
+        ],
+      },
+    },
+    {
       ...flowPt,
       line: "WhatsApp orders, point of sale and deliveries for a beverage distributor.",
       kicker: "Freelance · in production",
@@ -260,21 +296,63 @@ export const en: Content = {
         results: ["Searchable from the whole state down to the polling section, in every municipality in Acre."],
       },
     },
+    {
+      ...qrPt,
+      title: "QR Code Generator",
+      toponym: { name: "QR Code Generator", note: "open source" },
+      line: "Pix, Wi-Fi and WhatsApp QR codes in your brand's colors, made in the browser.",
+      tag: "open source",
+      kicker: "Personal project · open source · live",
+      role: "Author",
+      summary:
+        "Generates QR codes for Pix (Brazil's instant payment), Wi-Fi, WhatsApp, Instagram, Google Maps or any link, with the brand's colors and logo, ready to print. It runs entirely in the browser: nothing the person types goes to a server.",
+      shots: shotAlt(
+        qrPt,
+        "QR Code Generator in dark theme: shortcuts for Link, Pix, WiFi, WhatsApp, Instagram and Google Maps, the WiFi network form and the preview of a blue QR code with the WiFi symbol in the center",
+        "Style tab in light theme: six ready-made palettes, module and corner colors, and a terracotta QR code with the Instagram logo in the center",
+      ),
+      details: {
+        overview:
+          "A shop owner wants a Pix QR code on the counter or a Wi-Fi one on the wall, without signing up and without handing their Pix key to an unknown site. This is a single page: pick what the QR code will open, fill in simple fields, adjust colors, shape and logo, and download it as PNG or SVG.",
+        decisions: [
+          {
+            problem: "A Pix key and a Wi-Fi password shouldn't go through anyone's server.",
+            choice: "There is no server. The QR code is built and drawn in the browser, and once the page has loaded it works even offline.",
+          },
+          {
+            problem: "A badly built Pix QR code simply doesn't pay.",
+            choice: "The content follows the BR Code field by field, and the checksum calculation is tested against the example in the Central Bank's manual.",
+          },
+          {
+            problem: "Nobody should need to know the technical format of a Wi-Fi QR code.",
+            choice: "Shortcuts with simple fields build the right format, even when the network name or password has special characters.",
+          },
+          {
+            problem: "A big logo and a light color make the QR code pretty and, sometimes, unreadable.",
+            choice: "The preview redraws on every tweak, and the advanced options let you raise the error correction before printing.",
+          },
+        ],
+        results: ["Live on GitHub Pages, published on every change by GitHub Actions.", "Open source, under the MIT license.", "Works on phones and follows the device's light or dark theme."],
+      },
+    },
   ],
   archive: [
     { ...pt.archive[0], description: "The first version of Milix, for dentists only." },
     { ...pt.archive[1], title: "Fiscal data from Acre's municipalities", description: "The transparency portals of Acre's municipalities in one dataset." },
     { ...pt.archive[2], title: "Data presentations", description: "The Observatory's HTML decks, like the Acre Exports Overview." },
     { ...pt.archive[3], title: "AI agent skills", description: "Teaches Claude Code and Codex to work the team's way." },
-    { ...pt.archive[4], title: "Gazette Search", description: "Searches for terms inside Acre's official gazettes." },
+    { ...pt.archive[4], title: "Gazette Search", description: "Searches for terms inside Acre's official gazettes. It became Convokator." },
     { ...pt.archive[5], title: "FIEAC System service desk", description: "Took internal requests off email and paper." },
     { ...pt.archive[6], title: "FIEAC System intranet", description: "Rebuilt on modern SharePoint, with custom web parts." },
-    { ...pt.archive[7], title: "QR Code generator", description: "QR codes for Instagram, WhatsApp, Pix and Wi-Fi." },
   ],
   now: {
     label: "now",
     body: [
-      ["At the Observatory, I keep adding new sources to the lake and new dashboards to the platform. At Milix, I look after the clinics already using it and what they ask for."],
+      [
+        "At the Observatory, I keep adding new sources to the lake and new dashboards to the platform. At Milix, I look after the clinics already using it and what they ask for. And I'm starting ",
+        { text: "Convokator", href: "/en/projects/convokator" },
+        ", which alerts people who passed a public service exam when their name appears in the official gazette.",
+      ],
       [
         "I also take on projects for businesses: custom systems, ",
         {
@@ -341,18 +419,26 @@ export const en: Content = {
     { term: "JWT", note: "A signed digital badge, checked on every request, that says who the person is and what they can see." },
     { term: "Deterministic", note: "Same input, same output, every time." },
     { term: "resume points", note: "A mark of how far the import got. If it fails, it restarts from there instead of from zero." },
+    { term: "BR Code", note: "The Pix copy-and-paste format, defined by Brazil's Central Bank. It's the text a Pix QR code carries." },
+    { term: "error correction", note: "Repeated information inside the QR code. The higher it is, the more dirt, folding or logo on top the code survives and still scans." },
   ],
   game: {
     start: "or paddle down the river",
     startNote: "a 20-second game",
     label: "Game: paddle down the river",
-    hintMouse: "Move the mouse or use the ← → keys",
+    hintMouse: "Move the mouse or use the ← → keys. Space pauses.",
     hintTouch: "Drag your finger sideways",
     rule: "Grab the data. Dodge the errors.",
     stages: ["raw", "clean", "ready"],
+    stageNotes: ["data as it came from the source", "checked, with the dirt removed", "now it's a chart"],
     aboard: "aboard",
     quit: "quit",
+    sound: "sound",
+    paused: "Paused",
+    resume: "resume",
+    spaceKey: "space",
     doneTitle: "{n} of {total} data points delivered.",
+    perfectTitle: "All {total} data points delivered.",
     doneBody: "You picked up raw data upstream and got here with a chart. That's what I do at work.",
     emptyTitle: "The canoe arrived empty.",
     emptyBody: "Raw data slips away easily. You'll get the hang of it on the second run.",

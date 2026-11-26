@@ -96,6 +96,10 @@ html[data-jogo] :is(.canto, .regua, .faixa-topo, .faixa-base, .menu-botao, .pula
   z-index: 38;
   outline: none;
   transition: opacity 0.26s ease;
+  /* Escritas pelo motor (engine.ts): progresso da descida e as duas trocas de etapa, de 0 a 1. */
+  --jogo-p: 0;
+  --jogo-m1: 0.26;
+  --jogo-m2: 0.73;
 }
 /*
  * A camada e o cartão recebem o foco por código (para o teclado e o leitor
@@ -120,21 +124,28 @@ html[data-jogo] :is(.canto, .regua, .faixa-topo, .faixa-base, .menu-botao, .pula
   /* A canoa já mostra onde o mouse está. */
   cursor: none;
 }
+/* Pausado, o cursor volta: a pessoa precisa dele para clicar em continuar, no som ou em sair. */
+.jogo[data-pausa] .jogo-tela {
+  cursor: auto;
+}
 
-/* Placar: onde o dado está (bruto, limpo, pronto), quantos vão na canoa e a saída. */
+/*
+ * Placar. Três blocos: à esquerda a etapa do dado e o que ela quer dizer; ao
+ * lado, quantos dados vão na canoa; à direita, som e saída. Nada além disso:
+ * cada coisa na tela responde a uma pergunta de quem está jogando.
+ */
 .jogo-topo {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  padding: calc(var(--frame) + 3px) calc(var(--frame) + 1rem) 2.5rem;
+  align-items: flex-start;
+  gap: 2rem;
+  padding: calc(var(--frame) + 10px) calc(var(--frame) + 1.6rem) 3rem calc(var(--frame) + 1rem);
   /* A mesma noite da faixa do topo: o placar se lê também sobre a manhã da foz. */
-  background: linear-gradient(rgb(3 7 5 / 0.92), rgb(3 7 5 / 0.8) 45%, rgb(3 7 5 / 0));
+  background: linear-gradient(rgb(3 7 5 / 0.94), rgb(3 7 5 / 0.82) 50%, rgb(3 7 5 / 0));
   font: 500 12px/1 var(--font-mono);
-  text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--color-muted);
   pointer-events: none;
@@ -143,7 +154,8 @@ html[data-jogo] :is(.canto, .regua, .faixa-topo, .faixa-base, .menu-botao, .pula
 .jogo-etapas {
   display: flex;
   align-items: center;
-  min-height: 44px;
+  height: 24px;
+  text-transform: uppercase;
 }
 .jogo-etapas span {
   color: var(--color-faint);
@@ -164,58 +176,177 @@ html[data-jogo] :is(.canto, .regua, .faixa-topo, .faixa-base, .menu-botao, .pula
 .jogo-etapas [data-vez][data-etapa="2"] {
   color: #ffd173;
 }
-.jogo-conta output {
+/* Frase comum, sem caixa-alta: é para ser lida de relance no meio do jogo. */
+.jogo-etapa-nota {
+  margin-top: 0.15rem;
+  font: 14px/1.3 var(--font-body);
+  letter-spacing: 0;
   color: var(--color-ink);
-  font-size: 14px;
+  animation: jogo-nota 0.5s var(--ease-out-expo) both;
+}
+@keyframes jogo-nota {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+.jogo-conta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+  height: 24px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.jogo-conta output {
+  display: inline-block;
+  min-width: 2ch;
+  font-size: 20px;
+  line-height: 24px;
+  text-align: right;
+  color: var(--color-ink);
   font-variant-numeric: tabular-nums;
 }
-.jogo-sair {
+/* O número salta a cada dado recolhido e pisca em vermelho quando um erro derruba dados. */
+.jogo-conta output[data-mudou] {
+  animation: jogo-ganho 0.3s var(--ease-out-expo);
+}
+.jogo-conta output[data-perda] {
+  animation: jogo-perda 0.7s ease-out;
+}
+@keyframes jogo-ganho {
+  from {
+    scale: 1.35;
+    color: #ff9e54;
+  }
+}
+@keyframes jogo-perda {
+  0%,
+  45% {
+    scale: 1.25;
+    color: #ff6b6b;
+  }
+}
+.jogo-botoes {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  /* Os botões têm 44 px de toque; o texto do placar tem 24: sobe para alinhar as duas linhas de base. */
+  margin-top: -10px;
+  pointer-events: auto;
+}
+.jogo-som,
+.jogo-sair {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.55rem;
   min-height: 44px;
+  min-width: 44px;
+  justify-content: center;
   padding-inline: 0.6rem;
   font: inherit;
-  text-transform: inherit;
+  text-transform: uppercase;
   letter-spacing: inherit;
   color: var(--color-ink);
-  pointer-events: auto;
   transition: color 0.2s;
 }
+.jogo-som:hover,
 .jogo-sair:hover {
   color: var(--color-pen);
 }
-.jogo-sair kbd {
+/* Desligado, o som fica apagado como as etapas que ainda não chegaram. */
+.jogo-som[aria-pressed="false"] {
+  color: var(--color-muted);
+}
+.jogo :is(.jogo-sair, .jogo-pausa) kbd {
   padding: 0.3em 0.5em;
   border: 1px solid var(--color-line-strong);
   border-radius: 4px;
-  font: inherit;
+  font: 500 11px/1 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   color: var(--color-muted);
 }
 
-/* O comando e a regra, abaixo da canoa (ela fica a 60% da altura). Some depois de 6 s: a essa altura já se aprendeu. */
+/*
+ * Quanto falta. Mesma régua da página (frame.css, .regua): trilho fino na
+ * borda direita, a água sobe com a descida e passa por uma marca em cada
+ * troca de etapa. Quem leu a página antes de jogar já sabe ler.
+ */
+.jogo-regua {
+  position: absolute;
+  top: calc(var(--frame) + 64px);
+  bottom: calc(var(--frame) + 24px);
+  right: calc(var(--frame) + 10px);
+  width: 9px;
+  pointer-events: none;
+}
+.jogo-regua::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 1px;
+  background: rgb(237 235 230 / 0.2);
+}
+.jogo-regua-agua {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -1px;
+  width: 3px;
+  background: var(--color-water);
+  transform-origin: bottom;
+  transform: scaleY(var(--jogo-p));
+}
+.jogo-regua-marca {
+  position: absolute;
+  right: 0;
+  width: 9px;
+  height: 1px;
+  background: rgb(237 235 230 / 0.6);
+}
+.jogo-regua-marca[data-marca="1"] {
+  bottom: calc(var(--jogo-m1) * 100%);
+}
+.jogo-regua-marca[data-marca="2"] {
+  bottom: calc(var(--jogo-m2) * 100%);
+}
+
+/*
+ * O comando e a regra, no alto da tela, acima da canoa (ela fica a 60% da
+ * altura): é o trecho do rio que já passou. Embaixo dela, onde estava antes,
+ * a placa cobria as primeiras boias que o jogador tinha de pegar (captura do
+ * teste no navegador). Numa placa escura: solto sobre o rio, o texto
+ * disputava com os caracteres da água. Some depois de 6 s: a essa altura já
+ * se aprendeu.
+ */
 .jogo-dica {
   position: absolute;
-  top: 74%;
+  top: 15%;
   left: 50%;
-  width: min(30rem, calc(100% - 2rem));
+  width: max-content;
+  max-width: calc(100% - 2rem);
   transform: translateX(-50%);
   display: grid;
-  gap: 0.35rem;
+  gap: 0.3rem;
+  padding: 0.8rem 1.2rem 0.85rem;
+  border: 1px solid rgb(237 235 230 / 0.22);
+  border-radius: 8px;
+  background: rgb(3 7 5 / 0.86);
   text-align: center;
   font-weight: 500;
-  font-size: 1.05rem;
+  font-size: 1rem;
   line-height: 1.3;
   color: var(--color-ink);
-  text-shadow:
-    0 0 3px rgb(3 7 5 / 0.95),
-    0 1px 16px rgb(3 7 5 / 0.95);
   pointer-events: none;
   animation: jogo-dica 6.5s ease both;
 }
 .jogo-dica span:last-child {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
+  font-weight: 400;
   color: var(--color-muted);
 }
 .jogo-dica-toque {
@@ -228,8 +359,8 @@ html[data-jogo] :is(.canto, .regua, .faixa-topo, .faixa-base, .menu-botao, .pula
   .jogo-dica-toque {
     display: inline;
   }
-  /* Com o dedo não há Esc. */
-  .jogo-sair kbd {
+  /* Com o dedo não há Esc nem espaço. */
+  .jogo :is(.jogo-sair, .jogo-pausa) kbd {
     display: none;
   }
 }
@@ -245,6 +376,46 @@ html[data-jogo] :is(.canto, .regua, .faixa-topo, .faixa-base, .menu-botao, .pula
   100% {
     opacity: 0;
   }
+}
+/* Pausado, a dica sai do caminho: quem manda na tela é o aviso de pausa. */
+.jogo[data-pausa] .jogo-dica {
+  visibility: hidden;
+}
+
+/* Pausa: o rio para (espaço, botão, ou a janela perdeu o foco) e a tela diz como continuar. */
+.jogo-pausa {
+  position: absolute;
+  top: 36%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 0.4rem;
+  padding: 1.2rem 2rem 0.9rem;
+  border: 1px solid rgb(237 235 230 / 0.3);
+  border-radius: 8px;
+  background: rgb(3 7 5 / 0.92);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.jogo-pausa p {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.6rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.jogo-pausa button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 44px;
+  font-weight: 500;
+  font-size: 1rem;
+  color: var(--color-pen);
+}
+.jogo-pausa button:hover {
+  color: #f6d58a;
 }
 
 /*
@@ -275,10 +446,19 @@ html[data-jogo] :is(.canto, .regua, .faixa-topo, .faixa-base, .menu-botao, .pula
   margin-bottom: 0.9rem;
   border-bottom: 1px solid var(--color-line-strong);
 }
+/* As barras sobem uma a uma, na ordem em que os dados foram recolhidos: o gráfico se monta na frente de quem o trouxe. */
 .jogo-barras span {
   flex: 1 1 0;
   max-width: 10px;
   background: #ffd173;
+  transform-origin: bottom;
+  animation: jogo-barra 0.5s var(--ease-out-expo) both;
+  animation-delay: calc(var(--i) * 18ms + 350ms);
+}
+@keyframes jogo-barra {
+  from {
+    transform: scaleY(0);
+  }
 }
 .jogo-fim-titulo {
   font-family: var(--font-display);
@@ -318,15 +498,60 @@ html[data-jogo] :is(.canto, .regua, .faixa-topo, .faixa-base, .menu-botao, .pula
 @media (max-width: 767.98px) {
   .jogo-topo {
     gap: 0.9rem;
-    padding-inline: calc(var(--frame) + 0.7rem);
+    padding: calc(var(--frame) + 8px) calc(var(--frame) + 0.9rem) 2.5rem calc(var(--frame) + 0.7rem);
     font-size: 11px;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
   }
   .jogo-etapas span + span::before {
-    margin-inline: 0.4em;
+    margin-inline: 0.35em;
+  }
+  /*
+   * No celular são duas linhas: etapas, contador e botões em cima; embaixo,
+   * sozinha, a frase que explica a etapa. Lado a lado (como no desktop) a
+   * frase empurrava o contador e as duas coisas se liam como uma só
+   * ("o dado como chegou da fonte NA CANOA").
+   */
+  .jogo-topo {
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 0;
+  }
+  .jogo-etapa {
+    display: contents;
+  }
+  .jogo-etapa-nota {
+    order: 9;
+    flex-basis: 100%;
+    margin-top: 0;
+    font-size: 13.5px;
+  }
+  /* O rótulo "na canoa" desce para baixo do número: na mesma linha não cabe ao lado das etapas. */
+  .jogo-conta {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    height: auto;
+    font-size: 10px;
+  }
+  .jogo-botoes {
+    gap: 0;
+    margin-top: 0;
+  }
+  .jogo-som,
+  .jogo-sair {
+    padding-inline: 0.35rem;
+  }
+  /* O ícone do alto-falante basta; a palavra fica para o leitor de tela (aria-label). */
+  .jogo-som-texto {
+    display: none;
+  }
+  .jogo-regua {
+    top: calc(var(--frame) + 72px);
+    bottom: calc(var(--frame) + 16px);
+    right: calc(var(--frame) + 6px);
   }
   .jogo-dica {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
   /* No celular o alto é do convite ("me chama"): o cartão vai para baixo, acima do botão de menu. */
   .jogo-fim {
