@@ -16,6 +16,42 @@ const fill = (text: string, r: GameResult) => text.replace("{n}", String(r.deliv
 /** O motor só é baixado quando alguém mostra que vai jogar (mouse ou foco no convite, ou o clique). */
 const loadEngine = () => import("./engine");
 
+/** Quadro do gráfico no cartão, em unidades do SVG: a linha ocupa de PAD a W - PAD e sobe ou desce AMP em volta de MID. */
+const CHART = { W: 300, H: 84, PAD: 6, MID: 32, AMP: 24, BASE: 70 } as const;
+
+/**
+ * O gráfico da descida, no cartão do resultado: o caminho que a canoa fez,
+ * deitado (a nascente à esquerda, a foz à direita), com um ponto em cada dado
+ * recolhido e uma marca vermelha em cada erro. É o mesmo desenho em que o rio
+ * se transforma na chegada (drawFinale em engine.ts): quem viu a animação
+ * reconhece; quem pulou tem a legenda. Embaixo, as três etapas do dado nas
+ * cores que elas têm na água.
+ */
+function RouteChart({ result, label }: { result: GameResult; label: string }) {
+  const x = (along: number) => CHART.PAD + along * (CHART.W - 2 * CHART.PAD);
+  const y = (across: number) => CHART.MID - across * CHART.AMP;
+  const line = result.route.map(([a, c], i) => `${i ? "L" : "M"}${x(a).toFixed(1)} ${y(c).toFixed(1)}`).join("");
+  const stops = [0, ...result.gates, 1];
+  return (
+    <figure aria-hidden className="jogo-rota">
+      <svg viewBox={`0 0 ${CHART.W} ${CHART.H}`} width="100%">
+        {/* pathLength = 1: a linha se desenha da nascente à foz com um stroke-dashoffset só. */}
+        <path className="jogo-rota-linha" d={line} pathLength={1} />
+        {result.picks.map(([a, c], i) => (
+          <circle key={`d${i}`} className="jogo-rota-dado" cx={x(a)} cy={y(c)} r={1.7} style={{ "--i": i } as CSSProperties} />
+        ))}
+        {result.hits.map(([a, c], i) => (
+          <path key={`e${i}`} className="jogo-rota-erro" d={`M${x(a) - 3} ${y(c) - 3}l6 6m0-6-6 6`} />
+        ))}
+        {[0, 1, 2].map((i) => (
+          <line key={i} className="jogo-rota-etapa" data-etapa={i} x1={x(stops[i]) + (i ? 1.5 : 0)} x2={x(stops[i + 1])} y1={CHART.BASE} y2={CHART.BASE} />
+        ))}
+      </svg>
+      <figcaption>{label}</figcaption>
+    </figure>
+  );
+}
+
 /**
  * O jogo da canoa: o botão que o abre (na abertura da home), a camada do jogo
  * com o placar e o cartão do resultado. As regras estão em course.ts e o
@@ -54,7 +90,7 @@ export function CanoeGame({ t }: { t: Content["game"] }) {
   const game = useRef<Game | null>(null);
   const lastCount = useRef(0);
   /** O que o motor recebe na largada; escrito no clique, lido no efeito. */
-  const options = useRef({ stages: t.stages, sound: false });
+  const options = useRef({ stages: t.stages, routeLabel: t.routeLabel, sound: false });
 
   const start = () => {
     if (phase === "jogando" || phase === "saindo") return;
@@ -65,7 +101,7 @@ export function CanoeGame({ t }: { t: Content["game"] }) {
     } catch {
       // Navegação privada pode negar o localStorage: o som só começa desligado.
     }
-    options.current = { stages: t.stages, sound: wantSound };
+    options.current = { stages: t.stages, routeLabel: t.routeLabel, sound: wantSound };
     lastCount.current = 0;
     setSound(wantSound);
     setCount(0);
@@ -235,14 +271,7 @@ export function CanoeGame({ t }: { t: Content["game"] }) {
         result &&
         createPortal(
           <div ref={card} className="jogo-fim" role="group" aria-labelledby="jogo-fim-titulo" tabIndex={-1}>
-            {!empty && (
-              // O gráfico que a pessoa trouxe: uma barra por dado entregue, na ordem em que foram recolhidos.
-              <div aria-hidden className="jogo-barras">
-                {result.bars.map((level, i) => (
-                  <span key={i} style={{ height: `${Math.round(18 + level * 82)}%`, "--i": i } as CSSProperties} />
-                ))}
-              </div>
-            )}
+            <RouteChart result={result} label={t.routeLabel} />
             <p id="jogo-fim-titulo" className="jogo-fim-titulo">
               {empty ? t.emptyTitle : fill(all ? t.perfectTitle : t.doneTitle, result)}
             </p>

@@ -1,6 +1,6 @@
 import { chartGeometry } from "../chart/geometry";
 import { halfRef, riverHalf, riverX } from "../scene/river-curve";
-import { sceneState, wakeScene } from "../scene/store";
+import { type GameScene, sceneState, TRAIL_SAMPLES, wakeScene } from "../scene/store";
 import { createSound, type GameSound } from "./sound";
 import { buildCourse, CANOE_Y, COURSE_UNITS, cruise, gameRiver, gameSizes, keySpeed, makeChannel, mouseMap, placeCourse, seeded, STAGE_CLEAN, STAGE_GOLD, steer, touches } from "./course";
 
@@ -27,8 +27,14 @@ import { buildCourse, CANOE_Y, COURSE_UNITS, cruise, gameRiver, gameSizes, keySp
 /** Quanto leva para apagar e para reacender a cena, ms. Curto: é troca de cenário, não efeito. */
 const CLOSE_MS = 260;
 const OPEN_MS = 650;
-/** Parada na foz antes de sair, ms: tempo de ver a carga inteira virar barra. */
-const ARRIVE_MS = 1300;
+/**
+ * A chegada, ms: o caminho da canoa se solta do rio, gira e vira um gráfico
+ * de linha (drawFinale). Os tempos lá dentro somam ~3 s de animação e 1,2 s
+ * parado para ler; um clique, toque ou tecla pula.
+ */
+const ARRIVE_MS = 4300;
+/** Quantos dados seguidos sem erro chamam os vaga-lumes: uma fileira inteira. */
+const SWARM_STREAK = 4;
 /** Quantos dados um erro derruba da carga. */
 const ERROR_COST = 3;
 
@@ -38,7 +44,20 @@ const GOLD = "#ffd173";
 /** Fundo de noite atrás de cada dado (o --color-bg do site, quase opaco). */
 const INK_BACK = "rgb(3 7 5 / 0.8)";
 
-export type GameResult = { delivered: number; total: number; /** Altura de cada barra entregue, de 0 a 1. */ bars: number[] };
+/** Ponto do gráfico da descida: [ao longo do rio, de 0 a 1; para o lado, de -1 a 1]. */
+export type RoutePoint = [along: number, across: number];
+
+export type GameResult = {
+  delivered: number;
+  total: number;
+  /** O caminho que a canoa fez, da largada à foz: é a linha do gráfico. */
+  route: RoutePoint[];
+  /** Onde cada dado foi recolhido e onde cada erro pegou, sobre a linha. */
+  picks: RoutePoint[];
+  hits: RoutePoint[];
+  /** Em que ponto do caminho o dado passa a limpo e a pronto. */
+  gates: [number, number];
+};
 
 export type GameHooks = {
   /** Quantos dados vão na canoa. */
@@ -58,6 +77,8 @@ export type GameHooks = {
 export type GameOptions = {
   /** Nomes dos três estágios, escritos nas linhas que cruzam o rio. */
   stages: readonly [string, string, string];
+  /** Legenda do gráfico da chegada ("o caminho da sua canoa"). */
+  routeLabel: string;
   /** Som ligado desde a largada (a escolha da última vez). */
   sound: boolean;
 };
@@ -156,7 +177,18 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks, options: 
   fit();
 
   const cam = { x: 0, y: 0 };
-  const light = { x: W / 2, y: CANOE_Y * H };
+  // No celular o clarão da página (240 px) já cobre a largura inteira da
+  // tela: lá a lanterna começa menor, para também ter por onde crescer.
+  const dimStart = sizes.compact ? -0.35 : 0;
+  const light = { x: W / 2, y: CANOE_Y * H, grow: dimStart };
+  /** O que a cena desenha de diferente durante o jogo (store.ts): rio, lanterna, vaga-lumes e rastro. */
+  const scene: GameScene = { river, docH, light, swarm: false, trail: { data: new Float32Array(TRAIL_SAMPLES * 2), version: 0 } };
+  /** Última fatia do rastro já escrita. */
+  let trailAt = -1;
+  // O caminho da canoa e o que aconteceu nele, em px do mundo: viram o gráfico da chegada.
+  const route: { x: number; y: number }[] = [];
+  const picks: { x: number; y: number }[] = [];
+  const hits: { x: number; y: number }[] = [];
   const canoe = { x: channel(CANOE_Y * H).x, tilt: 0 };
   const carry: Carried[] = [];
   const sparks: Spark[] = [];
@@ -247,7 +279,9 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks, options: 
       glide *= Math.exp(-dt * 2);
       target = aim + glide;
     } else target = lane.x;
-    const x = steer(canoe.x, target, dt, lane, sizes);
+    // Parada na foz a canoa não obedece mais: o caminho dela já é o gráfico
+    // da chegada, e andar de lado ali riscava uma linha vertical no fim dele.
+    const x = phase === "descendo" ? steer(canoe.x, target, dt, lane, sizes) : canoe.x;
     // A proa aponta para onde a canoa vai: o desvio lateral contra o avanço.
     // Até 0,45 rad (~26°) e sem pressa: com o ângulo livre a canoa girava
     // quase de lado a cada movimento brusco e o jogo parecia nervoso.
@@ -275,15 +309,45 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks, options: 
         carry.unshift({ ch: it.text, digit: String(Math.floor(rand() * 10)), level, stage: 0, at: now, flip: -1e9, wave: -1e9, x, y: cy });
         slide += sizes.gap;
         sparks.push({ kind: "anel", x: it.px, y: it.py, at: now, text: "", dir: 0 });
+        picks.push({ x, y: cy });
         hooks.onCount(carry.length);
-        sound?.pick(streak++);
+        // A sequência conta com ou sem som: é ela que chama os vaga-lumes.
+        // (Dentro do `sound?.pick(...)` ela só subia com o som ligado.)
+        streak += 1;
+        sound?.pick(streak - 1);
       } else {
         lose(ERROR_COST, now);
+        hits.push({ x, y: cy });
         bumpAt = now;
         streak = 0;
         sound?.hit();
         buzz(40);
       }
+    }
+
+    // O que o jogador carrega muda a cena inteira (store.ts, GameScene):
+    // - a lanterna cresce com a carga: quanto mais dado, mais se enxerga;
+    // - uma fileira sem erro chama os vaga-lumes para perto da canoa;
+    // - a canoa deixa o rio limpo por onde passa, numa faixa de 14% do canal
+    //   com a canoa vazia a 76% com a carga cheia. Perder dado estreita a
+    //   faixa e apaga a luz: o erro se vê no rio, não só no placar.
+    const load = carry.length / total;
+    light.grow = dimStart + 0.9 * load;
+    scene.swarm = streak >= SWARM_STREAK;
+    if (phase === "descendo") {
+      const slot = Math.min(TRAIL_SAMPLES - 1, Math.floor((cy / docH) * TRAIL_SAMPLES));
+      // O rastro começa onde a canoa larga, não na nascente.
+      if (trailAt < 0) trailAt = slot - 1;
+      if (slot > trailAt) {
+        const sweep = lane.half * (0.14 + 0.62 * load);
+        for (let i = trailAt + 1; i <= slot; i++) {
+          scene.trail.data[i * 2] = x;
+          scene.trail.data[i * 2 + 1] = sweep;
+        }
+        trailAt = slot;
+        scene.trail.version++;
+      }
+      if (!route.length || cy - route[route.length - 1].y >= 10) route.push({ x, y: cy });
     }
 
     // A carga segue a canoa pelo caminho que ela fez, um dado a cada `gap` px.
@@ -571,6 +635,170 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks, options: 
       ctx.fillStyle = `rgb(255 60 60 / ${(0.16 * jolt).toFixed(3)})`;
       ctx.fillRect(0, 0, W, H);
     }
+    if (phase === "chegando") drawFinale(now - phaseAt);
+  };
+
+  /** O gráfico da descida, nas medidas do mundo: de onde a canoa largou até a foz, e o quanto ela foi para os lados. */
+  const routeFrame = () => {
+    const y0 = route[0]?.y ?? 0;
+    const y1 = cam.y + CANOE_Y * H;
+    let reach = 1;
+    for (const p of route) reach = Math.max(reach, Math.abs(p.x - W / 2));
+    return { y0, y1, length: Math.max(1, y1 - y0), reach };
+  };
+
+  /**
+   * A chegada. O caminho que a canoa fez se acende sobre o rio, a cena
+   * escurece, e a linha gira um quarto de volta enquanto encolhe até caber
+   * na tela: a nascente vai para a esquerda, a foz para a direita, e o que
+   * era ir de uma margem à outra vira subir e descer. O rio virou um gráfico
+   * de linha, e é o gráfico desta descida: cada dado recolhido é um ponto
+   * nele, cada erro é uma marca vermelha. O jogo passa 20 segundos dizendo
+   * "o dado chega pronto, em gráfico"; aqui ele mostra.
+   *
+   * `t`: ms desde que a canoa parou na foz.
+   */
+  const drawFinale = (t: number) => {
+    if (route.length < 2) return;
+    const ramp = (a: number, b: number) => {
+      const k = Math.min(1, Math.max(0, (t - a) / (b - a)));
+      return k * k * (3 - 2 * k);
+    };
+    const f = routeFrame();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = `rgb(3 7 5 / ${(0.82 * ramp(350, 1200)).toFixed(3)})`;
+    ctx.fillRect(0, 0, W, H);
+
+    // Do rio ao gráfico: `e` vai de 0 (a linha sobre a água, onde a canoa
+    // passou) a 1 (deitada no meio da tela). As duas escalas são separadas,
+    // como os eixos de um gráfico: ao longo do rio a linha encolhe até a
+    // largura do quadro; para os lados, até a altura dele.
+    const e = ramp(700, 2100);
+    const chartW = Math.min(W - 56, 900);
+    const chartH = Math.min(H * 0.16, 120);
+    const alongEnd = chartW / f.length;
+    const acrossEnd = chartH / f.reach;
+    const along = Math.exp(Math.log(alongEnd) * e);
+    const across = Math.exp(Math.log(acrossEnd) * e);
+    const turn = (-Math.PI / 2) * e;
+    const cos = Math.cos(turn);
+    const sin = Math.sin(turn);
+    // O ponto fixo da transformação é a canoa: sai de onde ela está e vai para a ponta direita do gráfico.
+    const ox = W / 2 + (chartW / 2) * e;
+    const oy = CANOE_Y * H + (H * 0.46 - CANOE_Y * H) * e;
+    const place = (p: { x: number; y: number }) => {
+      const a = (p.x - W / 2) * across;
+      const b = (p.y - f.y1) * along;
+      return [ox + a * cos - b * sin, oy + a * sin + b * cos] as const;
+    };
+
+    const trace = () => {
+      ctx.beginPath();
+      route.forEach((p, i) => {
+        const [px, py] = place(p);
+        if (i) ctx.lineTo(px, py);
+        else ctx.moveTo(px, py);
+      });
+      const [ex, ey] = place({ x: canoe.x, y: f.y1 });
+      ctx.lineTo(ex, ey);
+    };
+    const lit = ramp(150, 700);
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.strokeStyle = GOLD;
+    ctx.globalAlpha = 0.22 * lit;
+    ctx.lineWidth = 9;
+    trace();
+    ctx.stroke();
+    ctx.globalAlpha = lit;
+    ctx.lineWidth = 2.5;
+    trace();
+    ctx.stroke();
+
+    // Com a linha deitada: a régua das etapas embaixo, a legenda em cima e os pontos.
+    const set = ramp(2100, 2600);
+    if (set <= 0) return;
+    const left = W / 2 - chartW / 2;
+    const base = oy + chartH + 30;
+    // A área sob a linha, em degradê: é o que faz o rabisco ler como gráfico.
+    const shade = ctx.createLinearGradient(0, oy - chartH, 0, base);
+    shade.addColorStop(0, "rgb(255 209 115 / 0.26)");
+    shade.addColorStop(1, "rgb(255 209 115 / 0)");
+    trace();
+    ctx.lineTo(left + chartW, base);
+    ctx.lineTo(left, base);
+    ctx.closePath();
+    ctx.globalAlpha = set;
+    ctx.fillStyle = shade;
+    ctx.fill();
+    const gateX = (stageAt: number) => Math.min(left + chartW, Math.max(left, left + ((stageAt * docH - f.y0) / f.length) * chartW));
+    const marks = [left, gateX(STAGE_CLEAN), gateX(STAGE_GOLD), left + chartW];
+    ctx.globalAlpha = set;
+    ctx.font = fontChip;
+    ctx.textBaseline = "top";
+    [BRONZE, SILVER, GOLD].forEach((color, i) => {
+      ctx.fillStyle = color;
+      ctx.fillRect(marks[i] + (i ? 2 : 0), base, marks[i + 1] - marks[i] - (i ? 2 : 0), 2);
+      // O nome da etapa só entra se couber no trecho dela (no celular o "bruto" é curto).
+      const name = options.stages[i].toUpperCase();
+      if (ctx.measureText(name).width < marks[i + 1] - marks[i] - 8) {
+        ctx.textAlign = "left";
+        ctx.fillText(name, marks[i] + (i ? 4 : 0), base + 9);
+      }
+    });
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#a3a29b";
+    ctx.fillText(options.routeLabel.toUpperCase(), left, oy - chartH - 22);
+
+    // Os dados entram um a um, na ordem em que foram recolhidos.
+    const drops = [...picks.map((p) => ({ ...p, hit: false })), ...hits.map((p) => ({ ...p, hit: true }))].sort((a, b) => a.y - b.y);
+    drops.forEach((p, i) => {
+      const k = Math.min(1, Math.max(0, (t - 2300 - (i / drops.length) * 800) / 220));
+      if (k <= 0) return;
+      const [px, py] = place(p);
+      ctx.globalAlpha = k;
+      if (p.hit) {
+        ctx.strokeStyle = "#ff6b6b";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(px - 4, py - 4);
+        ctx.lineTo(px + 4, py + 4);
+        ctx.moveTo(px + 4, py - 4);
+        ctx.lineTo(px - 4, py + 4);
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.arc(px, py, 3.2 + 3 * (1 - k), 0, Math.PI * 2);
+        ctx.fillStyle = "#030705";
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = GOLD;
+        ctx.stroke();
+      }
+    });
+    ctx.globalAlpha = 1;
+  };
+
+  /** O mesmo gráfico da chegada, em medidas de 0 a 1, para o cartão desenhar em SVG. */
+  const result = (): GameResult => {
+    const f = routeFrame();
+    const point = (p: { x: number; y: number }): RoutePoint => [Math.min(1, Math.max(0, (p.y - f.y0) / f.length)), Math.max(-1, Math.min(1, (p.x - W / 2) / f.reach))];
+    // ~100 pontos bastam para uma linha de 300 px de largura no cartão.
+    const every = Math.max(1, Math.floor(route.length / 100));
+    const line = route.filter((_, i) => i % every === 0).map(point);
+    line.push(point({ x: canoe.x, y: f.y1 }));
+    const gate = (at: number) => Math.min(1, Math.max(0, (at * docH - f.y0) / f.length));
+    return { delivered: carry.length, total, route: line, picks: picks.map(point), hits: hits.map(point), gates: [gate(STAGE_CLEAN), gate(STAGE_GOLD)] };
+  };
+
+  /** Clique, toque ou tecla durante a chegada: pula a animação e vai para o resultado. */
+  const skipFinale = () => {
+    if (phase !== "chegando") return false;
+    finished = true;
+    leave(performance.now());
+    return true;
   };
 
   const setPaused = (on: boolean) => {
@@ -659,7 +887,7 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks, options: 
         s.curtain = 1 - Math.min(1, t / CLOSE_MS);
         if (t < CLOSE_MS) return;
         // No escuro: entra o rio do jogo, a câmera vai para a nascente e o luar chega de novo.
-        s.game = { river, docH, light };
+        s.game = scene;
         s.camera = cam;
         s.replayReveal = true;
         s.curtain = 1;
@@ -690,8 +918,7 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks, options: 
         s.tick = null;
         s.curtain = 1;
         wakeScene();
-        // O gráfico do cartão segue a ordem da coleta: o primeiro dado recolhido é a primeira barra.
-        if (finished) hooks.onFinish({ delivered: carry.length, total, bars: carry.map((c) => c.level).reverse() });
+        if (finished) hooks.onFinish(result());
         else hooks.onQuit();
         return;
       }
@@ -711,6 +938,7 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks, options: 
   };
 
   function onPointer(e: PointerEvent) {
+    if (e.type === "pointerdown" && skipFinale()) return;
     // Pausado, um clique ou toque na tela continua (mexer o mouse, não).
     if (paused) {
       if (e.type === "pointerdown") setPaused(false);
@@ -735,6 +963,12 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks, options: 
   function onKey(e: KeyboardEvent) {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     const down = e.type === "keydown";
+    // Na chegada qualquer tecla pula a animação, inclusive o Esc: a descida
+    // já terminou, e sair dali sem o resultado seria perder o que se fez.
+    if (down && !e.repeat && skipFinale()) {
+      e.preventDefault();
+      return;
+    }
     if (e.key === "Escape") {
       if (down) leave(performance.now());
       return;

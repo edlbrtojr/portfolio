@@ -148,6 +148,8 @@ export type Content = {
     resume: string;
     /** Nome da tecla que pausa e continua, escrito no botão de continuar. */
     spaceKey: string;
+    /** Legenda do gráfico da chegada e do cartão: diz que a linha é o caminho que a canoa fez. */
+    routeLabel: string;
     doneTitle: string;
     perfectTitle: string;
     doneBody: string;

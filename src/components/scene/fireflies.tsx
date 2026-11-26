@@ -33,6 +33,7 @@ const vertex = /* glsl */ `
   uniform vec2 uTarget;   // centro da lanterna, em unidades do mundo
   uniform float uGather;  // 0 soltos, 1 em volta da lanterna
   uniform float uRadius;
+  uniform float uBoost;   // 1 no jogo da canoa: a revoada em volta dela fica maior e mais acesa
   varying float vGlow;
   void main() {
     float t = uTime * (0.15 + aSeed * 0.2);
@@ -55,8 +56,12 @@ const vertex = /* glsl */ `
     float phase = sin(uTime * (0.6 + aSeed * 0.9) + aSeed * 100.0);
     float flash = pow(max(phase, 0.0), 8.0);
     vGlow = mix(0.5, 0.08 + 0.92 * flash, uMotion);
-    vGlow = mix(vGlow, max(vGlow, 0.55), pick * uGather);
-    gl_PointSize = uSize * (0.6 + vGlow) / -mv.z;
+    vGlow = mix(vGlow, max(vGlow, mix(0.55, 1.0, uBoost)), pick * uGather);
+    // No jogo (uBoost) os que rodeiam a canoa ficam quase o dobro e sempre
+    // acesos: sobre a água clareada pela lanterna, do tamanho normal eles
+    // sumiam (captura do primeiro teste) e o prêmio da fileira sem erro não
+    // se via.
+    gl_PointSize = uSize * (0.6 + vGlow) * (1.0 + 0.8 * uBoost * pick * uGather) / -mv.z;
   }
 `;
 
@@ -109,6 +114,7 @@ export function Fireflies({ count, reducedMotion }: { count: number; reducedMoti
           uTarget: { value: new THREE.Vector2(0, 0) },
           uGather: { value: 0 },
           uRadius: { value: 0.5 },
+          uBoost: { value: 0 },
         },
       }),
     [],
@@ -135,12 +141,17 @@ export function Fireflies({ count, reducedMotion }: { count: number; reducedMoti
     const cam = cameraNow();
     (u.uDrift.value as THREE.Vector2).set(cam.x / size.width, cam.y / size.height);
 
-    // px do documento → mundo (câmera olhando o plano z = 0).
-    const ty = s.lantern.y - window.scrollY;
-    (u.uTarget.value as THREE.Vector2).set((s.lantern.x / size.width - 0.5) * viewport.width, (0.5 - ty / size.height) * viewport.height);
-    // Raio de ~90 px: em volta da palavra, sem cobri-la.
+    // px do documento → mundo (câmera olhando o plano z = 0). No jogo da
+    // canoa o alvo é a própria canoa: quem recolhe uma fileira de dados sem
+    // bater ganha a revoada em volta dela (game.swarm).
+    const game = s.game;
+    const tx = game ? game.light.x : s.lantern.x;
+    const ty = game ? game.light.y : s.lantern.y - window.scrollY;
+    (u.uTarget.value as THREE.Vector2).set((tx / size.width - 0.5) * viewport.width, (0.5 - ty / size.height) * viewport.height);
+    // Raio de ~90 px: em volta da palavra (ou da canoa), sem cobri-la.
     u.uRadius.value = (90 / size.height) * viewport.height;
-    const want = s.lantern.active && s.lantern.gather ? 1 : 0;
+    const want = game ? (game.swarm ? 1 : 0) : s.lantern.active && s.lantern.gather ? 1 : 0;
+    u.uBoost.value = game ? 1 : 0;
     u.uGather.value += (want - u.uGather.value) * (1 - Math.exp(-delta * (reducedMotion ? 60 : 3)));
 
     // Vaga-lume é bicho de noite: apagam conforme a manhã chega ao meio da

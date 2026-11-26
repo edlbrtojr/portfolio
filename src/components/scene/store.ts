@@ -6,7 +6,32 @@ import type { ChartMode, RiverParams } from "./river-curve";
  * altura da home (a foz e o amanhecer são medidos por ele), e a lanterna
  * presa à canoa (`light`, px da janela).
  */
-export type GameScene = { river: RiverParams; docH: number; light: { x: number; y: number } };
+export type GameScene = {
+  river: RiverParams;
+  docH: number;
+  /**
+   * A lanterna da canoa. `grow` muda o tamanho do clarão (0 = o da página):
+   * no jogo a luz cresce com a carga e encolhe quando um erro derruba dados.
+   */
+  light: { x: number; y: number; grow: number };
+  /** Os vaga-lumes largam a mata e rodeiam a canoa (prêmio de uma fileira de dados sem erro). */
+  swarm: boolean;
+  /**
+   * Por onde a canoa passou: o rio fica limpo ali (river.tsx pinta a faixa).
+   * `data` tem TRAIL_SAMPLES pares, um por fatia de altura do percurso: x do
+   * centro da faixa (px do mundo) e meia largura (px; 0 = a canoa ainda não
+   * passou). `version` sobe a cada escrita, para a textura só ser reenviada
+   * à GPU quando mudou.
+   */
+  trail: { data: Float32Array; version: number };
+};
+
+/**
+ * Fatias do rastro. O percurso tem ~8.000 px a 900 de altura: com 1.024 dá
+ * uma fatia a cada ~8 px, menos que a célula de 12 px em que o rio é
+ * desenhado, então a faixa nunca fica com degrau visível.
+ */
+export const TRAIL_SAMPLES = 1024;
 
 /**
  * Um projeto na home, visto pela cena: de onde sai o braço do rio que leva à

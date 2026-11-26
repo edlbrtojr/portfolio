@@ -4,7 +4,8 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { BRANCH_HALF, COLUMN_END, dawnAt, halfRef, NOTES_MIN_WIDTH, NOTES_START, RIVER, RIVER_GLSL, SPINE_TEXT_START } from "./river-curve";
-import { BRANCH_SLOTS, cameraNow, sceneState, wakeScene } from "./store";
+import { STAGE_CLEAN } from "../game/course";
+import { BRANCH_SLOTS, cameraNow, sceneState, TRAIL_SAMPLES, wakeScene } from "./store";
 
 /**
  * Duração da chegada do luar. As letras do nome acendem em ~1,9 s (chart.css,
@@ -129,6 +130,9 @@ const fragment = /* glsl */ `
   uniform float uShade;   // 1 na página (recuo atrás das colunas de texto), 0 no jogo: não há coluna
   uniform float uInk;     // tinta dos caracteres do rio: 1 na página, GAME_INK no jogo
   uniform float uCurtain; // 1 cena acesa, 0 no escuro: o jogo troca de rio atrás dela
+  uniform float uLightGrow; // quanto o clarão da lanterna cresce (0 = o da página); no jogo acompanha a carga
+  uniform sampler2D uTrail; // rastro da canoa: uma linha, R = x do centro (px do mundo), G = meia largura (px)
+  uniform float uTrailOn;   // 1 quando há rastro (só no jogo)
   ${RIVER_GLSL}
 
   vec2 hash2(vec2 p) {
@@ -376,7 +380,8 @@ const fragment = /* glsl */ `
 
     // Lanterna: halo morno de ~240 px. Gaussiana com sigma de 120 px.
     float ld = length(scr - uLight.xy);
-    float lk = exp(-(ld * ld) / (2.0 * 120.0 * 120.0)) * uLight.z;
+    float lsig = 120.0 * (1.0 + uLightGrow);
+    float lk = exp(-(ld * ld) / (2.0 * lsig * lsig)) * uLight.z;
 
     // ── A água ──
     // Reflete o céu, então é mais clara que a mata. Superfície quase chapada
@@ -537,8 +542,24 @@ const fragment = /* glsl */ `
         vec2 k = hash2(id + 31.7);
         float clean = smoothstep(0.1, 0.42, stage);
         float gold = smoothstep(0.6, 0.9, stage);
+        // O rastro da canoa (só no jogo): por onde ela passou, o rio fica
+        // limpo. A célula inteira decide pelo próprio centro, para a faixa
+        // não cortar caractere ao meio. No trecho de dado bruto a faixa vira
+        // número; do "limpo" em diante vira barra de gráfico: a água mostra
+        // um estágio à frente do resto do rio. É o trabalho desenhado: a
+        // canoa é o pipeline.
+        float swept = 0.0;
+        if (uTrailOn > 0.5 && branch < 0.5) {
+          vec2 cc = (gcell + 0.5) * uCell;
+          vec2 tr = texture2D(uTrail, vec2(cc.y / uDocH, 0.5)).rg;
+          swept = step(abs(cc.x - tr.r), tr.g) * step(0.5, tr.g);
+          clean = max(clean, swept);
+          gold = max(gold, swept * step(${g(STAGE_CLEAN)}, stage));
+        }
         // Cada célula com o seu brilho; a lua, o sol e a lanterna acendem as que tocam.
-        float glow = 0.55 + 0.45 * k.y + 1.2 * astroGlow + 1.5 * lk;
+        // No rastro a lanterna pesa só 30%: somada à tinta cheia ela estourava
+        // as barras em branco bem atrás da canoa, e a faixa perdia o dourado.
+        float glow = 0.55 + 0.45 * k.y + 1.2 * astroGlow + 1.5 * lk * (1.0 - 0.7 * swept) + 0.45 * swept;
         float ridx;
         vec3 rink;
         if (h.x < gold) {
@@ -554,12 +575,16 @@ const fragment = /* glsl */ `
           ridx = k.x < 0.26 ? 0.0 : ${g(GLYPHS.raw0)} + floor(fract(h.x * 7.13) * ${g(GLYPHS.raw.length - 0.001)});
           rink = vec3(1.0, 0.62, 0.33) * glow * 0.8;
         }
-        float sign_ = texture2D(uGlyphs, vec2((ridx + gx) / ${g(GLYPHS.count)}, guv.y)).r * uInk;
+        // No jogo a tinta do rio é rala (uInk) para os dados a recolher
+        // saltarem; no rastro ela volta inteira, e é isso que o destaca.
+        float sign_ = texture2D(uGlyphs, vec2((ridx + gx) / ${g(GLYPHS.count)}, guv.y)).r * mix(uInk, 1.0, swept);
         // A água de noite sobe para azul vivo (×1,3 a ×2,15 por canal): entre
         // os pontos acesos da mata, o azul-cinza pintado ficava mais escuro
         // que a terra e o rio lia como vão. Azul claro e liso é rio; verde
         // reticulado é mata. Com o sol o ouro já é o mais claro da tela.
         vec3 paperW = waterC * mix(vec3(1.3, 1.7, 2.15), vec3(0.58), warm);
+        // A água do rastro escurece um pouco: tinta cheia sobre papel mais fundo lê como esteira.
+        paperW *= 1.0 - 0.22 * swept;
         // A tinta herda o que é da tela (recuo, chegada, vinheta) pelo "mul".
         vec3 waterG = mix(paperW, min(rink * mul, vec3(1.0)), sign_);
         col = mix(col, waterG, water);
@@ -573,6 +598,8 @@ export function River({ reducedMotion }: { reducedMotion: boolean }) {
   const { size } = useThree();
   const mesh = useRef<THREE.Mesh<THREE.PlaneGeometry, THREE.ShaderMaterial>>(null);
   const revealStart = useRef<number | null>(null);
+  const trailTex = useRef<THREE.DataTexture | null>(null);
+  const trailVersion = useRef(-1);
   // A cena precisa de quadros em ritmo cheio até o luar terminar de descer.
   useEffect(() => wakeScene(REVEAL_S * 1000 + 500), []);
 
@@ -613,6 +640,9 @@ export function River({ reducedMotion }: { reducedMotion: boolean }) {
           uShade: { value: 1 },
           uInk: { value: 1 },
           uCurtain: { value: 1 },
+          uLightGrow: { value: 0 },
+          uTrail: { value: null },
+          uTrailOn: { value: 0 },
         },
       }),
     [],
@@ -687,6 +717,40 @@ export function River({ reducedMotion }: { reducedMotion: boolean }) {
     u.uShade.value = game ? 0 : 1;
     u.uInk.value = game ? GAME_INK : 1;
     u.uCurtain.value = s.curtain;
+    u.uLightGrow.value = game ? game.light.grow : 0;
+    // O rastro da canoa é um vetor que o jogo escreve (store.ts); aqui ele
+    // vira textura de uma linha, reenviada à GPU só quando o jogo escreveu.
+    const trail = game?.trail;
+    if (trail) {
+      let tex = trailTex.current;
+      if (!tex || tex.image.data !== trail.data) {
+        tex?.dispose();
+        tex = new THREE.DataTexture(trail.data, TRAIL_SAMPLES, 1, THREE.RGFormat, THREE.FloatType);
+        // Sem interpolar: textura de float só filtra linear com extensão, e
+        // a faixa é decidida por célula, não por pixel.
+        tex.minFilter = THREE.NearestFilter;
+        tex.magFilter = THREE.NearestFilter;
+        trailTex.current = tex;
+        trailVersion.current = -1;
+      }
+      if (trailVersion.current !== trail.version) {
+        trailVersion.current = trail.version;
+        tex.needsUpdate = true;
+      }
+      u.uTrail.value = tex;
+      u.uTrailOn.value = 1;
+    } else {
+      u.uTrailOn.value = 0;
+      // A textura vive só durante o jogo: acabou a descida, sai da GPU. (É
+      // descartada aqui, e não num efeito de desmontagem, porque a regra
+      // react-hooks/immutability não deixa um efeito tocar num valor que o
+      // laço modifica; a cena só desmonta com a página ou com o WebGL perdido.)
+      if (trailTex.current) {
+        trailTex.current.dispose();
+        trailTex.current = null;
+        u.uTrail.value = null;
+      }
+    }
     u.uMode.value = s.mode === "spine" ? 1 : 0;
     u.uNotes.value = size.width >= NOTES_MIN_WIDTH ? 1 : 0;
     u.uTier.value = s.tier === "coarse" ? 1 : 0;
