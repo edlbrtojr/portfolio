@@ -4,7 +4,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { dawnAt } from "./river-curve";
-import { cameraNow, sceneState } from "./store";
+import { cameraNow, riverDocH, sceneState } from "./store";
 
 // Vaga-lumes soltos sobre a mata. Quando um topônimo ou uma nota recebe o
 // mouse ou o foco, cerca de um terço deles larga a mata e vai rodear a
@@ -147,7 +147,8 @@ export function Fireflies({ count, reducedMotion }: { count: number; reducedMoti
     // janela (o mesmo dawnAt do shader do rio).
     // Nas páginas de projeto (a leste) a cena recua e eles ficam a 35%.
     const onCase = cam.x > size.width * 0.85;
-    const day = onCase || !s.homeDocH ? 0 : dawnAt((cam.y + size.height / 2) / s.unit, s.homeDocH / s.unit);
+    const docH = riverDocH();
+    const day = onCase || !docH ? 0 : dawnAt((cam.y + size.height / 2) / s.unit, docH / s.unit);
     const target = (onCase ? 0.35 : 1) * (1 - day);
     u.uOpacity.value += (target - u.uOpacity.value) * 0.06;
   });

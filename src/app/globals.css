@@ -9,7 +9,9 @@
  * - styles/chart.css: a home (nome no rio, abertura, bio, trabalho, agora,
  *   trajetória e a foz);
  * - styles/notes.css: as notas de professor (margem e rodapé);
- * - styles/case.css: a folha de detalhe do projeto e o 404.
+ * - styles/case.css: a folha de detalhe do projeto e o 404;
+ * - styles/game.css: o jogo da canoa (convite, placar e resultado). Vem por
+ *   último porque esconde a página e a moldura enquanto o jogo roda.
  * Caminhos relativos a este arquivo (src/app → src/styles).
  */
 @import "../styles/base.css";
@@ -17,6 +19,7 @@
 @import "../styles/chart.css";
 @import "../styles/notes.css";
 @import "../styles/case.css";
+@import "../styles/game.css";
 
 /*
  * A carta: noite fechada sobre a mata, tinta creme, água azul-cinza e um

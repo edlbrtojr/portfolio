@@ -120,6 +120,32 @@ export type Content = {
   contact: { label: string; invite: Rich; channels: Rich[]; copied: string };
   /** O jargão das páginas de case, explicado na margem (ver Glossary). */
   glossary: Glossary;
+  /**
+   * O jogo da canoa (components/game). Passa na regra do topo: o visitante
+   * faz o que eu faço (recolhe dado bruto e chega com um gráfico) e a descida
+   * termina no contato. `start` e `startNote` são o convite da abertura: o
+   * que é e quanto tempo toma. `stages`: os três estágios do dado, em palavra
+   * comum. `doneTitle` troca `{n}` e `{total}` pelos números da descida;
+   * `empty*` é para quem chega sem nenhum dado.
+   */
+  game: {
+    start: string;
+    startNote: string;
+    /** Nome da camada do jogo para leitor de tela. */
+    label: string;
+    hintMouse: string;
+    hintTouch: string;
+    rule: string;
+    stages: [string, string, string];
+    aboard: string;
+    quit: string;
+    doneTitle: string;
+    doneBody: string;
+    emptyTitle: string;
+    emptyBody: string;
+    again: string;
+    close: string;
+  };
   ui: {
     visitSite: string;
     stack: string;

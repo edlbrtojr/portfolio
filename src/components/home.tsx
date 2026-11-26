@@ -7,6 +7,7 @@ import { ContactCard } from "./chart/legend";
 import { Prose } from "./chart/prose";
 import { RiverType } from "./chart/river-type";
 import { Projects } from "./chart/projects";
+import { CanoeGame } from "./game/canoe-game";
 import { RichText } from "./home/rich-text";
 import { ScenePage } from "./scene/scene-page";
 
@@ -18,7 +19,8 @@ import { ScenePage } from "./scene/scene-page";
  *
  * O percurso tem três perguntas, nesta ordem: quem é (abertura e bio), o que
  * ele fez (trabalho, agora, antes) e como falar com ele (contato). A abertura
- * já oferece os dois atalhos que quem chega procura.
+ * já oferece os dois atalhos que quem chega procura e, menor, o convite para
+ * o jogo da canoa.
  */
 export function Home({ locale }: { locale: Locale }) {
   const c = content[locale];
@@ -49,6 +51,10 @@ export function Home({ locale }: { locale: Locale }) {
                 {c.hero.cta.contact} ↗
               </a>
             </p>
+            {/* O terceiro caminho, para quem quer brincar: descer o rio fazendo o que eu faço (ver CanoeGame). */}
+            <div className="abertura-jogo entra" style={{ "--i": 4 } as CSSProperties}>
+              <CanoeGame t={c.game} />
+            </div>
           </div>
         </section>
 

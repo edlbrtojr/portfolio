@@ -1,0 +1,347 @@
+/* ───────────── O jogo da canoa (components/game) ───────────── */
+
+/*
+ * O convite, na abertura, abaixo dos dois atalhos. Menor que eles de
+ * propósito: quem chega procura primeiro o trabalho e o contato; o jogo é o
+ * terceiro caminho, para quem quer brincar. Cor de caneta, como tudo que se
+ * pode clicar.
+ */
+.abertura-jogo {
+  margin-top: 0.35rem;
+}
+.jogo-convite {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 0.6rem;
+  min-height: 44px;
+  text-align: left;
+  color: var(--color-pen);
+  transition: color 0.2s;
+}
+.jogo-convite-canoa {
+  flex: none;
+  transition: transform 0.5s var(--ease-out-expo);
+}
+.jogo-convite-texto {
+  font-weight: 500;
+  font-size: 0.95rem;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 6px;
+}
+/* Diz o que acontece ao clicar e quanto tempo toma: ninguém abre um jogo sem saber o tamanho dele. */
+.jogo-convite-nota {
+  font: 12px/1.4 var(--font-mono);
+  color: var(--color-muted);
+}
+.jogo-convite:hover {
+  color: #f6d58a;
+}
+.jogo-convite:hover .jogo-convite-canoa {
+  transform: translateX(4px) rotate(-7deg);
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* A canoa balança parada, como os barcos das telas: é o que chama o olho para o convite. */
+  .jogo-convite-canoa {
+    animation: jogo-balanco 3.6s ease-in-out infinite;
+  }
+}
+@keyframes jogo-balanco {
+  0%,
+  100% {
+    rotate: -3deg;
+  }
+  50% {
+    rotate: 3deg;
+    translate: 0 -1px;
+  }
+}
+/*
+ * O jogo é a cena WebGL em movimento por 20 s. Sem a cena não há rio para
+ * descer, e com "reduzir movimento" é justamente o que a pessoa pediu para
+ * não ver: nos dois casos o convite não aparece.
+ */
+html:not([data-webgl="on"]) .abertura-jogo {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .abertura-jogo {
+    display: none;
+  }
+}
+
+/*
+ * Durante a descida a página some inteira, e a navegação com ela: o rio do
+ * jogo não é o da página, e um link clicado no meio rolaria a home por baixo.
+ * Fica a moldura. `visibility` tira tudo da ordem de tabulação; o atraso é o
+ * tempo de a opacidade chegar a zero.
+ */
+html[data-jogo] .carta {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.22s ease,
+    visibility 0s 0.22s;
+}
+html[data-jogo] :is(.canto, .regua, .faixa-topo, .faixa-base, .menu-botao, .pular) {
+  visibility: hidden;
+}
+
+/* A camada do jogo: o canvas da canoa e dos dados, por cima da cena e por baixo da moldura. */
+.jogo {
+  position: fixed;
+  inset: 0;
+  z-index: 38;
+  outline: none;
+  transition: opacity 0.26s ease;
+}
+/*
+ * A camada e o cartão recebem o foco por código (para o teclado e o leitor
+ * de tela não ficarem perdidos), mas não são controles: sem o anel de foco
+ * global, que desenhava uma moldura dourada em volta da tela e do cartão.
+ */
+.jogo:focus-visible,
+.jogo-fim:focus-visible {
+  outline: none;
+}
+/* Saindo: o placar apaga junto com a cortina da cena. */
+.jogo[data-saindo] {
+  opacity: 0;
+}
+.jogo-tela {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* O dedo arrasta a canoa, não a página. */
+  touch-action: none;
+  /* A canoa já mostra onde o mouse está. */
+  cursor: none;
+}
+
+/* Placar: onde o dado está (bruto, limpo, pronto), quantos vão na canoa e a saída. */
+.jogo-topo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: calc(var(--frame) + 3px) calc(var(--frame) + 1rem) 2.5rem;
+  /* A mesma noite da faixa do topo: o placar se lê também sobre a manhã da foz. */
+  background: linear-gradient(rgb(3 7 5 / 0.92), rgb(3 7 5 / 0.8) 45%, rgb(3 7 5 / 0));
+  font: 500 12px/1 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-muted);
+  pointer-events: none;
+  animation: rise 0.6s var(--ease-out-expo) 0.3s both;
+}
+.jogo-etapas {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+.jogo-etapas span {
+  color: var(--color-faint);
+  transition: color 0.4s;
+}
+.jogo-etapas span + span::before {
+  content: "→";
+  margin-inline: 0.6em;
+  color: var(--color-faint);
+}
+/* As cores do dado na água (river.tsx): bronze, prata e ouro. */
+.jogo-etapas [data-vez][data-etapa="0"] {
+  color: #ff9e54;
+}
+.jogo-etapas [data-vez][data-etapa="1"] {
+  color: #d6ebff;
+}
+.jogo-etapas [data-vez][data-etapa="2"] {
+  color: #ffd173;
+}
+.jogo-conta output {
+  color: var(--color-ink);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.jogo-sair {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  padding-inline: 0.6rem;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  color: var(--color-ink);
+  pointer-events: auto;
+  transition: color 0.2s;
+}
+.jogo-sair:hover {
+  color: var(--color-pen);
+}
+.jogo-sair kbd {
+  padding: 0.3em 0.5em;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 4px;
+  font: inherit;
+  color: var(--color-muted);
+}
+
+/* O comando e a regra, abaixo da canoa (ela fica a 60% da altura). Some depois de 6 s: a essa altura já se aprendeu. */
+.jogo-dica {
+  position: absolute;
+  top: 74%;
+  left: 50%;
+  width: min(30rem, calc(100% - 2rem));
+  transform: translateX(-50%);
+  display: grid;
+  gap: 0.35rem;
+  text-align: center;
+  font-weight: 500;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  color: var(--color-ink);
+  text-shadow:
+    0 0 3px rgb(3 7 5 / 0.95),
+    0 1px 16px rgb(3 7 5 / 0.95);
+  pointer-events: none;
+  animation: jogo-dica 6.5s ease both;
+}
+.jogo-dica span:last-child {
+  font-size: 0.95rem;
+  color: var(--color-muted);
+}
+.jogo-dica-toque {
+  display: none;
+}
+@media (pointer: coarse) {
+  .jogo-dica-mouse {
+    display: none;
+  }
+  .jogo-dica-toque {
+    display: inline;
+  }
+  /* Com o dedo não há Esc. */
+  .jogo-sair kbd {
+    display: none;
+  }
+}
+@keyframes jogo-dica {
+  0%,
+  8% {
+    opacity: 0;
+  }
+  18%,
+  82% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/*
+ * O resultado. A descida termina com a home no contato; o cartão fica no
+ * alto, à direita (onde na foz não há texto), e deixa o convite e os canais
+ * à vista: é para lá que o jogo leva.
+ */
+.jogo-fim {
+  position: fixed;
+  z-index: 46;
+  top: calc(var(--frame) + 4.75rem);
+  right: calc(var(--frame) + 3%);
+  width: min(22rem, calc(100vw - 2rem));
+  padding: 1.1rem 1.4rem 0.7rem;
+  border: 1px solid rgb(237 235 230 / 0.3);
+  border-radius: 8px;
+  background: rgb(3 7 5 / 0.92);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  outline: none;
+  animation: rise 0.7s var(--ease-out-expo) both;
+}
+.jogo-barras {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 3.25rem;
+  margin-bottom: 0.9rem;
+  border-bottom: 1px solid var(--color-line-strong);
+}
+.jogo-barras span {
+  flex: 1 1 0;
+  max-width: 10px;
+  background: #ffd173;
+}
+.jogo-fim-titulo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.35rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.jogo-fim-texto {
+  margin-top: 0.45rem;
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: var(--color-muted);
+}
+.jogo-fim-acoes {
+  margin-top: 0.35rem;
+  display: flex;
+  gap: 1.5rem;
+}
+.jogo-fim-acoes button {
+  min-height: 44px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--color-pen);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 6px;
+  transition: color 0.2s;
+}
+.jogo-fim-acoes button:hover {
+  color: #f6d58a;
+}
+.jogo-fim-acoes button + button {
+  color: var(--color-muted);
+}
+
+@media (max-width: 767.98px) {
+  .jogo-topo {
+    gap: 0.9rem;
+    padding-inline: calc(var(--frame) + 0.7rem);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+  .jogo-etapas span + span::before {
+    margin-inline: 0.4em;
+  }
+  .jogo-dica {
+    font-size: 1rem;
+  }
+  /* No celular o alto é do convite ("me chama"): o cartão vai para baixo, acima do botão de menu. */
+  .jogo-fim {
+    top: auto;
+    right: auto;
+    left: 50%;
+    bottom: calc(68px + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    animation-name: jogo-subir;
+  }
+}
+/* `rise` anima o transform e desfaria o translateX que centra o cartão. */
+@keyframes jogo-subir {
+  from {
+    opacity: 0;
+    translate: 0 14px;
+  }
+}

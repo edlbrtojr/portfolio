@@ -47,6 +47,30 @@ export const RIVER = {
   spine: { axis: 0.11, amp: 0.025, half: 0.02, growth: 0, straight: 0, head: 1, maxAspect: Infinity, noise: 0.16, overhang: 3 },
 } as const;
 
+/** As constantes de uma curva: as de RIVER, ou as do rio do jogo (game/course.ts). */
+export type RiverParams = {
+  axis: number;
+  amp: number;
+  half: number;
+  growth: number;
+  straight: number;
+  head: number;
+  maxAspect: number;
+  noise: number;
+  overhang: number;
+};
+
+/**
+ * De que rio se está falando: o da página (pelo modo) ou um com constantes
+ * próprias. O jogo da canoa desce um rio mais largo e centrado, desenhado
+ * pelo mesmo shader; por isso as contas da curva aceitam as duas formas.
+ */
+export type RiverShape = ChartMode | RiverParams;
+
+function paramsOf(shape: RiverShape): RiverParams {
+  return typeof shape === "string" ? RIVER[shape] : shape;
+}
+
 /**
  * O estirão da abertura: largura cheia até 1,3 unidade e volta ao normal ao
  * longo de uma tela inteira, até 2,3. Antes ia de 0,7 a 1,5: o rio inchava em
@@ -186,21 +210,21 @@ function mouth(y: number, docUnits: number) {
  * Centro da água em fração de W, para y em unidades. Sem `docUnits` não há
  * foz (o caminho do nome, no topo, nunca chega lá).
  */
-export function riverX(y: number, mode: ChartMode, docUnits = Infinity) {
-  const m = RIVER[mode];
+export function riverX(y: number, shape: RiverShape, docUnits = Infinity) {
+  const m = paramsOf(shape);
   return m.axis + m.amp * riverWave(y) * (1 - m.straight * mouth(y, docUnits));
 }
 
 /** Meia largura em unidades de `halfRef`: respira um pouco ao longo do curso e alarga na foz. */
-export function riverHalf(y: number, mode: ChartMode, docUnits: number) {
-  const m = RIVER[mode];
+export function riverHalf(y: number, shape: RiverShape, docUnits: number) {
+  const m = paramsOf(shape);
   const head = 1 + m.head * (1 - smoothstep(HEAD_FROM, HEAD_TO, y));
   return m.half * (1 + 0.2 * Math.sin(2.3 * y)) * (1 + m.growth * mouth(y, docUnits)) * head;
 }
 
 /** Régua da meia largura em px (ver `maxAspect`). */
-export function halfRef(mode: ChartMode, W: number, unit: number) {
-  const cap = RIVER[mode].maxAspect;
+export function halfRef(shape: RiverShape, W: number, unit: number) {
+  const cap = paramsOf(shape).maxAspect;
   // Infinity = sem teto (W / Infinity daria 0 e o rio sumiria).
   return Number.isFinite(cap) ? Math.min(unit, W / cap) : unit;
 }

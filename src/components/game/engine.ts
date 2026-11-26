@@ -1,0 +1,548 @@
+import { chartGeometry } from "../chart/geometry";
+import { halfRef, riverHalf, riverX } from "../scene/river-curve";
+import { sceneState, wakeScene } from "../scene/store";
+import { buildCourse, CANOE_Y, COURSE_UNITS, cruise, gameRiver, gameSizes, makeChannel, placeCourse, seeded, STAGE_CLEAN, STAGE_GOLD, steer, touches } from "./course";
+
+// O motor do jogo da canoa. As regras são de course.ts; aqui ficam o tempo, o
+// teclado e o ponteiro, e o desenho da canoa e dos dados num canvas 2D por
+// cima da cena.
+//
+// O rio é o da cena WebGL: o jogo só entrega ao shader outras constantes de
+// curva (sceneState.game) e move a câmera (sceneState.camera), como a viagem
+// entre páginas faz. Não há segundo rio desenhado em lugar nenhum.
+//
+// Uma descida, do começo ao fim:
+// 1. `fechando`: a página some (html[data-jogo]) e a cortina da cena desce;
+// 2. no escuro, o rio da página dá lugar ao do jogo e a chegada do luar
+//    repete: a troca não se vê;
+// 3. `descendo`: a câmera desce o percurso; `chegando`: parou na foz;
+// 4. `saindo`: a cortina desce, o rio da página volta, a home é rolada até o
+//    contato (a foz de verdade, se a descida terminou) e a cortina sobe
+//    (`abrindo`).
+//
+// O laço não é daqui: quem chama `tick` é o Pacer da cena (scene-canvas.tsx),
+// antes de desenhar, para a canoa e o rio saírem no mesmo quadro.
+
+/** Quanto leva para apagar e para reacender a cena, ms. Curto: é troca de cenário, não efeito. */
+const CLOSE_MS = 260;
+const OPEN_MS = 650;
+/** Parada na foz antes de sair, ms: tempo de ver a carga inteira virar barra. */
+const ARRIVE_MS = 1300;
+/** Quantos dados um erro derruba da carga. */
+const ERROR_COST = 3;
+
+const BRONZE = "#ff9e54";
+const SILVER = "#d6ebff";
+const GOLD = "#ffd173";
+/** Fundo de noite atrás de cada dado (o --color-bg do site, quase opaco). */
+const INK_BACK = "rgb(3 7 5 / 0.8)";
+
+export type GameResult = { delivered: number; total: number; /** Altura de cada barra entregue, de 0 a 1. */ bars: number[] };
+
+export type GameHooks = {
+  /** Quantos dados vão na canoa. */
+  onCount(n: number): void;
+  /** Em que estágio a canoa está: 0 bruto, 1 limpo, 2 pronto. */
+  onStage(stage: number): void;
+  /** A saída começou (fim do percurso ou desistência): hora de esconder o placar. */
+  onLeave(): void;
+  /** A descida terminou e a home já está no contato. */
+  onFinish(result: GameResult): void;
+  /** Saiu no meio (Esc, botão, janela redimensionada, cena perdida). */
+  onQuit(): void;
+};
+
+type Carried = { ch: string; digit: string; level: number; stage: number; at: number; flip: number; x: number; y: number };
+type Spark = { kind: "anel" | "perda"; x: number; y: number; at: number; text: string; dir: number };
+
+/** Mancha de luz redonda, desenhada uma vez: `shadowBlur` por dado custava caro no celular. */
+function halo(color: string, size: number) {
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  const g = c.getContext("2d");
+  if (g) {
+    const r = size / 2;
+    const grad = g.createRadialGradient(r, r, 0, r, r, r);
+    grad.addColorStop(0, color);
+    grad.addColorStop(1, "rgb(0 0 0 / 0)");
+    g.fillStyle = grad;
+    g.fillRect(0, 0, size, size);
+  }
+  return c;
+}
+
+/**
+ * Começa uma descida no canvas dado (do tamanho da janela). Devolve `quit`
+ * (sai com a cortina, como o Esc) e `stop` (desfaz tudo na hora, sem avisar:
+ * para quando o componente desmonta). null se não der para começar.
+ */
+export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit(): void; stop(): void } | null {
+  const ctx = canvas.getContext("2d");
+  // Sem o canvas da cena montado (three.js ainda baixando) ninguém chamaria o
+  // `tick`; com a câmera ocupada há uma viagem entre páginas em curso.
+  if (!ctx || sceneState.tick || sceneState.camera || !document.querySelector(".scene-layer canvas")) return null;
+
+  const s = sceneState;
+  const root = document.documentElement;
+  const { W, unit } = chartGeometry();
+  const sizes = gameSizes(W, unit);
+  const river = gameRiver(W, unit);
+  const docH = COURSE_UNITS * unit;
+  const channel = makeChannel({ riverX, riverHalf, halfRef }, river, W, unit);
+  const rand = seeded((Math.random() * 2 ** 32) >>> 0);
+  const items = placeCourse(buildCourse(rand), channel, unit, sizes).map((it) => ({ ...it, done: false }));
+  const total = items.filter((it) => it.kind === "dado").length;
+  const family = getComputedStyle(root).getPropertyValue("--nf-code").trim() || "ui-monospace, monospace";
+  const fontBig = `700 ${sizes.big}px ${family}`;
+  const fontSmall = `700 ${sizes.small}px ${family}`;
+  const fontChip = `700 ${sizes.compact ? 11 : 12}px ${family}`;
+  const haloData = halo("rgb(255 158 84 / 0.5)", 64);
+  const haloError = halo("rgb(255 80 80 / 0.4)", 96);
+  const haloLamp = halo("rgb(255 226 160 / 0.85)", 48);
+
+  let H = 0;
+  let dpr = 1;
+  const fit = () => {
+    H = canvas.clientHeight || window.innerHeight;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+  };
+  fit();
+
+  const cam = { x: 0, y: 0 };
+  const light = { x: W / 2, y: CANOE_Y * H };
+  const canoe = { x: channel(CANOE_Y * H).x, tilt: 0 };
+  const carry: Carried[] = [];
+  const sparks: Spark[] = [];
+  /** Por onde a canoa passou (px do mundo): a carga vem atrás pelo mesmo caminho. */
+  const wake: { x: number; y: number }[] = [];
+  let phase: "fechando" | "descendo" | "chegando" | "saindo" | "abrindo" | "fim" = "fechando";
+  let phaseAt = performance.now();
+  let last = phaseAt;
+  let lastTick = phaseAt;
+  let finished = false;
+  let head = 0;
+  let stage = 0;
+  let bumpAt = -1e9;
+  /** Alvo do jogador, px da janela. Até o primeiro comando a canoa segue o meio do rio. */
+  let target = canoe.x;
+  let manual = false;
+  let held = 0;
+
+  const lose = (n: number, now: number) => {
+    const out = carry.splice(Math.max(0, carry.length - n));
+    out.forEach((c, i) => sparks.push({ kind: "perda", x: c.x, y: c.y, at: now, text: c.stage ? c.digit : c.ch, dir: i % 2 ? 1 : -1 }));
+    if (out.length) hooks.onCount(carry.length);
+  };
+
+  const step = (now: number, dt: number) => {
+    const endY = docH - H;
+    if (phase === "descendo") {
+      cam.y = Math.min(endY, cam.y + cruise(cam.y, endY, unit, now - phaseAt) * dt);
+      if (cam.y >= endY - 0.5) {
+        phase = "chegando";
+        phaseAt = now;
+      }
+    } else if (now - phaseAt > ARRIVE_MS) {
+      finished = true;
+      leave(now);
+      return;
+    }
+
+    const cy = cam.y + CANOE_Y * H;
+    const lane = channel(cy);
+    if (held) {
+      // 0,75 unidade por segundo: mais que o rio anda de lado na curva mais
+      // fechada (~0,5), senão o teclado não alcança a margem a tempo.
+      target = Math.min(lane.x + lane.half, Math.max(lane.x - lane.half, target + held * 0.75 * unit * dt));
+    }
+    if (!manual) target = lane.x;
+    const x = steer(canoe.x, target, dt, lane, sizes);
+    // A proa aponta para onde a canoa vai: o desvio lateral contra o avanço.
+    const forward = Math.max(120, cruise(cam.y, endY, unit, now - phaseAt));
+    const want = phase === "descendo" ? Math.atan2((x - canoe.x) / Math.max(dt, 1e-3), forward) * 0.8 : 0;
+    canoe.tilt += (want - canoe.tilt) * (1 - Math.exp(-dt * 10));
+    canoe.x = x;
+    light.x = x;
+    light.y = CANOE_Y * H + sizes.canoeLen / 2;
+
+    for (let i = head; i < items.length; i++) {
+      const it = items[i];
+      if (it.py < cam.y - 90) {
+        if (i === head) head++;
+        continue;
+      }
+      if (it.py > cam.y + H + 90) break;
+      if (it.done || !touches(it.kind, it.px - x, it.py - cy, sizes)) continue;
+      it.done = true;
+      if (it.kind === "dado") {
+        // Barras vizinhas com alturas parecidas: no fim lê como gráfico, não como ruído.
+        const prev = carry[carry.length - 1]?.level ?? 0.5;
+        const level = Math.min(1, Math.max(0.12, prev + (rand() - 0.5) * 0.5));
+        carry.push({ ch: it.text, digit: String(Math.floor(rand() * 10)), level, stage: 0, at: now, flip: -1e9, x, y: cy });
+        sparks.push({ kind: "anel", x: it.px, y: it.py, at: now, text: "", dir: 0 });
+        hooks.onCount(carry.length);
+      } else {
+        lose(ERROR_COST, now);
+        bumpAt = now;
+      }
+    }
+
+    // A carga segue a canoa pelo caminho que ela fez, um dado a cada `gap` px.
+    if (!wake.length || cy - wake[wake.length - 1].y >= 2) wake.push({ x, y: cy });
+    if (wake.length > 900) wake.splice(0, 300);
+    let j = wake.length - 1;
+    for (let i = 0; i < carry.length; i++) {
+      const c = carry[i];
+      const wy = cy - sizes.canoeLen / 2 - 12 - i * sizes.gap;
+      while (j > 0 && wake[j].y > wy) j--;
+      c.x = wake[j].x;
+      c.y = wy;
+      // Cada dado muda de estágio quando ele mesmo cruza a marca: a troca
+      // sobe pela carga como uma onda, da canoa para trás.
+      const at = wy / docH;
+      const goal = at > STAGE_GOLD ? 2 : at > STAGE_CLEAN ? 1 : 0;
+      if (goal > c.stage && now - c.at > 300 && now - c.flip > 260) {
+        c.stage += 1;
+        c.flip = now;
+      }
+    }
+    // Parada na foz, o que ainda não virou barra vira: chega tudo pronto.
+    if (phase === "chegando") {
+      for (const c of carry) {
+        if (c.stage < 2 && now - c.flip > 200) {
+          c.stage += 1;
+          c.flip = now;
+        }
+      }
+    }
+
+    const here = cy / docH > STAGE_GOLD ? 2 : cy / docH > STAGE_CLEAN ? 1 : 0;
+    if (here !== stage) {
+      stage = here;
+      hooks.onStage(here);
+    }
+  };
+
+  const drawCanoe = (now: number) => {
+    const L = sizes.canoeLen;
+    const w = sizes.canoeWid;
+    const hull = (k: number) => {
+      ctx.beginPath();
+      ctx.moveTo(0, (L / 2) * k);
+      ctx.bezierCurveTo(w * 0.62 * k, L * 0.28 * k, w * 0.62 * k, -L * 0.28 * k, 0, (-L / 2) * k);
+      ctx.bezierCurveTo(-w * 0.62 * k, -L * 0.28 * k, -w * 0.62 * k, L * 0.28 * k, 0, (L / 2) * k);
+    };
+    ctx.save();
+    ctx.translate(canoe.x, CANOE_Y * H + Math.sin(now / 520) * 1.5);
+    // Canvas gira no sentido horário; a proa (para baixo) tem de ir para o lado do desvio.
+    ctx.rotate(-canoe.tilt);
+    // Sombra na água: separa o casco do rio, que debaixo da lanterna é claro.
+    ctx.save();
+    ctx.translate(2.5, 3);
+    hull(1.06);
+    ctx.fillStyle = "rgb(0 0 0 / 0.4)";
+    ctx.fill();
+    ctx.restore();
+    // Madeira escura com contorno quase preto: a primeira versão era cor de
+    // mel e desaparecia na água dourada da foz.
+    hull(1);
+    ctx.fillStyle = "#a06a34";
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#1a0f06";
+    ctx.stroke();
+    hull(0.7);
+    ctx.fillStyle = "#5b3a1a";
+    ctx.fill();
+    // Remo: troca de lado a cada remada.
+    const stroke = Math.sin(now / 240);
+    const sideways = (stroke > 0 ? 1 : -1) * (w / 2 + 3 + 7 * Math.abs(stroke));
+    ctx.beginPath();
+    ctx.moveTo(0, -L * 0.06);
+    ctx.lineTo(sideways, L * 0.1 - 5 * Math.abs(stroke));
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#e7d3ad";
+    ctx.stroke();
+    // Quem rema.
+    ctx.beginPath();
+    ctx.arc(0, -L * 0.08, w * 0.24, 0, Math.PI * 2);
+    ctx.fillStyle = "#edebe6";
+    ctx.fill();
+    // A lanterna na proa: é ela que acende a água em volta (sceneState.game.light).
+    ctx.drawImage(haloLamp, -12, L / 2 - 19, 24, 24);
+    ctx.beginPath();
+    ctx.arc(0, L / 2 - 7, 2.2, 0, Math.PI * 2);
+    ctx.fillStyle = "#fff1c9";
+    ctx.fill();
+    ctx.restore();
+  };
+
+  const draw = (now: number, alpha: number) => {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalAlpha = alpha;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    // Tranco de quando a canoa pega um erro.
+    const jolt = Math.max(0, 1 - (now - bumpAt) / 320);
+    if (jolt > 0) ctx.translate(Math.sin(now / 17) * 6 * jolt, Math.cos(now / 23) * 4 * jolt);
+
+    // A carga. Cada dado vai sobre uma conta escura: sem ela, o número prata
+    // sumia na água clara da noite e a barra dourada, na água dourada da foz
+    // (captura do primeiro teste no navegador). Primeiro o fundo de todas,
+    // depois os sinais, para a conta de um dado não cobrir o sinal do vizinho.
+    const barW = 6 + 26;
+    for (const c of carry) {
+      const sy = c.y - cam.y;
+      if (sy < -20) continue;
+      ctx.fillStyle = INK_BACK;
+      if (c.stage === 2) ctx.fillRect(c.x - barW / 2 - 3, sy - sizes.gap / 2, barW + 6, sizes.gap);
+      else {
+        ctx.beginPath();
+        ctx.arc(c.x, sy, sizes.bead, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    for (const c of carry) {
+      const sy = c.y - cam.y;
+      if (sy < -20) continue;
+      // Ao mudar de estágio o dado pisca em branco e assenta na cor nova.
+      const pop = Math.max(0, 1 - (now - c.flip) / 260);
+      const color = c.stage === 2 ? GOLD : c.stage === 1 ? SILVER : BRONZE;
+      ctx.fillStyle = pop > 0.5 ? "#ffffff" : color;
+      if (c.stage === 2) {
+        // Barra deitada, todas saindo da mesma linha: a fila inteira lê como gráfico de barras.
+        ctx.fillRect(c.x - barW / 2, sy - 3.5, 6 + c.level * 26, 7);
+      } else {
+        ctx.font = fontSmall;
+        ctx.fillText(c.stage ? c.digit : c.ch, c.x, sy + 0.5);
+      }
+    }
+
+    for (let i = head; i < items.length; i++) {
+      const it = items[i];
+      const sy = it.py - cam.y + Math.sin(now / 420 + it.py) * 2;
+      if (sy > H + 60) break;
+      if (it.done || sy < -60) continue;
+      if (it.kind === "dado") {
+        // Boia escura com aro: é o que separa o dado a recolher dos sinais
+        // que o próprio rio leva, de noite e de manhã.
+        ctx.drawImage(haloData, it.px - 30, sy - 30, 60, 60);
+        ctx.beginPath();
+        ctx.arc(it.px, sy, sizes.buoy, 0, Math.PI * 2);
+        ctx.fillStyle = INK_BACK;
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = BRONZE;
+        ctx.stroke();
+        ctx.font = fontBig;
+        ctx.fillStyle = BRONZE;
+        ctx.fillText(it.text, it.px, sy + 1);
+      } else {
+        const w = sizes.chipW;
+        const h = sizes.chipH;
+        ctx.drawImage(haloError, it.px - w, sy - w, w * 2, w * 2);
+        ctx.beginPath();
+        ctx.roundRect(it.px - w / 2, sy - h / 2, w, h, 4);
+        ctx.fillStyle = "rgb(92 14 20 / 0.94)";
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = "#ff6b6b";
+        ctx.stroke();
+        ctx.font = fontChip;
+        ctx.fillStyle = "#ffdede";
+        ctx.fillText(it.text, it.px, sy + 1);
+      }
+    }
+
+    drawCanoe(now);
+
+    for (let i = sparks.length - 1; i >= 0; i--) {
+      const p = sparks[i];
+      const k = (now - p.at) / (p.kind === "anel" ? 380 : 700);
+      if (k >= 1) {
+        sparks.splice(i, 1);
+        continue;
+      }
+      const sy = p.y - cam.y;
+      ctx.globalAlpha = alpha * (1 - k);
+      if (p.kind === "anel") {
+        ctx.beginPath();
+        ctx.arc(p.x, sy, 10 + 24 * k, 0, Math.PI * 2);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = BRONZE;
+        ctx.stroke();
+      } else {
+        // Dado perdido: sai de lado, vermelho, e fica para trás com a correnteza.
+        ctx.font = fontSmall;
+        ctx.fillStyle = "#ff6b6b";
+        ctx.fillText(p.text, p.x + p.dir * 46 * k, sy);
+      }
+      ctx.globalAlpha = alpha;
+    }
+  };
+
+  /** Desfaz o que o jogo mudou na cena e na página. Sem animação. */
+  const restore = () => {
+    s.game = null;
+    s.camera = null;
+    root.removeAttribute("data-jogo");
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  const unlisten = () => {
+    window.clearInterval(watchdog);
+    canvas.removeEventListener("pointerdown", onPointer);
+    canvas.removeEventListener("pointermove", onPointer);
+    window.removeEventListener("keydown", onKey);
+    window.removeEventListener("keyup", onKey);
+    window.removeEventListener("blur", onBlur);
+    window.removeEventListener("wheel", block);
+    window.removeEventListener("resize", onResize);
+    document.removeEventListener("visibilitychange", onVisible);
+  };
+
+  const stop = () => {
+    if (phase === "fim") return;
+    phase = "fim";
+    unlisten();
+    restore();
+    s.tick = null;
+    s.curtain = 1;
+    wakeScene();
+  };
+
+  /** Saída sem cortina, avisando quem chamou: a cena sumiu ou a janela mudou de largura. */
+  const abort = () => {
+    if (phase === "fim") return;
+    stop();
+    hooks.onQuit();
+  };
+
+  function leave(now: number) {
+    if (phase === "saindo" || phase === "abrindo" || phase === "fim") return;
+    // Antes de o rio trocar não há o que apagar: volta direto.
+    if (phase === "fechando") return abort();
+    phase = "saindo";
+    phaseAt = now;
+    hooks.onLeave();
+  }
+
+  const tick = (now: number) => {
+    try {
+      lastTick = now;
+      const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));
+      last = now;
+      const t = now - phaseAt;
+      if (phase === "fechando") {
+        s.curtain = 1 - Math.min(1, t / CLOSE_MS);
+        if (t < CLOSE_MS) return;
+        // No escuro: entra o rio do jogo, a câmera vai para a nascente e o luar chega de novo.
+        s.game = { river, docH, light };
+        s.camera = cam;
+        s.replayReveal = true;
+        s.curtain = 1;
+        phase = "descendo";
+        phaseAt = now;
+        return;
+      }
+      if (phase === "saindo") {
+        s.curtain = 1 - Math.min(1, t / CLOSE_MS);
+        draw(now, s.curtain);
+        if (t < CLOSE_MS) return;
+        restore();
+        // Quem desceu até a foz chega ao contato: é lá que o rio da home deságua.
+        if (finished) window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" });
+        phase = "abrindo";
+        phaseAt = now;
+        return;
+      }
+      if (phase === "abrindo") {
+        s.curtain = Math.min(1, t / OPEN_MS);
+        if (t < OPEN_MS) return;
+        phase = "fim";
+        unlisten();
+        s.tick = null;
+        s.curtain = 1;
+        wakeScene();
+        if (finished) hooks.onFinish({ delivered: carry.length, total, bars: carry.map((c) => c.level) });
+        else hooks.onQuit();
+        return;
+      }
+      if (phase === "fim") return;
+      step(now, dt);
+      if (phase === "descendo" || phase === "chegando") draw(now, phase === "descendo" ? Math.min(1, t / 500) : 1);
+    } catch (err) {
+      // Um erro aqui se repetiria a cada quadro com a página escondida: melhor devolver a página.
+      console.error(err);
+      abort();
+    }
+  };
+
+  function onPointer(e: PointerEvent) {
+    manual = true;
+    target = e.clientX;
+  }
+  function onKey(e: KeyboardEvent) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const down = e.type === "keydown";
+    if (e.key === "Escape") {
+      if (down) leave(performance.now());
+      return;
+    }
+    const dir = e.key === "ArrowLeft" || e.key === "a" || e.key === "A" ? -1 : e.key === "ArrowRight" || e.key === "d" || e.key === "D" ? 1 : 0;
+    if (dir) {
+      e.preventDefault();
+      // Do mouse para o teclado: o alvo passa a ser onde a canoa está, não onde o mouse ficou.
+      if (down && !held) target = canoe.x;
+      if (down) held = dir;
+      else if (held === dir) held = 0;
+      manual = true;
+      return;
+    }
+    // A página está escondida: seta para baixo, espaço e Page Down não podem
+    // rolá-la por baixo do jogo. O espaço continua valendo no botão de sair.
+    const scrolls = e.key === " " ? !(e.target instanceof HTMLButtonElement) : ["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"].includes(e.key);
+    if (down && scrolls) e.preventDefault();
+  }
+  function onBlur() {
+    held = 0;
+  }
+  function block(e: Event) {
+    e.preventDefault();
+  }
+  function onResize() {
+    // A largura mudou (janela redimensionada, celular girado): o rio do jogo
+    // foi calculado para a outra. Devolve a página em vez de remendar.
+    if (document.documentElement.clientWidth !== W) abort();
+    else fit();
+  }
+  function onVisible() {
+    lastTick = performance.now();
+  }
+  // Se a cena parar de chamar o `tick` (contexto WebGL perdido), a página
+  // ficaria escondida para sempre. Com a aba em segundo plano o rAF para de
+  // propósito: aí não conta.
+  const watchdog = window.setInterval(() => {
+    if (!document.hidden && performance.now() - lastTick > 2500) abort();
+  }, 1000);
+
+  canvas.addEventListener("pointerdown", onPointer);
+  canvas.addEventListener("pointermove", onPointer);
+  window.addEventListener("keydown", onKey);
+  window.addEventListener("keyup", onKey);
+  window.addEventListener("blur", onBlur);
+  window.addEventListener("wheel", block, { passive: false });
+  window.addEventListener("resize", onResize);
+  document.addEventListener("visibilitychange", onVisible);
+
+  root.dataset.jogo = "";
+  s.tick = tick;
+  wakeScene();
+
+  return { quit: () => leave(performance.now()), stop };
+}

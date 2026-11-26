@@ -454,6 +454,26 @@ export const pt: Content = {
     { term: "determinística", note: "Mesma entrada, mesma saída, sempre." },
     { term: "ponto de retomada", note: "Uma marca de até onde a importação chegou. Se cair, ela recomeça dali, e não do zero." },
   ],
+  // Os "20 segundos" são medidos: o teste de game/course.test.mjs quebra se a
+  // descida sair da faixa de 17 a 24 s. "bruto, limpo, pronto" são bronze,
+  // silver e gold em palavra comum, as mesmas do glossário acima.
+  game: {
+    start: "ou desça o rio de canoa",
+    startNote: "joguinho de 20 segundos",
+    label: "Jogo: descer o rio de canoa",
+    hintMouse: "Mova o mouse ou use as setas ← →",
+    hintTouch: "Arraste o dedo para os lados",
+    rule: "Pegue os dados. Desvie dos erros.",
+    stages: ["bruto", "limpo", "pronto"],
+    aboard: "na canoa",
+    quit: "sair",
+    doneTitle: "{n} de {total} dados entregues.",
+    doneBody: "Você pegou dado bruto lá em cima e chegou aqui com um gráfico. É o que eu faço no trabalho.",
+    emptyTitle: "A canoa chegou vazia.",
+    emptyBody: "Dado bruto escapa fácil. Na segunda descida já se pega o jeito.",
+    again: "descer de novo",
+    close: "fechar",
+  },
   ui: {
     visitSite: "Abrir o site",
     stack: "Stack",

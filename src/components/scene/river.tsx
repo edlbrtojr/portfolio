@@ -3,7 +3,7 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { BRANCH_HALF, COLUMN_END, halfRef, NOTES_MIN_WIDTH, NOTES_START, RIVER, RIVER_GLSL, SPINE_TEXT_START } from "./river-curve";
+import { BRANCH_HALF, COLUMN_END, dawnAt, halfRef, NOTES_MIN_WIDTH, NOTES_START, RIVER, RIVER_GLSL, SPINE_TEXT_START } from "./river-curve";
 import { BRANCH_SLOTS, cameraNow, sceneState, wakeScene } from "./store";
 
 /**
@@ -43,6 +43,14 @@ const GLYPHS = {
 const ATLAS_CELL = 36;
 /** Lado da célula na tela, px CSS. Menor no celular, onde o rio tem 54 px de largura. */
 const CELL = { chart: 12, spine: 10 } as const;
+/**
+ * Tinta dos caracteres do rio durante o jogo da canoa. Os dados que o jogador
+ * recolhe são os mesmos sinais, desenhados por cima (game/engine.ts): com o
+ * rio a 100% eles se perdiam no meio da correnteza. Chute de partida, ainda
+ * sem teste com gente jogando; se o dado a recolher não saltar aos olhos,
+ * desça este número antes de aumentar o dado.
+ */
+const GAME_INK = 0.4;
 
 // GLSL quer "1.0", não "1".
 const g = (n: number) => (Number.isInteger(n) ? n.toFixed(1) : String(n));
@@ -118,6 +126,9 @@ const fragment = /* glsl */ `
   uniform float uCell;    // lado da célula, px CSS
   uniform float uBranchY[${BRANCH_SLOTS}]; // de onde sai cada braço, px do mundo; -1 = vaga livre
   uniform float uBranchOn; // vaga do braço da página aberta, -1 = nenhum
+  uniform float uShade;   // 1 na página (recuo atrás das colunas de texto), 0 no jogo: não há coluna
+  uniform float uInk;     // tinta dos caracteres do rio: 1 na página, GAME_INK no jogo
+  uniform float uCurtain; // 1 cena acesa, 0 no escuro: o jogo troca de rio atrás dela
   ${RIVER_GLSL}
 
   vec2 hash2(vec2 p) {
@@ -458,6 +469,7 @@ const fragment = /* glsl */ `
     float shadeChart = (0.35 + 0.2 * warm + 0.15 * uGlyph) * (1.0 - smoothstep(${COLUMN_END - 0.04}, ${COLUMN_END + 0.03}, xf))
       + (0.15 + 0.4 * uGlyph) * uNotes * smoothstep(${NOTES_START - 0.03}, ${NOTES_START + 0.01}, xf);
     float shadeSpine = (0.3 + 0.2 * uGlyph) * smoothstep(${SPINE_TEXT_START - 0.05}, ${SPINE_TEXT_START + 0.01}, xf);
+    float shade = mix(shadeChart, shadeSpine, uMode) * uShade;
     // A chegada: a página abre no escuro e o luar desce o rio, de cima para
     // baixo e do eixo do rio para as bordas. 3,3 = 1 + o maior desconto
     // possível (1,27 de distância na lombada + 0,9 de altura): em uReveal = 1
@@ -465,9 +477,11 @@ const fragment = /* glsl */ `
     float reveal = smoothstep(0.0, 1.0, uReveal * 3.3 - abs(xf - uAxis) / 0.7 - scr.y / uRes.y * 0.9);
     vec3 mul = (1.0 + lk * vec3(1.2, 0.75, 0.35) * 0.9)
       * (0.7 + 0.3 * smoothstep(1.15, 0.25, length(scr / uRes - 0.5) * 1.5))
-      * (1.0 - mix(shadeChart, shadeSpine, uMode))
+      * (1.0 - shade)
       * (1.0 - 0.35 * east)
-      * mix(0.06, 1.0, reveal);
+      // A cortina desce para o mesmo 6% de onde a chegada parte: o jogo
+      // apaga, troca de rio e repete a chegada sem degrau de luz.
+      * mix(0.06, 1.0, reveal * uCurtain);
     // A luz da lanterna soma depois do recuo: sobre a mata quase preta
     // (~0,03) o termo só multiplicativo somava ~0,03 e não aparecia. Com
     // +0,08 no centro o halo se vê, e o texto continua com contraste acima
@@ -498,7 +512,7 @@ const fragment = /* glsl */ `
       // (transformar o que existe em dado) sem escrever uma palavra.
       // Só fora das colunas de texto (onde o recuo é zero): número aceso
       // atrás de título e parágrafo atrapalha a leitura.
-      if (lk * (1.0 - smoothstep(0.0, 0.25, mix(shadeChart, shadeSpine, uMode))) > 0.45) {
+      if (lk * (1.0 - smoothstep(0.0, 0.25, shade)) > 0.45) {
         idx = ${g(GLYPHS.clean0)} + floor(hash2(gcell).x * ${g(GLYPHS.clean.length - 0.001)});
         ink = min(ink * 1.25 + vec3(0.1, 0.07, 0.03), vec3(1.0));
       }
@@ -540,7 +554,7 @@ const fragment = /* glsl */ `
           ridx = k.x < 0.26 ? 0.0 : ${g(GLYPHS.raw0)} + floor(fract(h.x * 7.13) * ${g(GLYPHS.raw.length - 0.001)});
           rink = vec3(1.0, 0.62, 0.33) * glow * 0.8;
         }
-        float sign_ = texture2D(uGlyphs, vec2((ridx + gx) / ${g(GLYPHS.count)}, guv.y)).r;
+        float sign_ = texture2D(uGlyphs, vec2((ridx + gx) / ${g(GLYPHS.count)}, guv.y)).r * uInk;
         // A água de noite sobe para azul vivo (×1,3 a ×2,15 por canal): entre
         // os pontos acesos da mata, o azul-cinza pintado ficava mais escuro
         // que a terra e o rio lia como vão. Azul claro e liso é rio; verde
@@ -596,6 +610,9 @@ export function River({ reducedMotion }: { reducedMotion: boolean }) {
           uCell: { value: CELL.chart },
           uBranchY: { value: Array.from({ length: BRANCH_SLOTS }, () => -1) },
           uBranchOn: { value: -1 },
+          uShade: { value: 1 },
+          uInk: { value: 1 },
+          uCurtain: { value: 1 },
         },
       }),
     [],
@@ -641,7 +658,10 @@ export function River({ reducedMotion }: { reducedMotion: boolean }) {
     // (regra react-hooks/immutability).
     const u = obj.material.uniforms;
     const s = sceneState;
-    const m = RIVER[s.mode];
+    // No jogo da canoa o shader desenha outro rio (mais largo, centrado, com
+    // o comprimento do percurso): mesmas contas, outras constantes.
+    const game = s.game;
+    const m = game?.river ?? RIVER[s.mode];
     (u.uRes.value as THREE.Vector2).set(size.width, size.height);
     u.uDpr.value = state.gl.getPixelRatio();
     // A câmera é lida aqui, sem suavização: o SVG do nome rola com a página
@@ -657,36 +677,50 @@ export function River({ reducedMotion }: { reducedMotion: boolean }) {
     u.uHead.value = m.head;
     u.uNoise.value = m.noise;
     u.uOverhang.value = m.overhang;
-    u.uHalfRef.value = halfRef(s.mode, size.width, s.unit);
-    // A foz e o amanhecer são da home. Quem abriu um case direto ainda não
-    // mediu a home: sem a altura não há manhã (uDawnOn = 0), e a foz usa um
-    // chute alto, que só apareceria numa volta e é trocado quando a home monta.
-    u.uDocH.value = s.homeDocH || 8 * s.unit;
-    u.uDawnOn.value = s.homeDocH ? 1 : 0;
+    u.uHalfRef.value = halfRef(m, size.width, s.unit);
+    // A foz e o amanhecer são da home (ou do percurso do jogo). Quem abriu um
+    // case direto ainda não mediu a home: sem a altura não há manhã
+    // (uDawnOn = 0), e a foz usa um chute alto, que só apareceria numa volta e
+    // é trocado quando a home monta.
+    u.uDocH.value = game?.docH ?? (s.homeDocH || 8 * s.unit);
+    u.uDawnOn.value = game || s.homeDocH ? 1 : 0;
+    u.uShade.value = game ? 0 : 1;
+    u.uInk.value = game ? GAME_INK : 1;
+    u.uCurtain.value = s.curtain;
     u.uMode.value = s.mode === "spine" ? 1 : 0;
     u.uNotes.value = size.width >= NOTES_MIN_WIDTH ? 1 : 0;
     u.uTier.value = s.tier === "coarse" ? 1 : 0;
     u.uCell.value = CELL[s.mode];
     u.uTime.value = reducedMotion ? 0 : state.clock.elapsedTime;
     const branches = u.uBranchY.value as number[];
-    for (let i = 0; i < BRANCH_SLOTS; i++) branches[i] = s.branches[i];
-    u.uBranchOn.value = s.activeBranch;
+    // No jogo não há braço: eles levam a projetos, e a página está escondida.
+    for (let i = 0; i < BRANCH_SLOTS; i++) branches[i] = game ? -1 : s.branches[i];
+    u.uBranchOn.value = game ? -1 : s.activeBranch;
     // O relógio do r3f aqui é o performance.now da página (ver Pacer), então
     // a chegada conta a partir do primeiro quadro desenhado, não do zero.
+    // O jogo pede a chegada de novo quando troca de rio no escuro.
+    if (s.replayReveal) {
+      s.replayReveal = false;
+      revealStart.current = null;
+    }
     revealStart.current ??= state.clock.elapsedTime;
     const r = reducedMotion ? 1 : Math.min(1, (state.clock.elapsedTime - revealStart.current) / REVEAL_S);
     u.uReveal.value = r * r * (3 - 2 * r);
 
     // Lanterna: alvo (nome de projeto, nota ou foco) vence o ponteiro.
     // Suavizada com constante de tempo, para não depender da taxa de quadros.
+    // No jogo a lanterna vai na proa da canoa, com qualquer ponteiro.
     const L = s.light;
-    const target = s.lantern.active ? { x: s.lantern.x, y: s.lantern.y - window.scrollY } : s.pointer.active ? s.pointer : null;
-    // Em viagem a página está escondida: não há o que iluminar.
-    const want = s.fine && target && !s.camera ? 1 : 0;
+    const target = game ? game.light : s.lantern.active ? { x: s.lantern.x, y: s.lantern.y - window.scrollY } : s.pointer.active ? s.pointer : null;
+    // Em viagem a página está escondida: não há o que iluminar. No jogo a
+    // lanterna apaga com o sol: somada à água já dourada da foz ela estourava
+    // num clarão branco em volta da canoa.
+    const want = game ? 1 - 0.9 * dawnAt((cam.y + game.light.y) / s.unit, game.docH / s.unit) : s.fine && target && !s.camera ? 1 : 0;
     const k = 1 - Math.exp(-delta * (reducedMotion ? 60 : 9));
     if (target) {
       // Ligando do zero: nasce no lugar, sem varrer a tela vindo do canto.
-      if (L.on < 0.02) {
+      // No jogo ela não tem atraso: é a canoa que a carrega.
+      if (L.on < 0.02 || game) {
         L.x = target.x;
         L.y = target.y;
       }

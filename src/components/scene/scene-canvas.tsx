@@ -30,7 +30,9 @@ const MIN_DPR = 0.75;
  *   ~1,5 s depois de lanterna, foco ou resize (wakeScene);
  * - se a média de quadros ficar 40% acima do previsto por 1,5 s, a
  *   resolução cai um degrau (1,5 → 1 → 0,75) e não volta: subir e descer
- *   ficaria piscando a nitidez.
+ *   ficaria piscando a nitidez;
+ * - com o jogo da canoa rodando (sceneState.tick), é ele quem anda primeiro
+ *   em cada quadro e a cena desenha todos.
  */
 function Pacer({ reducedMotion, coarse }: { reducedMotion: boolean; coarse: boolean }) {
   const get = useThree((s) => s.get);
@@ -51,8 +53,14 @@ function Pacer({ reducedMotion, coarse }: { reducedMotion: boolean; coarse: bool
 
     const loop = (now: number) => {
       raf = requestAnimationFrame(loop);
+      // O jogo da canoa anda aqui, antes da leitura da câmera: ele a move e
+      // desenha a canoa no mesmo quadro em que o shader desenha o rio. Com
+      // jogo, todo quadro conta como movimento (sem teto de 30 fps): é o
+      // mesmo custo de alguém rolando a página pelos ~20 s da descida.
+      const playing = sceneState.tick !== null;
+      sceneState.tick?.(now);
       const y = window.scrollY;
-      const moved = y !== lastY;
+      const moved = y !== lastY || playing;
       lastY = y;
       if (moved) wakeScene(2000);
       // Lanterna pousada num topônimo: os vaga-lumes orbitam, fica em ritmo cheio.

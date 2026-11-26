@@ -1,4 +1,12 @@
-import type { ChartMode } from "./river-curve";
+import type { ChartMode, RiverParams } from "./river-curve";
+
+/**
+ * O que a cena desenha enquanto o jogo da canoa roda (game/engine.ts): um rio
+ * próprio, mais largo e centrado, com o comprimento do percurso no lugar da
+ * altura da home (a foz e o amanhecer são medidos por ele), e a lanterna
+ * presa à canoa (`light`, px da janela).
+ */
+export type GameScene = { river: RiverParams; docH: number; light: { x: number; y: number } };
 
 /**
  * Um projeto na home, visto pela cena: de onde sai o braço do rio que leva à
@@ -58,7 +66,24 @@ export const sceneState = {
    * contínua: transições da lanterna, dos vaga-lumes e da viagem. Ver Pacer.
    */
   wakeUntil: 0,
+  /** O rio do jogo da canoa; null = a cena desenha a página. */
+  game: null as null | GameScene,
+  /**
+   * Chamado pelo Pacer a cada quadro, antes de a cena desenhar. É por aqui que
+   * o jogo anda: a câmera, a canoa (canvas 2D) e o shader têm de sair no mesmo
+   * quadro, e dois laços de rAF separados deixariam um deles um quadro atrás.
+   */
+  tick: null as null | ((now: number) => void),
+  /** Cortina: 1 = cena acesa, 0 = no escuro. O jogo troca de rio atrás dela. */
+  curtain: 1,
+  /** Pede ao River que repita a chegada do luar (consumido no quadro seguinte). */
+  replayReveal: false,
 };
+
+/** Altura (px) do rio que a cena está desenhando: o percurso do jogo ou a home. 0 = ainda não medida. */
+export function riverDocH() {
+  return sceneState.game?.docH ?? sceneState.homeDocH;
+}
 
 /** Canto superior esquerdo da janela no mundo, px: a câmera em viagem ou a página parada mais o scroll. */
 export function cameraNow() {
