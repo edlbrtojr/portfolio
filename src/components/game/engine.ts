@@ -1,7 +1,7 @@
 import { chartGeometry } from "../chart/geometry";
 import { halfRef, riverHalf, riverX } from "../scene/river-curve";
 import { sceneState, wakeScene } from "../scene/store";
-import { buildCourse, CANOE_Y, COURSE_UNITS, cruise, gameRiver, gameSizes, makeChannel, placeCourse, seeded, STAGE_CLEAN, STAGE_GOLD, steer, touches } from "./course";
+import { buildCourse, CANOE_Y, COURSE_UNITS, cruise, gameRiver, gameSizes, keySpeed, makeChannel, mouseMap, placeCourse, seeded, STAGE_CLEAN, STAGE_GOLD, steer, touches } from "./course";
 
 // O motor do jogo da canoa. As regras são de course.ts; aqui ficam o tempo, o
 // teclado e o ponteiro, e o desenho da canoa e dos dados num canvas 2D por
@@ -127,8 +127,17 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
   let bumpAt = -1e9;
   /** Alvo do jogador, px da janela. Até o primeiro comando a canoa segue o meio do rio. */
   let target = canoe.x;
-  let manual = false;
+  let input: "nenhum" | "ponteiro" | "teclas" = "nenhum";
+  /** Seta segurada (-1, 0, 1) e há quantos segundos: a velocidade cresce com o tempo (keySpeed). */
   let held = 0;
+  let heldFor = 0;
+  // Mouse: a canoa anda uma fração do que o mouse anda (mouseMap). `aim` é
+  // onde o mouse a quer; `glide` é o que sobra de diferença quando o jogador
+  // começa a usar o mouse, e some em ~1 s: a canoa nunca salta para o cursor.
+  const mouse = mouseMap(W, unit);
+  let anchor = W / 2;
+  let aim = canoe.x;
+  let glide = 0;
 
   const lose = (n: number, now: number) => {
     const out = carry.splice(Math.max(0, carry.length - n));
@@ -152,17 +161,23 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
 
     const cy = cam.y + CANOE_Y * H;
     const lane = channel(cy);
-    if (held) {
-      // 0,75 unidade por segundo: mais que o rio anda de lado na curva mais
-      // fechada (~0,5), senão o teclado não alcança a margem a tempo.
-      target = Math.min(lane.x + lane.half, Math.max(lane.x - lane.half, target + held * 0.75 * unit * dt));
-    }
-    if (!manual) target = lane.x;
+    if (input === "teclas") {
+      if (held) heldFor += dt;
+      // O alvo não sai do rio: senão, depois de segurar a seta contra a
+      // margem, a seta contrária levaria um tempo morto para fazer efeito.
+      target = Math.min(lane.x + lane.half, Math.max(lane.x - lane.half, target + held * keySpeed(heldFor, unit) * dt));
+    } else if (input === "ponteiro") {
+      glide *= Math.exp(-dt * 2);
+      target = aim + glide;
+    } else target = lane.x;
     const x = steer(canoe.x, target, dt, lane, sizes);
     // A proa aponta para onde a canoa vai: o desvio lateral contra o avanço.
+    // Até 0,45 rad (~26°) e sem pressa: com o ângulo livre a canoa girava
+    // quase de lado a cada movimento brusco e o jogo parecia nervoso.
     const forward = Math.max(120, cruise(cam.y, endY, unit, now - phaseAt));
-    const want = phase === "descendo" ? Math.atan2((x - canoe.x) / Math.max(dt, 1e-3), forward) * 0.8 : 0;
-    canoe.tilt += (want - canoe.tilt) * (1 - Math.exp(-dt * 10));
+    const lean = phase === "descendo" ? Math.atan2((x - canoe.x) / Math.max(dt, 1e-3), forward) * 0.7 : 0;
+    const want = Math.max(-0.45, Math.min(0.45, lean));
+    canoe.tilt += (want - canoe.tilt) * (1 - Math.exp(-dt * 6));
     canoe.x = x;
     light.x = x;
     light.y = CANOE_Y * H + sizes.canoeLen / 2;
@@ -484,8 +499,21 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
   };
 
   function onPointer(e: PointerEvent) {
-    manual = true;
-    target = e.clientX;
+    if (e.pointerType === "touch") {
+      // O dedo manda 1 para 1: a canoa vai para baixo dele.
+      aim = e.clientX;
+      glide = 0;
+    } else {
+      if (input !== "ponteiro") {
+        // Primeiro movimento do mouse (ou volta do teclado): o ponto em que
+        // o cursor está passa a valer a posição atual da canoa, até onde as
+        // margens continuam ao alcance; o resto da diferença escoa em `glide`.
+        anchor = Math.min(mouse.hi, Math.max(mouse.lo, e.clientX - (canoe.x - W / 2) / mouse.gain));
+        glide = canoe.x - (W / 2 + (e.clientX - anchor) * mouse.gain);
+      }
+      aim = W / 2 + (e.clientX - anchor) * mouse.gain;
+    }
+    input = "ponteiro";
   }
   function onKey(e: KeyboardEvent) {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -497,11 +525,14 @@ export function startGame(canvas: HTMLCanvasElement, hooks: GameHooks): { quit()
     const dir = e.key === "ArrowLeft" || e.key === "a" || e.key === "A" ? -1 : e.key === "ArrowRight" || e.key === "d" || e.key === "D" ? 1 : 0;
     if (dir) {
       e.preventDefault();
-      // Do mouse para o teclado: o alvo passa a ser onde a canoa está, não onde o mouse ficou.
-      if (down && !held) target = canoe.x;
-      if (down) held = dir;
-      else if (held === dir) held = 0;
-      manual = true;
+      if (down) {
+        // Do mouse para o teclado: o alvo passa a ser onde a canoa está, não onde o mouse ficou.
+        if (input !== "teclas") target = canoe.x;
+        // Seta nova (a repetição automática da tecla não conta): a arrancada recomeça devagar.
+        if (held !== dir) heldFor = 0;
+        held = dir;
+        input = "teclas";
+      } else if (held === dir) held = 0;
       return;
     }
     // A página está escondida: seta para baixo, espaço e Page Down não podem

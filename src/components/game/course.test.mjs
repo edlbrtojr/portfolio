@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { halfRef, riverHalf, riverX } from "../scene/river-curve.ts";
-import { CANOE_Y, COURSE_UNITS, buildCourse, cruise, gameRiver, gameSizes, makeChannel, placeCourse, seeded, steer, touches } from "./course.ts";
+import { CANOE_Y, COURSE_UNITS, MOUSE_GAIN, buildCourse, cruise, gameRiver, gameSizes, keySpeed, makeChannel, mouseMap, placeCourse, seeded, steer, touches } from "./course.ts";
 
 // O jogo da canoa não tem como ser jogado num teste de unidade, mas as regras
 // dele são conta pura (course.ts). Aqui um jogador simulado desce o rio com a
@@ -115,6 +115,47 @@ test("quem não joga também chega: no meio do rio não há erro, e sobra dado p
     const r = run(W, H, 3, idle);
     assert.equal(r.hit, 0, `${W}×${H}: o meio do rio tem erro`);
     assert.ok(r.got < 0.6 * r.total, `${W}×${H}: parado pegou ${r.got} de ${r.total}; remar não faz diferença`);
+  }
+});
+
+// A sensibilidade foi baixada a pedido (mouse a 0,6 px por px, setas com
+// arrancada lenta). Baixar demais tem um piso: o jogador precisa conseguir
+// chegar às duas margens e acompanhar a curva mais fechada.
+test("com o mouse nas bordas da tela a canoa alcança as duas margens, em todo o percurso", () => {
+  // Telas em que se joga de mouse (no celular é o dedo, 1 para 1).
+  for (const [W, H] of viewports.filter(([w]) => w >= 768)) {
+    const { gain, lo, hi } = mouseMap(W, H);
+    assert.ok(gain >= MOUSE_GAIN && gain <= 1 && lo <= hi, `${W}×${H}: ganho ${gain.toFixed(2)}, âncora de ${lo.toFixed(0)} a ${hi.toFixed(0)}`);
+    const channel = makeChannel(curve, gameRiver(W, H), W, H);
+    for (let y = 0; y <= COURSE_UNITS * H; y += 4) {
+      const lane = channel(y);
+      // Pior caso de cada lado: a âncora no extremo oposto e o mouse a 8 px da borda.
+      const leftmost = W / 2 + (8 - lo) * gain;
+      const rightmost = W / 2 + (W - 8 - hi) * gain;
+      assert.ok(leftmost <= lane.x - lane.half && rightmost >= lane.x + lane.half, `${W}×${H} y=${y}: mouse alcança de ${leftmost.toFixed(0)} a ${rightmost.toFixed(0)}, rio de ${(lane.x - lane.half).toFixed(0)} a ${(lane.x + lane.half).toFixed(0)}`);
+    }
+  }
+});
+
+test("as setas começam devagar e, seguradas, andam mais que o rio na curva mais fechada", () => {
+  for (const [W, H] of viewports) {
+    const channel = makeChannel(curve, gameRiver(W, H), W, H);
+    const endY = COURSE_UNITS * H - H;
+    const dt = 1 / 60;
+    let camY = 0;
+    let ms = 0;
+    let fastest = 0;
+    while (camY < endY - 0.5) {
+      const before = channel(camY + CANOE_Y * H).x;
+      camY = Math.min(endY, camY + cruise(camY, endY, H, ms) * dt);
+      ms += dt * 1000;
+      fastest = Math.max(fastest, Math.abs(channel(camY + CANOE_Y * H).x - before) / dt);
+    }
+    assert.ok(keySpeed(1, H) > 1.2 * fastest, `${W}×${H}: setas a ${keySpeed(1, H).toFixed(0)} px/s, rio a ${fastest.toFixed(0)} px/s`);
+    // Um toque de 100 ms move menos que a largura da canoa: dá para ajustar fino.
+    let tap = 0;
+    for (let t = 0; t < 0.1; t += dt) tap += keySpeed(t, H) * dt;
+    assert.ok(tap < 0.035 * H, `${W}×${H}: um toque move ${tap.toFixed(0)} px`);
   }
 });
 

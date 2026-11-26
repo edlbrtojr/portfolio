@@ -37,11 +37,54 @@ export const CANOE_Y = 0.6;
 export const SPEED = { from: 0.35, to: 0.5 } as const;
 
 /**
- * Com que pressa a canoa vai atrás do mouse ou do dedo (1/s). Com 12 ela
- * ficava ~30 px atrás nas curvas fechadas a 1440 px e perdia dado que o
- * jogador mirou certo; 16 ainda tem peso de barco.
+ * Com que pressa a canoa vai atrás do alvo do jogador (1/s). Começou em 16 e
+ * o Edilberto, jogando em 2026-11-26, achou a sensibilidade "muito alta": a
+ * canoa colava no mouse e tremia. Com 10 ela tem peso de barco e o jogador
+ * simulado do teste ainda pega os dados. O piso é 8: com 7 a canoa atrasa
+ * tanto na curva do monitor largo (1920×1080) que, mesmo no meio do rio,
+ * encosta num erro, e o teste "quem não joga também chega" quebra.
  */
-export const FOLLOW = 16;
+export const FOLLOW = 10;
+
+/**
+ * Quanto a canoa anda para cada px que o mouse anda. Era 1 para 1 com o
+ * cursor escondido: qualquer movimento de mão virava um tranco. 0,6 foi o
+ * primeiro corte depois da queixa acima; se ainda parecer nervoso, desça
+ * este número antes de mexer em FOLLOW. O dedo continua 1 para 1: a canoa
+ * vai para baixo dele, que é o que se espera no toque.
+ */
+export const MOUSE_GAIN = 0.6;
+
+/**
+ * Como o mouse vira posição da canoa: `x = W/2 + (mouse - anchor) * gain`.
+ * `gain` só passa de MOUSE_GAIN em janela estreita, onde com 0,6 o mouse
+ * bateria na borda da tela antes de a canoa chegar à margem do rio.
+ * `anchor` é o ponto do mouse que corresponde ao meio da tela: o motor o põe
+ * onde o cursor estava quando o jogador mexeu pela primeira vez (o botão do
+ * jogo fica à esquerda, e sem isso a canoa largava indo para a margem), mas
+ * só entre `lo` e `hi`, a faixa em que as duas margens continuam ao alcance
+ * do mouse em qualquer ponto do percurso (o teste confere).
+ */
+export function mouseMap(W: number, unit: number) {
+  const river = gameRiver(W, unit);
+  // O mais longe do meio da tela que a canoa precisa ir: a curva inteira
+  // mais a meia largura no trecho mais largo e inclinado.
+  const reach = 1.5 * river.amp * W + 1.6 * river.half * unit;
+  const gain = Math.max(MOUSE_GAIN, reach / (0.47 * W));
+  return { gain, lo: reach / gain, hi: W - reach / gain };
+}
+
+/**
+ * Velocidade lateral das setas, px/s. Um toque curto é um ajuste fino (22%
+ * da unidade por segundo); segurando, chega em 0,35 s a 75%, mais do que o
+ * rio anda de lado na curva mais fechada (o teste confere), senão o teclado
+ * não alcançaria a margem a tempo. Antes era 75% desde o primeiro quadro: um
+ * toque de 100 ms jogava a canoa um terço do rio para o lado.
+ */
+export function keySpeed(heldSeconds: number, unit: number) {
+  const k = Math.min(1, Math.max(0, heldSeconds / 0.35));
+  return unit * (0.22 + 0.53 * k * k * (3 - 2 * k));
+}
 
 /**
  * O rio do jogo: centrado e largo o bastante para haver por onde desviar.
